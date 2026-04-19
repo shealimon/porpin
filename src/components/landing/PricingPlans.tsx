@@ -26,7 +26,7 @@ type PricingPlansProps = {
 
 export function PricingPlans({ variant }: PricingPlansProps) {
   const isLanding = variant === 'landing'
-  const { pricing, isError, refetch } = usePricingConfig()
+  const { pricing, isError, refetch } = usePricingConfig({ fetchRemote: !isLanding })
   const user = useAuthStore((s) => s.user)
   const monthlySubscribeTo = user ? '/app/billing' : '/signup?plan=monthly'
   const yearlySubscribeTo = user ? '/app/billing' : '/signup?plan=yearly'
