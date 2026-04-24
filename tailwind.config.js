@@ -16,7 +16,6 @@ export default {
       fontFamily: {
         sans: [
           '"Geist Variable"',
-          '"Plus Jakarta Sans"',
           'system-ui',
           'Segoe UI',
           'sans-serif',

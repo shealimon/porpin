@@ -34,6 +34,30 @@ export async function postTranslateSync(
     }
     throw new Error(message)
   }
+
+  const asyncMarker =
+    res.headers.get('X-Translator-Response') ?? res.headers.get('x-translator-response')
+  const contentType = res.headers.get('content-type') ?? ''
+  const looksLikeJson =
+    asyncMarker === 'async-job-enqueued' || /\bapplication\/json\b/i.test(contentType)
+
+  if (looksLikeJson) {
+    let jobId: string | undefined
+    try {
+      const data = (await res.json()) as { job_id?: string }
+      jobId = typeof data.job_id === 'string' ? data.job_id : undefined
+    } catch {
+      /* ignore */
+    }
+    throw new Error(
+      'This server returns a translation job (JSON), not a DOCX/PDF file. Use Upload in the app to get your document, ' +
+        (jobId
+          ? `or open the job page for id ${jobId.slice(0, 8)}… `
+          : '') +
+        'For direct file download from /translate, set ENABLE_SYNC_TRANSLATE=true on the API (dev only).',
+    )
+  }
+
   return res.blob()
 }
 
@@ -43,4 +67,19 @@ export function downloadBlob(blob: Blob, filename: string) {
   a.download = filename
   a.click()
   URL.revokeObjectURL(a.href)
+}
+
+const INVALID_FILENAME_CHARS = /[<>:"/\\|?*\u0000-\u001f]/g
+const MAX_STEM_LEN = 180
+
+/** ``Sleep_Book.pdf`` + ``docx`` → ``Sleep_Book-Hinglish.docx`` (matches backend rules). */
+export function hinglishExportFilename(uploadName: string, ext: 'docx' | 'pdf' | 'zip'): string {
+  const lastDot = uploadName.lastIndexOf('.')
+  let stem = lastDot > 0 ? uploadName.slice(0, lastDot) : uploadName
+  stem = stem.replace(INVALID_FILENAME_CHARS, '_').replace(/^[\s.]+|[\s.]+$/g, '')
+  if (!stem) stem = 'document'
+  if (stem.length > MAX_STEM_LEN) {
+    stem = stem.slice(0, MAX_STEM_LEN).replace(/[\s.]+$/g, '') || 'document'
+  }
+  return `${stem}-Hinglish.${ext}`
 }

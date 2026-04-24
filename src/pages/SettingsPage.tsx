@@ -1,10 +1,9 @@
 import { useEffect, useState, type ComponentProps } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Loader2, Sparkles } from 'lucide-react'
+import { Loader2, Mail, Save, User } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 import { apiClient } from '@/api/client'
-import { Button } from '@/components/ui/button'
 import { fieldControlInputCompactClassName, Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { loadAccountProfileForQuery } from '@/lib/accountProfileLoad'
@@ -15,20 +14,15 @@ import {
 } from '@/lib/syncBackendProfile'
 import { supabaseUserToAuthUser } from '@/lib/mapSupabaseUser'
 import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
-import { useAuthStore, type UploadTier } from '@/stores/authStore'
+import { useAuthStore } from '@/stores/authStore'
 import {
   appPageHeaderClass,
-  appPagePrimaryCtaClass,
   appPageShellClass,
   appPageTitleClass,
 } from '@/lib/appPageLayout'
 import { cn } from '@/lib/utils'
+import { IN_CODE_LABEL, IN_DIAL, formatInMobileForApi, parseInMobileToLocal } from '@/lib/phoneCountryCodes'
 import { displayNameFromNameParts, setStoredUserName } from '@/utils/greeting'
-
-const tierOptions: { tier: UploadTier; title: string; hint: string }[] = [
-  { tier: 'trial', title: 'Standard', hint: 'Server applies free & subscription words first' },
-  { tier: 'payg', title: 'Pay-as-you-go emphasis', hint: 'Upload shows estimate, amount, and PAYG confirmation' },
-]
 
 function SectionCard({
   children,
@@ -64,8 +58,6 @@ export function SettingsPage() {
   const authHydrated = useAuthStore((s) => s.authHydrated)
   const user = useAuthStore((s) => s.user)
   const accessToken = useAuthStore((s) => s.accessToken)
-  const uploadTier = useAuthStore((s) => s.uploadTier)
-  const setUploadTier = useAuthStore((s) => s.setUploadTier)
   const setSession = useAuthStore((s) => s.setSession)
 
   const userId = user?.id ?? ''
@@ -83,18 +75,18 @@ export function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [mobile, setMobile] = useState('')
+  const [mobileLocal, setMobileLocal] = useState('')
   const [city, setCity] = useState('')
-  const [country, setCountry] = useState('')
+  const [country, setCountry] = useState('India')
 
   useEffect(() => {
     const d = profileQuery.data
     if (d) {
       setFirstName(d.first_name ?? '')
       setLastName(d.last_name ?? '')
-      setMobile(d.mobile ?? '')
+      setMobileLocal(parseInMobileToLocal(d.mobile))
       setCity(d.city ?? '')
-      setCountry(d.country ?? '')
+      setCountry((d.country ?? '').trim() || 'India')
       return
     }
     setFirstName(user?.firstName ?? '')
@@ -108,15 +100,15 @@ export function SettingsPage() {
     try {
       const fn = firstName.trim()
       const ln = lastName.trim()
-      const mob = mobile.trim()
+      const mob = formatInMobileForApi(mobileLocal).trim() || null
       const cty = city.trim()
-      const ctry = country.trim()
+      const ctry = country.trim() || 'India'
       const body = {
         first_name: fn || null,
         last_name: ln || null,
-        mobile: mob || null,
+        mobile: mob,
         city: cty || null,
-        country: ctry || null,
+        country: ctry,
       }
 
       const { data } = await apiClient.patch<SyncProfileResponse>('/me/profile', body)
@@ -173,8 +165,9 @@ export function SettingsPage() {
         <div className="border-b border-zinc-100 pb-5 dark:border-zinc-800">
           <h2
             id="profile-heading"
-            className="font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-50"
+            className="flex items-center gap-2 font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-50"
           >
+            <User className="size-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
             Profile
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
@@ -185,12 +178,23 @@ export function SettingsPage() {
         {user?.email ? (
           <div
             className={cn(
-              'mt-5 rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-3 text-sm',
+              'mt-5 flex min-h-11 items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-2.5 text-sm',
               'dark:border-zinc-800 dark:bg-zinc-900/50',
             )}
           >
-            <span className="text-zinc-500 dark:text-zinc-400">Signed in as </span>
-            <span className="break-all font-medium text-zinc-900 dark:text-zinc-100">{user.email}</span>
+            <span
+              className={cn(
+                'inline-flex size-7 shrink-0 items-center justify-center rounded-lg border',
+                'border-brand-200/80 bg-brand-50/90 dark:border-brand-500/30 dark:bg-brand-950/50',
+              )}
+              aria-hidden
+            >
+              <Mail className="size-[0.9rem] text-brand-600 dark:text-brand-400" />
+            </span>
+            <p className="min-w-0 py-0.5 leading-snug">
+              <span className="text-zinc-500 dark:text-zinc-400">Signed in as </span>
+              <span className="break-all font-medium text-zinc-900 dark:text-zinc-100">{user.email}</span>
+            </p>
           </div>
         ) : null}
 
@@ -255,18 +259,36 @@ export function SettingsPage() {
             </div>
 
             <div className="min-w-0 space-y-2">
-              <Label htmlFor="profile-mobile" className="text-zinc-700 dark:text-zinc-300">
+              <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300" id="profile-mobile-group">
                 Mobile <span className="font-normal text-zinc-500">(optional)</span>
-              </Label>
-              <Input
-                id="profile-mobile"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                autoComplete="tel"
-                inputMode="tel"
-                className={fieldControlInputCompactClassName}
-                placeholder="For support or account contact"
-              />
+              </div>
+              <div
+                className="flex min-w-0 items-stretch gap-2"
+                role="group"
+                aria-labelledby="profile-mobile-group"
+              >
+                <div
+                  className={cn(
+                    'flex h-9 min-h-9 shrink-0 items-center justify-center gap-1 rounded-lg border border-zinc-300 px-2 text-xs tabular-nums',
+                    'text-zinc-600 dark:border-zinc-600 dark:text-zinc-300',
+                  )}
+                  title={`${IN_CODE_LABEL} ${IN_DIAL}`}
+                  aria-hidden
+                >
+                  <span className="font-semibold text-zinc-700 dark:text-zinc-200">{IN_CODE_LABEL}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">{IN_DIAL}</span>
+                </div>
+                <Input
+                  id="profile-mobile-local"
+                  value={mobileLocal}
+                  onChange={(e) => setMobileLocal(e.target.value.replace(/\D/g, ''))}
+                  autoComplete="tel-national"
+                  inputMode="numeric"
+                  className={cn(fieldControlInputCompactClassName, 'min-w-0 flex-1')}
+                  placeholder="10-digit number"
+                  aria-label="Mobile number"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-4">
@@ -298,12 +320,21 @@ export function SettingsPage() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-zinc-100 pt-5 dark:border-zinc-800 sm:flex-row sm:justify-end">
-              <Button
+            <div className="flex justify-center border-t border-zinc-100 pt-5 dark:border-zinc-800">
+              <button
                 type="button"
                 onClick={() => void onSaveProfile()}
                 disabled={saving}
-                className={cn(appPagePrimaryCtaClass, 'w-full min-h-[44px] sm:w-auto sm:min-h-10 sm:min-w-[10rem]')}
+                className={cn(
+                  'inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border-0 px-5',
+                  'text-sm font-semibold text-white',
+                  'bg-emerald-600 shadow-md shadow-black/10',
+                  'transition hover:bg-emerald-700 hover:shadow-lg hover:shadow-black/15 active:scale-[0.98]',
+                  'dark:bg-emerald-500 dark:hover:bg-emerald-400',
+                  'outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400/50 dark:focus-visible:outline-zinc-500/50',
+                  'disabled:pointer-events-none disabled:opacity-60',
+                  'sm:min-w-[10rem] sm:w-auto',
+                )}
               >
                 {saving ? (
                   <span className="inline-flex items-center justify-center gap-2">
@@ -311,89 +342,15 @@ export function SettingsPage() {
                     Saving…
                   </span>
                 ) : (
-                  'Save changes'
+                  <>
+                    <Save className="size-4 shrink-0" aria-hidden />
+                    Save Changes
+                  </>
                 )}
-              </Button>
+              </button>
             </div>
           </div>
         )}
-      </SectionCard>
-
-      <SectionCard aria-labelledby="upload-mode-heading">
-        <div className="border-b border-zinc-100 pb-5 dark:border-zinc-800">
-          <h2
-            id="upload-mode-heading"
-            className="font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-50"
-          >
-            Upload screen
-          </h2>
-          <p className="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Choose how strongly the uploader highlights pay-as-you-go pricing. File types and billing rules are the
-            same.
-          </p>
-        </div>
-
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {tierOptions.map(({ tier, title, hint }) => {
-            const selected = uploadTier === tier
-            return (
-              <button
-                key={tier}
-                type="button"
-                onClick={() => {
-                  setUploadTier(tier)
-                  toast.success(
-                    tier === 'payg'
-                      ? 'Upload will emphasize price and confirmation.'
-                      : 'Upload will use simpler prompts when everything is covered by credits.',
-                  )
-                }}
-                className={cn(
-                  'relative min-h-[4.5rem] w-full touch-manipulation rounded-2xl border px-4 py-3.5 text-left transition',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2',
-                  'dark:focus-visible:ring-offset-zinc-950',
-                  selected
-                    ? 'border-brand-500 bg-brand-50/90 shadow-sm dark:border-brand-500 dark:bg-brand-950/40'
-                    : 'border-zinc-200 bg-zinc-50/50 hover:border-zinc-300 hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/30 dark:hover:border-zinc-600',
-                )}
-              >
-                {selected ? (
-                  <span
-                    className={cn(
-                      'absolute right-3 top-3 flex size-6 items-center justify-center rounded-full',
-                      'bg-brand-600 text-white dark:bg-brand-500',
-                    )}
-                    aria-hidden
-                  >
-                    <Check className="size-3.5" strokeWidth={2.5} />
-                  </span>
-                ) : null}
-                <span className="flex items-start gap-2.5 pr-8">
-                  <Sparkles
-                    className={cn(
-                      'mt-0.5 size-4 shrink-0 text-zinc-400 dark:text-zinc-500',
-                      selected && 'text-brand-600 dark:text-brand-400',
-                    )}
-                    aria-hidden
-                  />
-                  <span className="min-w-0">
-                    <span
-                      className={cn(
-                        'block text-sm font-semibold',
-                        selected ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-800 dark:text-zinc-200',
-                      )}
-                    >
-                      {title}
-                    </span>
-                    <span className="mt-1 block text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-                      {hint}
-                    </span>
-                  </span>
-                </span>
-              </button>
-            )
-          })}
-        </div>
       </SectionCard>
     </div>
   )

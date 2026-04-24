@@ -4,6 +4,7 @@ export const JOB_STATUS_LABEL: Record<string, string> = {
   pending_estimate: 'Pending estimate',
   estimated: 'Estimated',
   preview_ready: 'Preview ready',
+  awaiting_payment: 'Payment required',
   queued: 'Queued',
   processing: 'Processing',
   parsing_document: 'Reading document',

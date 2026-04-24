@@ -37,6 +37,15 @@ export const authFormFieldCompactLightClass = cn(
 export const authFormLabelLightClass =
   'text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-zinc-500'
 
+/**
+ * Light password field: suppress browser-native “show password” on Windows — see `index.css`
+ * `.auth-password-no-native-reveal`.
+ */
+export const authFormFieldPasswordLightClass = cn(
+  authFormFieldCompactLightClass,
+  'auth-password-no-native-reveal',
+)
+
 /** Black CTA on light auth cards (login / signup / forgot). */
 export const authFormPrimaryButtonLightClass = cn(
   'h-10 w-full rounded-md border-0 text-[0.8125rem] font-semibold shadow-md sm:text-sm',

@@ -1,5 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 
@@ -13,10 +14,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delay={0}>
         <BrowserRouter>
-          <AuthSessionSync />
-          {children}
+          <HelmetProvider>
+            <AuthSessionSync />
+            {children}
+          </HelmetProvider>
           <PorpinLoadingIndicator />
-          <Toaster position="top-center" />
+          <Toaster position="bottom-right" />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

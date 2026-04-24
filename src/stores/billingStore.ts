@@ -3,23 +3,9 @@ import { persist } from 'zustand/middleware'
 
 import { useAuthStore } from '@/stores/authStore'
 
-export type BillingTxKind = 'payg_demo' | 'included_words'
-
-export type BillingTransaction = {
-  id: string
-  createdAt: string
-  jobId?: string
-  fileName?: string
-  words: number
-  amountInr: number
-  status: 'succeeded' | 'pending' | 'failed'
-  kind: BillingTxKind
-}
-
 export type UserBillingSlice = {
   trialStartedAt: string | null
   trialWordsConsumed: number
-  transactions: BillingTransaction[]
 }
 
 const LEGACY_KEY = '__legacy__'
@@ -30,13 +16,7 @@ type PersistedBillingV2 = {
 }
 
 function emptyUser(): UserBillingSlice {
-  return { trialStartedAt: null, trialWordsConsumed: 0, transactions: [] }
-}
-
-function newTxId(): string {
-  return typeof crypto !== 'undefined' && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `tx-${Date.now()}`
+  return { trialStartedAt: null, trialWordsConsumed: 0 }
 }
 
 function resolveUserId(s: BillingState): string | null {
@@ -47,29 +27,25 @@ function getSlice(s: BillingState, userId: string): UserBillingSlice {
   return s.billingByUser[userId] ?? emptyUser()
 }
 
-/** Active slice for the signed-in user (for hooks / UI). */
-export function selectUserBilling(s: BillingState): UserBillingSlice {
-  const id = resolveUserId(s)
-  if (!id) return emptyUser()
-  return getSlice(s, id)
-}
-
-/** Snapshot for non-React code paths (e.g. confirm job). */
-export function getActiveBillingSnapshot(): UserBillingSlice {
-  return selectUserBilling(useBillingStore.getState())
-}
-
 interface BillingState {
   activeUserId: string | null
   billingByUser: Record<string, UserBillingSlice>
   setActiveUserId: (userId: string | null) => void
-  /** Clears trial + transaction list for the current account (call on sign-out). */
+  /** Clears trial tracking for the current account (call on sign-out). */
   resetActiveUserBilling: () => void
   startTrialClockIfNeeded: () => void
   consumeTrialWords: (n: number) => void
-  addTransaction: (tx: Omit<BillingTransaction, 'id' | 'createdAt'>) => void
   /** Dev / full wipe. */
   reset: () => void
+}
+
+function normalizeSlice(v: unknown): UserBillingSlice {
+  if (!v || typeof v !== 'object') return emptyUser()
+  const o = v as Partial<UserBillingSlice> & { transactions?: unknown }
+  return {
+    trialStartedAt: o.trialStartedAt ?? null,
+    trialWordsConsumed: typeof o.trialWordsConsumed === 'number' ? o.trialWordsConsumed : 0,
+  }
 }
 
 export const useBillingStore = create<BillingState>()(
@@ -90,7 +66,7 @@ export const useBillingStore = create<BillingState>()(
             const { [LEGACY_KEY]: _, ...rest } = s.billingByUser
             return {
               activeUserId: userId,
-              billingByUser: { ...rest, [userId]: { ...legacy } },
+              billingByUser: { ...rest, [userId]: normalizeSlice(legacy) },
             }
           }
           return {
@@ -135,25 +111,6 @@ export const useBillingStore = create<BillingState>()(
             billingByUser: { ...s.billingByUser, [id]: next },
           }
         }),
-      addTransaction: (tx) =>
-        set((s) => {
-          const id = resolveUserId(s)
-          if (!id) return {}
-          const slice = getSlice(s, id)
-          const row: BillingTransaction = {
-            ...tx,
-            id: newTxId(),
-            createdAt: new Date().toISOString(),
-          }
-          const next: UserBillingSlice = {
-            ...slice,
-            transactions: [row, ...slice.transactions],
-          }
-          return {
-            activeUserId: s.activeUserId ?? id,
-            billingByUser: { ...s.billingByUser, [id]: next },
-          }
-        }),
       reset: () =>
         set({
           activeUserId: null,
@@ -162,7 +119,7 @@ export const useBillingStore = create<BillingState>()(
     }),
     {
       name: 'translator-billing',
-      version: 2,
+      version: 3,
       partialize: (state) => ({
         activeUserId: state.activeUserId,
         billingByUser: state.billingByUser,
@@ -176,10 +133,15 @@ export const useBillingStore = create<BillingState>()(
           return currentState
         }
         if (p.billingByUser && typeof p.billingByUser === 'object') {
+          const raw = p.billingByUser as Record<string, unknown>
+          const billingByUser: Record<string, UserBillingSlice> = {}
+          for (const [k, v] of Object.entries(raw)) {
+            billingByUser[k] = normalizeSlice(v)
+          }
           return {
             ...currentState,
             activeUserId: p.activeUserId ?? null,
-            billingByUser: p.billingByUser as Record<string, UserBillingSlice>,
+            billingByUser,
           }
         }
         if ('transactions' in p || 'trialStartedAt' in p || 'trialWordsConsumed' in p) {
@@ -190,9 +152,6 @@ export const useBillingStore = create<BillingState>()(
               [LEGACY_KEY]: {
                 trialStartedAt: (p.trialStartedAt as string | null) ?? null,
                 trialWordsConsumed: (p.trialWordsConsumed as number) ?? 0,
-                transactions: Array.isArray(p.transactions)
-                  ? (p.transactions as BillingTransaction[])
-                  : [],
               },
             },
           }

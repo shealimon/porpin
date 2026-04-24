@@ -14,7 +14,7 @@ export type JobBillingBreakdown = {
   subscriptionUsed: number
   /** INR charged for this job as PAYG (source of truth from backend). */
   amountToPay: number
-  /** Backend plan bucket, e.g. mixed | free | pay_as_you_go */
+  /** Backend plan bucket, e.g. mixed | free | payg */
   userPlanType?: string
 }
 

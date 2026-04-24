@@ -2,14 +2,12 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 
 import { stashReferralCodeFromQuery } from '@/lib/referralCapture'
+import { LandingPage } from '@/pages/LandingPage'
 import { AppLayout } from '@/routes/AppLayout'
 import { GuestOnlyRoute } from '@/routes/GuestOnlyRoute'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { PublicLayout } from '@/routes/PublicLayout'
-
-const LandingPage = lazy(() =>
-  import('@/pages/LandingPage').then((m) => ({ default: m.LandingPage })),
-)
+import { DocumentMeta } from '@/seo/DocumentMeta'
 const LoginPage = lazy(() =>
   import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
 )
@@ -89,6 +87,7 @@ export function AppRouter() {
   return (
     <Suspense fallback={<PageFallback />}>
       <ReferralCaptureListener />
+      <DocumentMeta />
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />

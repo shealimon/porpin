@@ -49,14 +49,14 @@ export function AppLayout() {
     return email?.trim()?.[0]?.toUpperCase() ?? '?'
   }, [user?.firstName, user?.lastName, email])
 
-  /** Inner main pane scrolls; scrollbar visually hidden on these routes (all breakpoints / “normal” desktop included). */
+  /** Inner main pane scrolls; scrollbar visually hidden on these routes (all breakpoints / “normal” desktop included). Account, billing, history, invite, upload. */
   const path =
     location.pathname.length > 1 && location.pathname.endsWith('/')
       ? location.pathname.slice(0, -1)
       : location.pathname
   const isUploadRoute = path === '/app/upload'
   const isHiddenScrollbarMainRoute =
-    /^\/app\/(settings|billing|history)(\/|$)/.test(location.pathname) || isUploadRoute
+    /^\/app\/(settings|billing|history|invite)(\/|$)/.test(location.pathname) || isUploadRoute
 
   useEffect(() => {
     const prev = document.body.style.overflow
@@ -277,7 +277,7 @@ export function AppLayout() {
                 >
                   <Link role="menuitem" to="/#pricing" className={menuRowMobileClass} onClick={onMenuPricingClick}>
                     <Sparkles className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                    <span>Plans & pricing</span>
+                    <span>Upgrade Plan</span>
                   </Link>
                   <div className="mx-1.5 my-1.5 h-px bg-zinc-200 dark:bg-zinc-800" role="separator" />
                   <Link
@@ -375,7 +375,7 @@ export function AppLayout() {
                 <div className="mx-1.5 h-px bg-zinc-200 dark:bg-zinc-800" role="separator" />
                 <Link role="menuitem" to="/#pricing" className={menuRowClass} onClick={onMenuPricingClick}>
                   <Sparkles className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                  <span>Plans & pricing</span>
+                  <span>Upgrade Plan</span>
                 </Link>
                 <div className="mx-1.5 my-1 h-px bg-zinc-200 dark:bg-zinc-800" role="separator" />
                 <Link

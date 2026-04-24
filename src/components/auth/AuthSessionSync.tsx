@@ -1,6 +1,10 @@
 import { useEffect } from 'react'
 
-import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
+import {
+  clearAuthRememberMePreference,
+  isSupabaseConfigured,
+  supabase,
+} from '@/lib/supabaseClient'
 import { resolveAuthUser, supabaseUserToAuthUser } from '@/lib/mapSupabaseUser'
 import { refreshProfileExtras } from '@/lib/syncBackendProfile'
 import { useAuthStore } from '@/stores/authStore'
@@ -93,6 +97,7 @@ export function AuthSessionSync() {
           useBillingStore.getState().setActiveUserId(session.user.id)
           void refreshProfileExtras()
         } else {
+          clearAuthRememberMePreference()
           useBillingStore.getState().setActiveUserId(null)
           clearSession()
           useProfileExtrasStore.getState().reset()
@@ -122,6 +127,7 @@ export function AuthSessionSync() {
           useBillingStore.getState().setActiveUserId(session.user.id)
           void refreshProfileExtras()
         } else {
+          clearAuthRememberMePreference()
           useBillingStore.getState().setActiveUserId(null)
           clearSession()
           useProfileExtrasStore.getState().reset()

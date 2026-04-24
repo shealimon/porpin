@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Calendar, ChevronLeft, ChevronRight, History, Loader2 } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, FileText, History, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -24,55 +24,73 @@ function HistoryRow({ row }: { row: JobListItem }) {
       : null
 
   return (
-    <li>
+    <li className="min-w-0 max-w-full">
       <Link
         to={`/app/jobs/${encodeURIComponent(row.id)}`}
         className={cn(
-          'group flex min-h-[4.5rem] w-full items-center gap-3 rounded-2xl border border-zinc-200/90 bg-white p-3 shadow-sm',
+          'group box-border flex w-full min-w-0 max-w-full min-h-[4.25rem] items-center gap-1.5 rounded-2xl border border-zinc-200/90 bg-white p-2.5 pr-1.5 shadow-sm',
           'no-underline decoration-transparent outline-none transition duration-200',
           'visited:text-inherit hover:no-underline',
           'hover:border-brand-500/35 hover:shadow-md',
+          'sm:min-h-[4.5rem] sm:gap-3 sm:p-3 sm:pr-3',
           'dark:border-zinc-800 dark:bg-zinc-950/80 dark:hover:border-brand-500/30',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2',
-          'dark:focus-visible:ring-offset-zinc-950',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500/50',
         )}
         aria-label={`Open completed translation: ${row.fileName}`}
       >
-        <div className="min-w-0 flex-1 pr-1">
-          <p
-            className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50 sm:text-base"
-            title={row.fileName}
+        <div className="flex min-h-0 min-w-0 flex-1 items-center gap-2 overflow-x-hidden pr-0.5 sm:gap-3 sm:pr-1">
+          <div
+            className={cn(
+              'flex size-9 shrink-0 items-center justify-center rounded-xl border',
+              'border-brand-200/80 bg-brand-50/90 dark:border-brand-500/30 dark:bg-brand-950/50',
+              'sm:size-10',
+            )}
+            aria-hidden
           >
-            {row.fileName}
-          </p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-            <span className="inline-flex items-center gap-1 tabular-nums">
-              <Calendar className="size-3.5 shrink-0 opacity-80" aria-hidden />
-              <span>{completedLabel}</span>
-            </span>
-            {priceLabel ? (
-              <>
-                <span className="hidden text-zinc-300 dark:text-zinc-600 sm:inline" aria-hidden>
-                  ·
-                </span>
-                <span className="font-medium text-zinc-600 tabular-nums dark:text-zinc-300">
-                  {priceLabel}
-                </span>
-              </>
-            ) : null}
+            <FileText className="size-[1.05rem] text-brand-600 dark:text-brand-400 sm:size-5" />
+          </div>
+          <div className="w-0 min-w-0 flex-1">
+            <p
+              className={cn(
+                'line-clamp-2 min-w-0 break-words text-sm font-semibold leading-snug text-zinc-900',
+                'sm:line-clamp-1',
+                'dark:text-zinc-50 sm:text-base',
+              )}
+              title={row.fileName}
+            >
+              {row.fileName}
+            </p>
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="inline-flex min-w-0 items-center gap-1 tabular-nums">
+                <Calendar className="size-3.5 shrink-0 text-brand-600/90 dark:text-brand-400/90" aria-hidden />
+                <span className="min-w-0">{completedLabel}</span>
+              </span>
+              {priceLabel ? (
+                <>
+                  <span className="hidden text-zinc-300 dark:text-zinc-600 sm:inline" aria-hidden>
+                    ·
+                  </span>
+                  <span className="min-w-0 font-medium text-zinc-600 tabular-nums [overflow-wrap:anywhere] dark:text-zinc-300">
+                    {priceLabel}
+                  </span>
+                </>
+              ) : null}
+            </div>
           </div>
         </div>
         <span
           className={cn(
-            'inline-flex shrink-0 items-center gap-0.5 rounded-xl px-2.5 py-2 text-sm font-semibold',
-            'text-brand-700 dark:text-brand-300',
-            'bg-brand-600/[0.08] transition group-hover:bg-brand-600 group-hover:text-white',
-            'dark:bg-brand-500/15 dark:group-hover:bg-brand-500',
-            'sm:px-3',
+            'box-border flex shrink-0 select-none items-center justify-center self-center',
+            'gap-1 rounded-lg px-2.5 py-2 text-xs font-semibold leading-tight',
+            'whitespace-nowrap min-h-10',
+            'sm:min-h-0 sm:rounded-xl sm:px-3 sm:py-2 sm:text-sm',
+            'text-brand-800 dark:text-brand-200',
+            'bg-brand-600/15 transition group-hover:bg-brand-600 group-hover:text-white',
+            'dark:bg-brand-500/20 dark:group-hover:bg-brand-500',
           )}
         >
-          <span className="hidden sm:inline">Open</span>
-          <ChevronRight className="size-4 sm:ml-0.5" strokeWidth={2.25} aria-hidden />
+          Open
+          <ChevronRight className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
         </span>
       </Link>
     </li>
@@ -106,18 +124,20 @@ function HistoryPagination({
   return (
     <nav
       className={cn(
-        'mt-6 flex flex-col gap-3 rounded-2xl border border-zinc-200/90 bg-zinc-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between',
+        'mt-6 w-full min-w-0 max-w-full',
+        'flex flex-col gap-3 rounded-2xl border border-zinc-200/90 bg-zinc-50/80 px-3 py-3',
+        'sm:flex-row sm:items-center sm:justify-between sm:px-4',
         'dark:border-zinc-800 dark:bg-zinc-900/50',
       )}
       aria-label="History pages"
     >
-      <p className="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">
+      <p className="min-w-0 break-words text-center text-sm tabular-nums text-zinc-600 sm:text-left dark:text-zinc-400">
         <span className="font-medium text-zinc-800 dark:text-zinc-200">
           {start.toLocaleString('en-IN')}–{end.toLocaleString('en-IN')}
         </span>{' '}
         of {totalItems.toLocaleString('en-IN')}
       </p>
-      <div className="flex items-center justify-center gap-2 sm:justify-end">
+      <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 sm:flex-nowrap sm:justify-end">
         <button
           type="button"
           disabled={safePage <= 1 || isBusy}
@@ -165,12 +185,13 @@ function HistoryPagination({
 
 function HistorySkeleton() {
   return (
-    <ul className="space-y-3" aria-hidden>
+    <ul className="min-w-0 space-y-3" aria-hidden>
       {[1, 2, 3, 4, 5].map((i) => (
         <li
           key={i}
-          className="flex items-center gap-3 rounded-2xl border border-zinc-100 bg-white p-3 dark:border-zinc-800/80 dark:bg-zinc-950/50"
+          className="flex min-w-0 max-w-full items-center gap-2 rounded-2xl border border-zinc-100 bg-white p-2.5 sm:gap-3 sm:p-3 dark:border-zinc-800/80 dark:bg-zinc-950/50"
         >
+          <div className="h-9 w-9 shrink-0 rounded-xl bg-zinc-200/80 dark:bg-zinc-800/80" />
           <div className="min-w-0 flex-1 space-y-2 pr-1">
             <div className="h-4 w-[min(100%,14rem)] animate-pulse rounded-md bg-zinc-200/90 dark:bg-zinc-800/90" />
             <div className="h-3 w-40 animate-pulse rounded-md bg-zinc-200/70 dark:bg-zinc-800/70" />
@@ -209,17 +230,17 @@ export function HistoryPage() {
       : null
 
   return (
-    <div className={appPageShellClass}>
-      <header className={cn(appPageHeaderClass, 'min-w-0')}>
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h1 className={appPageTitleClass}>History</h1>
+    <div className={cn(appPageShellClass, 'w-full min-w-0 max-w-full')}>
+      <header className={cn(appPageHeaderClass, 'min-w-0 max-w-full')}>
+        <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-3 sm:gap-y-1">
+          <h1 className={cn(appPageTitleClass, 'min-w-0')}>History</h1>
           {summaryLine ? (
-            <span className="text-sm font-medium tabular-nums text-zinc-500 dark:text-zinc-400">
+            <span className="min-w-0 text-sm font-medium leading-snug tabular-nums text-zinc-500 dark:text-zinc-400">
               {summaryLine}
             </span>
           ) : null}
         </div>
-        <p className={appPageDescriptionClass}>
+        <p className={cn(appPageDescriptionClass, 'max-w-full break-words [overflow-wrap:anywhere]')}>
           Download past Hinglish outputs anytime. Jobs are listed with the newest first (
           {pageSize} per page).
         </p>
@@ -260,12 +281,12 @@ export function HistoryPage() {
         >
           <div
             className={cn(
-              'flex size-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/80',
-              'dark:bg-zinc-950 dark:ring-zinc-800',
+              'flex size-14 items-center justify-center rounded-2xl border border-brand-200/90 bg-brand-50/90 shadow-sm',
+              'dark:border-brand-500/30 dark:bg-brand-950/50',
             )}
             aria-hidden
           >
-            <History className="size-7 text-zinc-400 dark:text-zinc-500" strokeWidth={1.75} />
+            <History className="size-7 text-brand-600 dark:text-brand-400" strokeWidth={1.75} />
           </div>
           <h2 className="mt-5 font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-100">
             No history yet
@@ -316,7 +337,7 @@ export function HistoryPage() {
         <>
           <ul
             className={cn(
-              'space-y-3 transition-opacity duration-200',
+              'min-w-0 space-y-3 transition-opacity duration-200',
               pageIsLoading && 'pointer-events-none opacity-50',
             )}
             aria-busy={pageIsLoading}

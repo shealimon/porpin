@@ -1,7 +1,7 @@
 /**
  * Milestone job lifecycle (/job/*). Prefer importing from @/features/jobs/api in new code.
  */
-import type { JobDetailDto, MilestoneJob } from '@/features/jobs/api'
+import type { JobDetailDto, JobConfirmResponse, MilestoneJob } from '@/features/jobs/api'
 import {
   confirmMilestoneJob,
   confirmMilestoneJobSafe,
@@ -31,13 +31,14 @@ export async function fetchJobStatus(jobId: string): Promise<JobStatusResponse> 
   return toSnake(m)
 }
 
-export async function confirmJobSafe(jobId: string): Promise<void> {
-  await confirmMilestoneJobSafe(jobId)
+export async function confirmJobSafe(
+  jobId: string,
+): Promise<JobConfirmResponse | 'already_started'> {
+  return confirmMilestoneJobSafe(jobId)
 }
 
-export async function confirmJob(jobId: string): Promise<{ status: string }> {
-  await confirmMilestoneJob(jobId)
-  return { status: 'queued' }
+export async function confirmJob(jobId: string): Promise<JobConfirmResponse> {
+  return confirmMilestoneJob(jobId)
 }
 
 export function getJobApiErrorMessage(err: unknown): string {
@@ -45,4 +46,4 @@ export function getJobApiErrorMessage(err: unknown): string {
   return 'Request failed'
 }
 
-export type { JobDetailDto, MilestoneJob }
+export type { JobDetailDto, JobConfirmResponse, MilestoneJob }

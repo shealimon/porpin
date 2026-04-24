@@ -24,7 +24,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { usePricingConfig } from '@/hooks/usePricingConfig'
 import { qk } from '@/lib/queryKeys'
 import { queryClient } from '@/lib/queryClient'
-import { useAuthStore } from '@/stores/authStore'
 import { useJobStore } from '@/stores/jobStore'
 import { cn } from '@/lib/utils'
 const PAYG_ACCEPT: Record<string, string[]> = {
@@ -51,12 +50,11 @@ function rejectionMessage(rejections: FileRejection[], maxMb: number): string {
 }
 
 function formatInr(amount: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 1,
+  const n = new Intl.NumberFormat('en-IN', {
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amount)
+  return `₹${n}`
 }
 
 function isPaygAllowedFile(file: File): boolean {
@@ -86,7 +84,6 @@ export function FileInputBar({
 }: FileInputBarProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
-  useAuthStore((s) => s.uploadTier)
   const { pricing } = usePricingConfig()
   const [file, setFile] = useState<File | null>(null)
   const [estimating, setEstimating] = useState(false)
@@ -173,6 +170,9 @@ export function FileInputBar({
   const maxBytes =
     pricing.max_upload_file_mb > 0 ? pricing.max_upload_file_mb * 1024 * 1024 : undefined
 
+  /** True while a request is in flight and we have not applied its estimate yet. */
+  const waitingForEstimate = estimating && !estimate
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     onDropRejected,
@@ -181,7 +181,7 @@ export function FileInputBar({
     accept: PAYG_ACCEPT,
     maxSize: maxBytes,
     maxFiles: 1,
-    disabled: estimating,
+    disabled: waitingForEstimate,
     multiple: false,
     validator: paygFileValidator,
   })
@@ -243,6 +243,10 @@ export function FileInputBar({
           amount_to_pay: data.amount_to_pay,
           user_plan_type: data.user_plan_type,
         })
+        // Clear progress immediately so we never get stuck on “Counting words…” if a stale
+        // request’s `finally` skips (estimateReqId mismatch) after a race or abort.
+        setUploadUi(null)
+        setEstimating(false)
         useJobStore.getState().upsertHistory({
           id: data.job_id,
           fileName: data.file_name,
@@ -294,7 +298,7 @@ export function FileInputBar({
   }, [file, onUploadProgressTick])
 
   const runEstimateAgain = useCallback(async () => {
-    if (!file || estimating) return
+    if (!file || waitingForEstimate) return
     setEstimating(true)
     setError(null)
     try {
@@ -326,10 +330,10 @@ export function FileInputBar({
     } finally {
       setEstimating(false)
     }
-  }, [file, estimating])
+  }, [file, waitingForEstimate])
 
   const onStartTranslation = useCallback(() => {
-    if (!estimate?.job_id || estimating) return
+    if (!estimate?.job_id || waitingForEstimate) return
     const needsPay = estimate.amount_to_pay > 0.005
     if (needsPay && !payAck) {
       toast.error('Please confirm payment authorisation to continue.')
@@ -337,35 +341,35 @@ export function FileInputBar({
     }
     void queryClient.invalidateQueries({ queryKey: qk.jobs.detail(estimate.job_id) })
     navigate(`/app/jobs/${encodeURIComponent(estimate.job_id)}`)
-  }, [estimate, estimating, payAck, navigate])
+  }, [estimate, waitingForEstimate, payAck, navigate])
 
   const onRightAction = useCallback(() => {
     if (estimate) {
       void onStartTranslation()
-    } else if (file && !estimating && error) {
+    } else if (file && !waitingForEstimate && error) {
       void runEstimateAgain()
     }
-  }, [estimate, file, estimating, error, onStartTranslation, runEstimateAgain])
+  }, [estimate, file, waitingForEstimate, error, onStartTranslation, runEstimateAgain])
 
   const needsPayAck = Boolean(estimate && estimate.amount_to_pay > 0.005)
 
-  const showRightSpinner = estimating
-  const canStart = !!estimate && !estimating && (!needsPayAck || payAck)
-  const rightDisabled = !file || estimating || (estimate ? !canStart : !error)
+  const showRightSpinner = waitingForEstimate
+  const canStart = !!estimate && !waitingForEstimate && (!needsPayAck || payAck)
+  const rightDisabled = !file || waitingForEstimate || (estimate ? !canStart : !error)
 
   const uploadTooltipText = useMemo(
-    () => (estimating ? 'Please wait' : 'Add file'),
-    [estimating],
+    () => (waitingForEstimate ? 'Please wait' : 'Add file'),
+    [waitingForEstimate],
   )
 
   const startActionTooltipText = useMemo(() => {
     if (!file) return 'Select a file first'
-    if (estimating) return 'Working…'
+    if (waitingForEstimate) return 'Working…'
     if (error) return 'Retry estimate'
     if (!estimate) return 'Wait for estimate'
-    if (needsPayAck && !payAck) return 'Confirm payment below first'
-    return 'Start translation'
-  }, [file, estimating, error, estimate, needsPayAck, payAck])
+    if (needsPayAck) return 'Pay & Start'
+    return 'Start'
+  }, [file, waitingForEstimate, error, estimate, needsPayAck])
 
   return (
     <div
@@ -406,7 +410,7 @@ export function FileInputBar({
         <div className="relative w-full">
           <div className="file-input-bar-stack">
         <div
-          className={`file-input-bar${isDragActive ? ' file-input-bar--drag' : ''}${estimating ? ' file-input-bar--busy' : ''}`}
+          className={`file-input-bar${isDragActive ? ' file-input-bar--drag' : ''}${waitingForEstimate ? ' file-input-bar--busy' : ''}`}
         >
           <Tooltip>
             <TooltipTrigger
@@ -417,7 +421,7 @@ export function FileInputBar({
                     type="button"
                     className="file-input-bar__action file-input-bar__action--plus"
                     aria-label="Add file"
-                    disabled={estimating}
+                    disabled={waitingForEstimate}
                     onClick={(e) => {
                       e.stopPropagation()
                       fileInputRef.current?.click()
@@ -448,7 +452,7 @@ export function FileInputBar({
                   : 'file-input-bar__placeholder'
               }
             >
-              {estimating && file
+              {waitingForEstimate && file
                 ? 'Calculating estimate…'
                 : file
                   ? file.name
@@ -466,7 +470,9 @@ export function FileInputBar({
                     className={`file-input-bar__action file-input-bar__action--send${canStart ? ' file-input-bar__action--send-active' : ''}`}
                     aria-label={
                       estimate
-                        ? 'Start translation'
+                        ? needsPayAck
+                          ? 'Pay & Start'
+                          : 'Start'
                         : error
                           ? 'Retry estimate'
                           : 'Waiting for estimate'
@@ -500,7 +506,7 @@ export function FileInputBar({
           </Tooltip>
         </div>
 
-      {uploadUi ? (
+      {uploadUi && !estimate ? (
         <div
           className="file-input-bar__upload-progress mx-auto w-full max-w-md px-0.5"
           aria-live="polite"
@@ -519,7 +525,7 @@ export function FileInputBar({
         </div>
       ) : null}
 
-      {file && estimating && !estimate && uploadUi?.phase === 'processing' ? (
+      {file && waitingForEstimate && uploadUi?.phase === 'processing' ? (
         <div
           className="file-input-bar__estimate-card mx-auto mt-1 w-full max-w-sm animate-pulse rounded-xl border border-border/50 bg-muted/30 px-4 py-3 dark:border-zinc-700/80 dark:bg-zinc-900/40"
           aria-hidden
@@ -533,7 +539,7 @@ export function FileInputBar({
       <SourceLangChips
         value={sourceLang}
         onChange={onSourceLangChange}
-        disabled={estimating}
+        disabled={waitingForEstimate}
       />
 
       {estimate && (
@@ -543,7 +549,7 @@ export function FileInputBar({
         >
           <PaygPricingCalculator
             wordCount={estimate.word_count}
-            disabled={estimating}
+            disabled={waitingForEstimate}
             jobBilling={estimateJobBilling}
           />
           {estimate.remaining_words > 0 ? (
@@ -561,15 +567,15 @@ export function FileInputBar({
                   type="checkbox"
                   checked={payAck}
                   onChange={(e) => setPayAck(e.target.checked)}
-                  disabled={estimating}
+                  disabled={waitingForEstimate}
                   className="mt-0.5 size-4 rounded border-zinc-400"
                 />
                 <span className="text-zinc-800 dark:text-zinc-200">
-                  I authorise{' '}
+                  I agree to pay{' '}
                   <strong className="font-semibold">
                     {formatInr(estimate.amount_to_pay)}
                   </strong>{' '}
-                  as the pay-as-you-go charge for this job.
+                  for words in this file
                 </span>
               </label>
             </div>

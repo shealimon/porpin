@@ -1,9 +1,13 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { PorpinMark } from '@/components/brand/PorpinMark'
-import { LandingUploadPreview } from '@/components/landing/LandingUploadPreview'
-import { PricingPlans } from '@/components/landing/PricingPlans'
 import { cn } from '@/lib/utils'
+
+const LandingBelowTheFold = lazy(() =>
+  import('@/components/landing/LandingBelowTheFold').then((m) => ({
+    default: m.LandingBelowTheFold,
+  })),
+)
 
 export function LandingPage() {
   const { pathname, hash } = useLocation()
@@ -19,7 +23,7 @@ export function LandingPage() {
   return (
     <div
       className={cn(
-        'voltix-landing relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#f6f4f1] font-sans text-stone-600 antialiased',
+        'voltix-landing relative flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col bg-[#f6f4f1] font-sans text-stone-600 antialiased',
         'selection:bg-orange-200/35 selection:text-stone-900',
       )}
     >
@@ -38,13 +42,13 @@ export function LandingPage() {
 
       <section
         aria-labelledby="landing-hero-heading"
-        className="mx-auto flex min-h-[calc(100svh-4.5rem)] max-w-6xl flex-col justify-center px-4 pb-16 pt-14 sm:min-h-[calc(100svh-4.75rem)] sm:pb-24 sm:pt-20"
+        className="mx-auto flex min-h-[calc(100svh-4.5rem)] w-full min-w-0 max-w-6xl flex-col justify-center px-4 pb-10 pt-14 sm:min-h-[calc(100svh-4.75rem)] sm:pb-12 sm:pt-20 tab:px-6"
       >
         <div className="mx-auto max-w-5xl text-center">
           <h1
             id="landing-hero-heading"
             className={cn(
-              'voltix-fade-in animate-fade-up-delay-1 !m-0 font-display !text-[clamp(2.85rem,8.2vw,5.75rem)] !font-normal !leading-[1.04] !tracking-[-0.038em] text-stone-900 opacity-0 motion-reduce:opacity-100 [animation-fill-mode:forwards]',
+              'voltix-fade-in animate-fade-up-delay-1 !m-0 font-display !text-[clamp(2.1rem,calc(7vw_+_0.25rem),5.75rem)] !font-normal !leading-[1.04] !tracking-[-0.038em] text-stone-900 opacity-0 motion-reduce:opacity-100 [animation-fill-mode:forwards] sm:!text-[clamp(2.85rem,8.2vw,5.75rem)]',
             )}
           >
             <span className="block">
@@ -78,7 +82,7 @@ export function LandingPage() {
                 'sm:w-auto sm:min-w-[14rem]',
               )}
             >
-              Start free
+              Start Free
             </Link>
           </div>
         </div>
@@ -91,37 +95,31 @@ export function LandingPage() {
         >
           Less friction, more natural reading.
         </p>
-
-        <div
-          id="demo"
-          className={cn(
-            'voltix-fade-in animate-fade-up-delay-3 scroll-mt-28 relative mx-auto mt-16 w-full max-w-4xl opacity-0 motion-reduce:opacity-100 [animation-fill-mode:forwards] sm:mt-20',
-          )}
-        >
-          <div className="mb-8 text-center sm:mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 sm:text-[13px]">
-              Preview
-            </p>
-            <p className="mt-3 font-display text-2xl font-normal tracking-tight text-stone-900 sm:mt-3.5 sm:text-3xl">
-              The same flow you get in the app
-            </p>
-          </div>
-          <div
-            className="absolute -inset-2 rounded-[1.35rem] bg-gradient-to-b from-stone-300/40 via-orange-200/20 to-transparent blur-xl"
-            aria-hidden
-          />
-          <LandingUploadPreview />
-        </div>
       </section>
 
-      <PricingPlans variant="landing" />
+      {/*
+        Keep demo / pricing / testimonials *outside* the hero flex+justify-center block.
+        Nesting a tall column inside min-h+justify-center caused overlapping plan cards in some layouts.
+      */}
+      <div className="mx-auto w-full min-w-0 max-w-6xl flex-1 box-border px-4 tab:px-6">
+        <Suspense
+          fallback={
+            <div
+              className="mx-auto mt-10 min-h-[min(60svh,38rem)] w-full max-w-4xl rounded-2xl bg-stone-200/35 sm:mt-14"
+              aria-hidden
+            />
+          }
+        >
+          <LandingBelowTheFold />
+        </Suspense>
+      </div>
 
-      <footer className="mt-auto border-t border-stone-200/80 bg-white/90 py-12 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 text-center">
+      <footer className="mt-auto border-t border-stone-200/80 bg-white/90 py-8 backdrop-blur-sm sm:py-10">
+        <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col items-center gap-6 px-4 tab:px-6 sm:gap-7">
           <Link
             to="/"
             className={cn(
-              'group flex shrink-0 items-center gap-2.5 no-underline transition duration-200',
+              'group flex items-center gap-2.5 no-underline transition duration-200',
               'text-stone-950 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/25 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
               'active:scale-[0.97]',
             )}
@@ -132,7 +130,19 @@ export function LandingPage() {
             </span>
             <span className="text-sm font-semibold tracking-tight tab:text-base">Porpin</span>
           </Link>
-          <p className="text-sm text-stone-500">© 2026 Porpin</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm tab:gap-x-8 tab:text-base">
+            <p className="m-0 text-stone-500">© 2026 Porpin</p>
+            <a
+              href="mailto:help@porpin.com"
+              className={cn(
+                'font-medium text-stone-700 no-underline transition',
+                'hover:text-stone-950 active:opacity-90',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:rounded-sm',
+              )}
+            >
+              help@porpin.com
+            </a>
+          </div>
         </div>
       </footer>
     </div>

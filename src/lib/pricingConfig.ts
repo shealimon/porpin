@@ -14,8 +14,8 @@ export type PublicPricingConfig = {
   subscription_words_per_cycle: number
   rate_inr_per_10000_words: number
   minimum_charge_inr: number
-  /** When true, API requires INR credit before PAYG confirm; false until payments are wired. */
-  payg_wallet_required: boolean
+  /** When true, API requires payment before PAYG jobs run. */
+  payg_checkout_required: boolean
   max_upload_file_mb: number
   currency: string
   trust_payment_copy: string
@@ -31,7 +31,7 @@ export const FALLBACK_PRICING: PublicPricingConfig = {
   subscription_words_per_cycle: 2_000_000,
   rate_inr_per_10000_words: 9.9,
   minimum_charge_inr: 5,
-  payg_wallet_required: false,
+  payg_checkout_required: false,
   max_upload_file_mb: 0,
   currency: 'INR',
   trust_payment_copy:
@@ -94,7 +94,7 @@ export function mergePricingConfig(server?: Partial<PublicPricingConfig>): Publi
     free_tier_label: server?.free_tier_label ?? FALLBACK_PRICING.free_tier_label,
     payg_label: server?.payg_label ?? FALLBACK_PRICING.payg_label,
     subscription_label: server?.subscription_label ?? FALLBACK_PRICING.subscription_label,
-    payg_wallet_required:
-      server?.payg_wallet_required ?? FALLBACK_PRICING.payg_wallet_required,
+    payg_checkout_required:
+      server?.payg_checkout_required ?? FALLBACK_PRICING.payg_checkout_required,
   }
 }

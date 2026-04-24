@@ -9,7 +9,6 @@ export type SyncProfileResponse = {
   id: string
   email: string | null
   plan: string
-  credits_inr_balance?: number
   free_credits?: number
   subscription_active?: boolean
   subscription_credits?: number
@@ -46,11 +45,11 @@ export type SyncBackendProfileOptions = {
 
 export function applySyncProfileResponse(data: SyncProfileResponse): void {
   useProfileExtrasStore.getState().applyFromSync({
+    plan: data.plan,
     referral_code: data.referral_code,
     referral_bonus_words: data.referral_bonus_words,
     referral_words_earned_total: data.referral_words_earned_total,
     referred_by_user_id: data.referred_by_user_id,
-    credits_inr_balance: data.credits_inr_balance,
     free_credits: data.free_credits,
     subscription_active: data.subscription_active,
     subscription_credits: data.subscription_credits,

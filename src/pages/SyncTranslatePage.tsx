@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
   downloadBlob,
+  hinglishExportFilename,
   postTranslateSync,
   type TranslateExportFormat,
 } from '@/features/translate/syncApi'
@@ -31,7 +33,7 @@ export function SyncTranslatePage() {
       const blob = await postTranslateSync(file, format, ac.signal)
       const ext =
         format === 'both' ? 'zip' : format === 'pdf' ? 'pdf' : 'docx'
-      downloadBlob(blob, `translated_hinglish.${ext}`)
+      downloadBlob(blob, hinglishExportFilename(file.name, ext))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Request failed')
     } finally {
@@ -45,8 +47,15 @@ export function SyncTranslatePage() {
         Hinglish translate
       </h1>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Upload PDF, DOCX, or TXT. The server returns a translated document (natural
-        Hinglish, Roman script).
+        Upload PDF, DOCX, or TXT. With sync mode enabled on the server, you get a direct
+        DOCX/PDF download. By default the API queues a job instead — use{' '}
+        <Link
+          to="/app/upload"
+          className="font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-100"
+        >
+          Upload
+        </Link>{' '}
+        for the normal translated file.
       </p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-6">

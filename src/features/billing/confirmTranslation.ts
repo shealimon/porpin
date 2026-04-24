@@ -5,7 +5,6 @@ import { confirmMilestoneJobSafe } from '@/features/jobs/api'
 import { qk } from '@/lib/queryKeys'
 import { queryClient } from '@/lib/queryClient'
 import { refreshProfileExtras } from '@/lib/syncBackendProfile'
-import { useBillingStore } from '@/stores/billingStore'
 
 export type ConfirmTranslationArgs = {
   jobId: string
@@ -18,17 +17,11 @@ export type ConfirmTranslationArgs = {
 }
 
 export async function confirmTranslationJob(args: ConfirmTranslationArgs): Promise<void> {
-  const { jobId, words, amountToPay, fileName, inputLang = 'en' } = args
-  const billing = useBillingStore.getState()
+  const { jobId, inputLang = 'en' } = args
 
+  let result: Awaited<ReturnType<typeof confirmMilestoneJobSafe>>
   try {
-    const didPost = await confirmMilestoneJobSafe(jobId, inputLang)
-    if (!didPost) {
-      void queryClient.invalidateQueries({ queryKey: qk.jobs.all })
-      void queryClient.invalidateQueries({ queryKey: qk.jobs.detail(jobId) })
-      void refreshProfileExtras()
-      return
-    }
+    result = await confirmMilestoneJobSafe(jobId, inputLang)
   } catch (e: unknown) {
     if (axios.isAxiosError(e) && e.response?.status === 402) {
       const d = e.response.data as { detail?: string } | undefined
@@ -37,15 +30,21 @@ export async function confirmTranslationJob(args: ConfirmTranslationArgs): Promi
     }
     throw e
   }
-  void queryClient.invalidateQueries({ queryKey: qk.jobs.all })
-  void refreshProfileExtras()
-  billing.addTransaction({
-    jobId,
-    fileName,
-    words,
-    amountInr: amountToPay,
-    status: 'succeeded',
-    kind: amountToPay > 0 ? 'payg_demo' : 'included_words',
-  })
-}
 
+  if (result === 'already_started') {
+    void queryClient.invalidateQueries({ queryKey: qk.jobs.all })
+    void queryClient.invalidateQueries({ queryKey: qk.jobs.detail(jobId) })
+    void refreshProfileExtras()
+    return
+  }
+
+  if (result.awaiting_payment) {
+    void queryClient.invalidateQueries({ queryKey: qk.jobs.all })
+    void queryClient.invalidateQueries({ queryKey: qk.jobs.detail(jobId) })
+    return
+  }
+
+  void queryClient.invalidateQueries({ queryKey: qk.jobs.all })
+  void queryClient.invalidateQueries({ queryKey: qk.jobs.detail(jobId) })
+  void refreshProfileExtras()
+}

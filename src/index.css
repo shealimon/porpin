@@ -3,6 +3,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Landing: testimonial row — use plain CSS so the loop always runs (Tailwind @keyframes in theme can fail to style in some builds). */
+@layer components {
+  @keyframes porpin-testimonial-marquee {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+  .voltix-landing .testimonial-marquee-track {
+    display: flex;
+    width: max-content;
+    /* Slower loop so readers can follow each card (~2× prior 45s). */
+    animation: porpin-testimonial-marquee 90s linear infinite;
+    will-change: transform;
+  }
+  .voltix-landing .testimonial-marquee-wrap:hover .testimonial-marquee-track {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .voltix-landing .testimonial-marquee-track {
+      animation: none;
+    }
+  }
+}
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -26,7 +53,11 @@
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
+  /* ~80% of prior 18px / 16px — matches comfortable “browser zoom 80%” density */
+  font-family: var(--sans);
+  font-size: 14.4px;
+  line-height: 145%;
+  font-weight: 400;
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
@@ -37,7 +68,7 @@
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
-    font-size: 16px;
+    font-size: 12.8px;
   }
 }
 
@@ -112,6 +143,14 @@ canvas {
   background: transparent;
 }
 
+/* Login / signup password: hide Windows browser-native “show password” (custom control only). */
+.auth-password-no-native-reveal[type='password']::-ms-reveal,
+.auth-password-no-native-reveal[type='password']::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 @media (prefers-color-scheme: dark) {
   .app-sidebar-scroll {
     scrollbar-color: rgb(71 85 105 / 0.9) transparent;
@@ -178,21 +217,21 @@ h2 {
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
+  font-size: 44.8px;
+  letter-spacing: -1.34px;
+  margin: 25.6px 0;
   @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+    font-size: 28.8px;
+    margin: 16px 0;
   }
 }
 h2 {
-  font-size: 24px;
+  font-size: 19.2px;
   line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
+  letter-spacing: -0.19px;
+  margin: 0 0 6.4px;
   @media (max-width: 1024px) {
-    font-size: 20px;
+    font-size: 16px;
   }
 }
 p {
@@ -208,7 +247,7 @@ code,
 }
 
 code {
-  font-size: 15px;
+  font-size: 12px;
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
@@ -1057,35 +1096,63 @@ code {
 
 /* Landing: upload preview + estimate card (light chrome on marketing page) */
 .landing-upload-preview {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   /* Darker than app slate-500 so labels & inherited copy stay readable on white */
-  --text: #3f3f46;
-  --text-h: #18181b;
+  --text: #44403c;
+  --text-h: #1c1917;
   --bg: #ffffff;
-  --border: #e4e4e7;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-deep: #1e40af;
-  --primary-soft: rgba(37, 99, 235, 0.14);
-  --primary-glow: rgba(37, 99, 235, 0.35);
+  --border: #e7e5e4;
+  --primary: #ea580c;
+  --primary-hover: #c2410c;
+  --primary-deep: #9a3412;
+  --primary-soft: rgba(234, 88, 12, 0.18);
+  --primary-glow: rgba(234, 88, 12, 0.35);
   color: var(--text);
-  font-size: 16px;
+  font-size: 1rem;
+}
+
+.landing-upload-preview .file-input-bar__estimate-card {
+  background: linear-gradient(180deg, #fffdfb 0%, #fff7ed 100%);
+  border-color: rgba(251, 146, 60, 0.35);
+  box-shadow:
+    0 2px 8px rgba(234, 88, 12, 0.08),
+    0 14px 36px -12px rgba(28, 25, 23, 0.14);
 }
 
 .landing-upload-preview .dashboard-home .file-input-bar {
-  border-color: #e4e4e7;
+  min-width: 0;
+  border-color: #d6d3d1;
+  background: #fafaf9;
   box-shadow:
-    0 2px 6px rgba(24, 24, 27, 0.05),
-    0 14px 36px -10px rgba(24, 24, 27, 0.12);
+    0 2px 8px rgba(234, 88, 12, 0.07),
+    0 16px 40px -14px rgba(28, 25, 23, 0.14);
 }
 
 /* Middle “file name” strip: see through to the landing card (not a solid panel) */
 .landing-upload-preview .file-input-bar__field {
-  background: transparent;
-  border-color: rgba(24, 24, 27, 0.08);
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(234, 88, 12, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+
+/* Narrow viewports: long “translating…” copy must shrink inside the pill (flex min-width) */
+@media (max-width: 639px) {
+  .landing-upload-preview .dashboard-home .file-input-bar__filename {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
 }
 
 .landing-upload-preview .file-input-bar__field .file-input-bar__placeholder {
@@ -1094,7 +1161,8 @@ code {
 
 /* Global placeholder is #94a3b8 — too faint on the marketing card */
 .landing-upload-preview .file-input-bar__placeholder {
-  color: #52525b;
+  color: #57534e;
+  font-weight: 500;
 }
 
 .landing-upload-preview .file-input-bar--busy {
@@ -1112,10 +1180,11 @@ code {
 
 .landing-upload-preview__filmstrip {
   position: relative;
-  height: 3px;
+  height: 4px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(24, 24, 27, 0.08);
+  background: linear-gradient(90deg, rgba(254, 215, 170, 0.55), rgba(255, 237, 213, 0.85));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .landing-upload-preview__filmstrip-inner {
@@ -1127,7 +1196,8 @@ code {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(24, 24, 27, 0.22),
+    rgba(234, 88, 12, 0.55),
+    rgba(251, 191, 36, 0.65),
     transparent
   );
   animation: landing-upload-film 2.2s ease-in-out infinite;
@@ -1440,6 +1510,19 @@ code {
   animation: upload-spin 0.7s linear infinite;
 }
 
+/* Neutral send circle (e.g. estimating, landing “Translating” demo): white ring is illegible on #f1f5f9 */
+.file-input-bar__action--send:not(.file-input-bar__action--send-active) .file-input-bar__spinner {
+  border-color: rgba(234, 88, 12, 0.28);
+  border-top-color: #c2410c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .file-input-bar__action--send:not(.file-input-bar__action--send-active) .file-input-bar__spinner {
+    border-color: rgba(251, 146, 60, 0.35);
+    border-top-color: #fb923c;
+  }
+}
+
 .file-input-bar__error {
   margin: 0;
   width: 100%;
@@ -1500,7 +1583,7 @@ code {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: min(26rem, 100%);
+  max-width: min(32rem, 100%);
   text-align: center;
 }
 

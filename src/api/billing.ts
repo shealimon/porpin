@@ -6,38 +6,74 @@ export type RazorpaySubscriptionStart = {
   plan_id: string
 }
 
-export type RazorpayWalletOrder = {
+export type RazorpayPaygJobOrder = {
   order_id: string
   key_id: string
   amount_inr: number
   amount_paise: number
   currency: string
+  job_id: string
 }
 
-export type RazorpayWalletHandlerResponse = {
+export type RazorpayVerifyCapturedBody = {
   razorpay_order_id: string
   razorpay_payment_id: string
   razorpay_signature: string
 }
 
-export function createRazorpaySubscription(): Promise<RazorpaySubscriptionStart> {
+export type RazorpayVerifyCapturedResult = {
+  ok: boolean
+  credited_inr: number
+  already_applied: boolean
+  kind: string
+  job_activated: boolean
+  job_id: string | null
+}
+
+export function createRazorpaySubscription(
+  kind: 'monthly' | 'yearly' = 'monthly',
+): Promise<RazorpaySubscriptionStart> {
   return backendClient
-    .post<RazorpaySubscriptionStart>('/api/billing/razorpay/create-subscription')
+    .post<RazorpaySubscriptionStart>(
+      '/api/billing/razorpay/create-subscription',
+      { kind },
+    )
     .then((r) => r.data)
 }
 
-export function createRazorpayWalletOrder(amountInr: number): Promise<RazorpayWalletOrder> {
+/** After Checkout success: persist plan + credits (webhooks may not hit localhost). */
+export function syncRazorpaySubscriptionAfterCheckout(): Promise<{
+  ok: boolean
+  plan: string
+  subscription_active: boolean
+}> {
   return backendClient
-    .post<RazorpayWalletOrder>('/api/billing/razorpay/create-wallet-order', {
-      amount_inr: amountInr,
+    .post<{
+      ok: boolean
+      plan: string
+      subscription_active: boolean
+    }>('/api/billing/razorpay/sync-subscription-after-checkout')
+    .then((r) => r.data)
+}
+
+/** Razorpay order for a job in ``awaiting_payment`` (per-job PAYG). */
+export function createRazorpayPaygJobOrder(
+  jobId: string,
+): Promise<RazorpayPaygJobOrder> {
+  return backendClient
+    .post<RazorpayPaygJobOrder>('/api/billing/razorpay/create-payg-translation-order', {
+      job_id: jobId,
     })
     .then((r) => r.data)
 }
 
-export function verifyRazorpayWalletTopup(
-  body: RazorpayWalletHandlerResponse,
-): Promise<{ ok: boolean; credited_inr: number; already_applied: boolean }> {
+export function verifyRazorpayCapturedPayment(
+  body: RazorpayVerifyCapturedBody,
+): Promise<RazorpayVerifyCapturedResult> {
   return backendClient
-    .post('/api/billing/razorpay/verify-wallet-topup', body)
+    .post<RazorpayVerifyCapturedResult>(
+      '/api/billing/razorpay/verify-captured-payment',
+      body,
+    )
     .then((r) => r.data)
 }

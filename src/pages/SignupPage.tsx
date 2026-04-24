@@ -21,9 +21,14 @@ import {
   authFormFieldCompactLightClass,
   authFormLabelLightClass,
   authFormPrimaryButtonLightClass,
+  authFormFieldPasswordLightClass,
 } from '@/lib/authFormStyles'
 import { resolveAuthUser, supabaseUserToAuthUser } from '@/lib/mapSupabaseUser'
-import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
+import {
+  isSupabaseConfigured,
+  supabase,
+  supabaseConfigMissingUserMessage,
+} from '@/lib/supabaseClient'
 import { syncBackendProfile } from '@/lib/syncBackendProfile'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
@@ -44,9 +49,7 @@ export function SignupPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isSupabaseConfigured()) {
-      toast.error(
-        'Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to frontend/.env (Supabase → API).',
-      )
+      toast.error(supabaseConfigMissingUserMessage)
       return
     }
     const fn = firstName.trim()
@@ -65,10 +68,6 @@ export function SignupPage() {
     }
     setBusy(true)
     try {
-      const uploadTier =
-        searchParams.get('plan') === 'payg' || searchParams.get('tier') === 'payg'
-          ? 'payg'
-          : 'trial'
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -89,9 +88,7 @@ export function SignupPage() {
       const user = data.session?.user
       if (data.session && user) {
         const u = await resolveAuthUser(supabase, user)
-        setSession(data.session.access_token, supabaseUserToAuthUser(u), {
-          uploadTier,
-        })
+        setSession(data.session.access_token, supabaseUserToAuthUser(u))
         await syncBackendProfile()
         toast.success("You're all set — taking you to upload.", { duration: 5000 })
         navigate('/app/upload', { replace: true })
@@ -125,7 +122,7 @@ export function SignupPage() {
           <span className="text-sm font-semibold tracking-tight">Porpin</span>
         </Link>
 
-        <Card className="w-full max-w-[420px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
+        <Card className="w-full max-w-[380px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
           <CardHeader className="space-y-3 border-b border-zinc-100 px-6 pb-6 pt-8 text-center sm:px-8 sm:pt-8">
             <AuthCardEyebrow label={AUTH_EYEBROW_NEW_ACCOUNT} variant="light" />
             <CardTitle className="font-display text-xl font-normal !leading-snug tracking-tight text-zinc-900 sm:text-2xl">
@@ -191,7 +188,7 @@ export function SignupPage() {
                   placeholder="Min. 8 characters"
                   value={password}
                   onChange={(ev) => setPassword(ev.target.value)}
-                  className={authFormFieldCompactLightClass}
+                  className={authFormFieldPasswordLightClass}
                 />
               </div>
               <p className="text-xs leading-relaxed text-zinc-500">
@@ -223,7 +220,7 @@ export function SignupPage() {
           </CardFooter>
         </Card>
 
-        <p className="mt-8 max-w-[420px] text-center text-xs leading-relaxed text-zinc-500">
+        <p className="mt-8 max-w-[380px] text-center text-xs leading-relaxed text-zinc-500">
           By continuing you agree to our{' '}
           <a
             href="#"

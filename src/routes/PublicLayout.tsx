@@ -26,6 +26,10 @@ export function PublicLayout() {
   const onLightMarketing =
     onLanding || onLogin || onSignup || onForgotPassword
   const onPricing = path === '/pricing' || (onLanding && hash === '#pricing')
+  const loginNavActive = onLogin || onForgotPassword
+  /** Black signup CTA only on home (no #pricing) and on /signup; muted when Pricing or Log in is current. */
+  const signupProminent =
+    onSignup || (onLanding && !onPricing && !onLogin && !onForgotPassword)
 
   const navInactive = publicNavInactiveClass
   const navActive = publicNavActiveClass
@@ -67,9 +71,22 @@ export function PublicLayout() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const mobileRowClass = cn(
-    'flex w-full min-h-12 items-center justify-center rounded-full border border-solid px-5 text-center text-[0.9375rem] font-medium no-underline transition-colors',
+  /** Drawer-only: compact so Pricing / Log in / Sign up fit small viewports; min 44px tap height. */
+  const mobileDrawerLinkBase = cn(
+    'box-border flex min-h-11 w-full min-w-0 shrink-0 items-center justify-center rounded-full border-2 border-solid px-4 py-2.5 text-center font-outfit text-sm leading-tight no-underline transition-colors sm:px-5',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+  )
+  const mobileDrawerMuted = cn(
+    mobileDrawerLinkBase,
+    'border-border bg-background/90 font-medium text-foreground hover:bg-muted',
+  )
+  const mobileDrawerActive = cn(
+    mobileDrawerLinkBase,
+    'border-primary bg-primary font-semibold text-primary-foreground shadow-md hover:opacity-90',
+  )
+  const mobileDrawerSignup = cn(
+    mobileDrawerLinkBase,
+    'border-zinc-900 bg-zinc-900 font-semibold text-white hover:bg-zinc-800 hover:text-white',
   )
 
   return (
@@ -111,7 +128,7 @@ export function PublicLayout() {
             </Link>
             <Link
               to="/login"
-              className={onLogin ? navActive : navInactive}
+              className={loginNavActive ? navActive : navInactive}
               aria-current={onLogin ? 'page' : undefined}
             >
               Log in
@@ -119,8 +136,10 @@ export function PublicLayout() {
             <Link
               to="/signup"
               className={cn(
-                publicNavSignupClass,
-                onSignup && 'ring-2 ring-zinc-900/20 ring-offset-2 ring-offset-background',
+                signupProminent ? publicNavSignupClass : publicNavInactiveClass,
+                signupProminent &&
+                  onSignup &&
+                  'ring-2 ring-zinc-900/20 ring-offset-2 ring-offset-background',
               )}
               aria-current={onSignup ? 'page' : undefined}
             >
@@ -158,26 +177,29 @@ export function PublicLayout() {
                   aria-modal="true"
                   aria-label="Site navigation"
                   className={cn(
-                    'fixed right-0 top-0 z-[90] flex h-svh max-h-dvh w-[min(20rem,calc(100vw-0px))] min-w-0 flex-col',
+                    'fixed right-0 top-0 z-[90] flex h-svh max-h-dvh min-h-0 w-[min(20rem,calc(100vw-1rem))] max-w-full min-w-0 flex-col overflow-hidden',
                     'border-l border-border bg-background shadow-2xl',
                     'pt-[max(0px,env(safe-area-inset-top))] pb-[max(0px,env(safe-area-inset-bottom))]',
                   )}
                 >
-                  <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3">
+                  <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2.5">
                     <p className="min-w-0 truncate text-sm font-semibold">Menu</p>
                     <button
                       type="button"
                       onClick={closeMenu}
-                      className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+                      className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
                       aria-label="Close menu"
                     >
                       <X className="size-5" aria-hidden />
                     </button>
                   </div>
-                  <nav className="flex flex-col gap-3 p-4" aria-label="Marketing mobile">
+                  <nav
+                    className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-y-contain px-3 py-3"
+                    aria-label="Marketing mobile"
+                  >
                     <Link
                       to="/#pricing"
-                      className={cn(mobileRowClass, onPricing ? navActive : navInactive)}
+                      className={onPricing ? mobileDrawerActive : mobileDrawerMuted}
                       aria-current={onPricing ? 'page' : undefined}
                       onClick={closeMenu}
                     >
@@ -185,7 +207,7 @@ export function PublicLayout() {
                     </Link>
                     <Link
                       to="/login"
-                      className={cn(mobileRowClass, onLogin ? navActive : navInactive)}
+                      className={loginNavActive ? mobileDrawerActive : mobileDrawerMuted}
                       aria-current={onLogin ? 'page' : undefined}
                       onClick={closeMenu}
                     >
@@ -194,9 +216,10 @@ export function PublicLayout() {
                     <Link
                       to="/signup"
                       className={cn(
-                        mobileRowClass,
-                        'border-zinc-900 bg-zinc-900 font-semibold text-white hover:bg-zinc-800 hover:text-white',
-                        onSignup && 'ring-2 ring-zinc-900/25 ring-offset-2 ring-offset-background',
+                        signupProminent ? mobileDrawerSignup : mobileDrawerMuted,
+                        signupProminent &&
+                          onSignup &&
+                          'ring-2 ring-zinc-900/25 ring-offset-2 ring-offset-background',
                       )}
                       aria-current={onSignup ? 'page' : undefined}
                       onClick={closeMenu}

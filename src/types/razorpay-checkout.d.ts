@@ -11,7 +11,7 @@ export type RazorpayConstructor = new (options: {
   key: string
   /** Subscription checkout */
   subscription_id?: string
-  /** Order checkout (one-time wallet top-up) */
+  /** Order checkout (e.g. per-job PAYG) */
   order_id?: string
   amount?: number
   currency?: string
@@ -22,6 +22,7 @@ export type RazorpayConstructor = new (options: {
   readonly?: boolean
 }) => {
   open: () => void
+  on: (event: 'payment.failed', handler: (response: { error?: { description?: string; code?: string } }) => void) => void
 }
 
 declare global {

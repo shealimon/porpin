@@ -21,9 +21,15 @@ import {
   authFormFieldCompactLightClass,
   authFormLabelLightClass,
   authFormPrimaryButtonLightClass,
+  authFormFieldPasswordLightClass,
 } from '@/lib/authFormStyles'
 import { resolveAuthUser, supabaseUserToAuthUser } from '@/lib/mapSupabaseUser'
-import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
+import {
+  isSupabaseConfigured,
+  setAuthRememberMe,
+  supabase,
+  supabaseConfigMissingUserMessage,
+} from '@/lib/supabaseClient'
 import { syncBackendProfile } from '@/lib/syncBackendProfile'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
@@ -36,6 +42,7 @@ export function LoginPage() {
   const setSession = useAuthStore((s) => s.setSession)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(true)
   const [busy, setBusy] = useState(false)
 
   const locState = location.state as LoginState
@@ -59,9 +66,7 @@ export function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isSupabaseConfigured()) {
-      toast.error(
-        'Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to frontend/.env (Supabase → API).',
-      )
+      toast.error(supabaseConfigMissingUserMessage)
       return
     }
     const em = email.trim()
@@ -71,6 +76,7 @@ export function LoginPage() {
     }
     setBusy(true)
     try {
+      setAuthRememberMe(rememberMe)
       const { data, error } = await supabase.auth.signInWithPassword({
         email: em,
         password,
@@ -83,7 +89,6 @@ export function LoginPage() {
         const u = await resolveAuthUser(supabase, data.user)
         setSession(data.session.access_token, supabaseUserToAuthUser(u))
         await syncBackendProfile()
-        toast.success("You're signed in — welcome back!", { duration: 4500 })
         navigate(from, { replace: true })
       }
     } finally {
@@ -109,7 +114,7 @@ export function LoginPage() {
           <span className="text-sm font-semibold tracking-tight">Porpin</span>
         </Link>
 
-        <Card className="w-full max-w-[420px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
+        <Card className="w-full max-w-[380px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
           <CardHeader className="space-y-2 border-b border-zinc-100 px-6 pb-4 pt-8 text-center sm:px-8 sm:pt-8">
             <AuthCardEyebrow label={AUTH_EYEBROW_ACCOUNT_ACCESS} variant="light" />
             <CardTitle className="font-display text-xl font-normal !leading-snug tracking-tight text-zinc-900 sm:text-2xl">
@@ -155,8 +160,20 @@ export function LoginPage() {
                   placeholder="Your password"
                   value={password}
                   onChange={(ev) => setPassword(ev.target.value)}
-                  className={authFormFieldCompactLightClass}
+                  className={authFormFieldPasswordLightClass}
                 />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  id="login-remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(ev) => setRememberMe(ev.target.checked)}
+                  className="size-3.5 shrink-0 rounded border border-zinc-300 text-zinc-900 accent-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-400/25 focus-visible:ring-offset-2"
+                />
+                <label htmlFor="login-remember" className="text-sm text-zinc-600 select-none">
+                  Remember me on this device
+                </label>
               </div>
               <Button type="submit" disabled={busy} className={authFormPrimaryButtonLightClass}>
                 {busy ? (
@@ -184,7 +201,7 @@ export function LoginPage() {
           </CardFooter>
         </Card>
 
-        <p className="mt-8 max-w-[420px] text-center text-xs leading-relaxed text-zinc-500">
+        <p className="mt-8 max-w-[380px] text-center text-xs leading-relaxed text-zinc-500">
           By continuing you agree to our{' '}
           <a
             href="#"

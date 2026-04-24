@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Logged-in app UI — avoid indexing dashboard and job URLs
+Disallow: /app/
+
+Sitemap: https://porpin.com/sitemap.xml

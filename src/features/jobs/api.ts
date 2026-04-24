@@ -1,5 +1,15 @@
 import axios from 'axios'
+
+/** Response from `POST /job/confirm` (breakdown may include billing fields from backend). */
+export type JobConfirmResponse = {
+  ok: boolean
+  awaiting_payment?: boolean
+  amount_to_pay?: number
+  [key: string]: unknown
+}
 import { backendClient } from '@/api/backendClient'
+import { normalizeAxiosError } from '@/api/axiosError'
+import { downloadBlob } from '@/features/translate/syncApi'
 
 export type JobDetailDto = {
   job_id: string
@@ -110,6 +120,73 @@ export function milestoneTranslatedPdfUrl(jobId: string): string {
   return `${translationOutputsBaseUrl()}/${encodeURIComponent(jobId)}/translated.pdf`
 }
 
+function parseContentDispositionFilename(header: string | undefined): string | null {
+  if (!header) return null
+  const utf8 = /filename\*=(?:UTF-8''|utf-8'')([^;]+)/i.exec(header)
+  if (utf8) {
+    const raw = utf8[1].trim().replace(/^"|"$/g, '')
+    try {
+      return decodeURIComponent(raw)
+    } catch {
+      return raw
+    }
+  }
+  const quoted = /filename="([^"]+)"/i.exec(header)
+  if (quoted) return quoted[1]
+  const plain = /filename=([^;\s]+)/i.exec(header)
+  if (plain) return plain[1].replace(/^"|"$/g, '')
+  return null
+}
+
+async function detailFromErrorBlob(blob: Blob): Promise<string | null> {
+  try {
+    const t = await blob.text()
+    const j = JSON.parse(t) as { detail?: unknown }
+    if (typeof j.detail === 'string') return j.detail
+    if (Array.isArray(j.detail)) return JSON.stringify(j.detail)
+  } catch {
+    /* ignore */
+  }
+  return null
+}
+
+/**
+ * Download translated DOCX/PDF with the same auth as other API calls.
+ * Plain {@link HTMLAnchorElement} navigation does not send `Authorization`, so the API
+ * returned 401 JSON — browsers often saved that body as `translated.json`.
+ */
+export async function downloadMilestoneTranslatedArtifact(
+  jobId: string,
+  kind: 'docx' | 'pdf',
+): Promise<void> {
+  const url =
+    kind === 'pdf'
+      ? milestoneTranslatedPdfUrl(jobId)
+      : milestoneTranslatedDocxUrl(jobId)
+  try {
+    const res = await backendClient.get(url, {
+      responseType: 'blob',
+      headers: { Accept: '*/*' },
+    })
+    const ct = (res.headers['content-type'] ?? '').toLowerCase()
+    if (ct.includes('application/json')) {
+      const detail = await detailFromErrorBlob(res.data as Blob)
+      throw new Error(detail ?? 'Download failed')
+    }
+    const disposition = res.headers['content-disposition'] as string | undefined
+    const name =
+      parseContentDispositionFilename(disposition) ??
+      (kind === 'pdf' ? 'translated.pdf' : 'translated.docx')
+    downloadBlob(res.data, name)
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.data instanceof Blob) {
+      const detail = await detailFromErrorBlob(err.response.data)
+      throw new Error(detail ?? 'Download failed')
+    }
+    throw normalizeAxiosError(err)
+  }
+}
+
 export async function fetchMilestoneJob(jobId: string): Promise<MilestoneJob> {
   const { data } = await backendClient.get<JobDetailDto>(
     `/job/${encodeURIComponent(jobId)}`,
@@ -122,11 +199,12 @@ export type MilestoneInputLang = 'en' | 'hi'
 export async function confirmMilestoneJob(
   jobId: string,
   inputLang: MilestoneInputLang = 'en',
-): Promise<void> {
-  await backendClient.post('/job/confirm', {
+): Promise<JobConfirmResponse> {
+  const { data } = await backendClient.post<JobConfirmResponse>('/job/confirm', {
     job_id: jobId,
     input_lang: inputLang,
   })
+  return data
 }
 
 export async function startMilestonePreviewJob(
@@ -140,18 +218,16 @@ export async function startMilestonePreviewJob(
 }
 
 /**
- * Idempotent confirm: 409 (already queued / wrong state) returns false.
- * Use the boolean to avoid duplicate client-side billing rows when confirm already ran.
+ * Idempotent confirm: 409 (already queued / wrong state) returns ``already_started``.
  */
 export async function confirmMilestoneJobSafe(
   jobId: string,
   inputLang: MilestoneInputLang = 'en',
-): Promise<boolean> {
+): Promise<JobConfirmResponse | 'already_started'> {
   try {
-    await confirmMilestoneJob(jobId, inputLang)
-    return true
+    return await confirmMilestoneJob(jobId, inputLang)
   } catch (e) {
-    if (axios.isAxiosError(e) && e.response?.status === 409) return false
+    if (axios.isAxiosError(e) && e.response?.status === 409) return 'already_started'
     throw e
   }
 }

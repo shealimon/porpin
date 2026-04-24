@@ -18,6 +18,8 @@ const DEMO_WORD_COUNT = 10_000
 const DEMO_CHARGE_INR = estimatePaygInrWholeRupees(DEMO_WORD_COUNT)
 
 const STEP_LABELS = ['Estimate', 'Translating', 'Download'] as const
+/** Middle step: shorter on small screens so the row fits without clipping (overflow-x on #root). */
+const STEP_LABELS_MOBILE = ['Estimate', 'Translate', 'Download'] as const
 const STEP_MS = 4200
 
 function usePrefersReducedMotion(): boolean {
@@ -36,7 +38,7 @@ function usePrefersReducedMotion(): boolean {
 function ArrowToBar({ className }: { className?: string }) {
   return (
     <svg
-      className={cn('h-9 w-5 shrink-0 text-zinc-600', className)}
+      className={cn('h-8 w-5 shrink-0 text-orange-700/85 sm:h-9', className)}
       viewBox="0 0 20 36"
       fill="none"
       aria-hidden
@@ -52,35 +54,57 @@ function ArrowToBar({ className }: { className?: string }) {
   )
 }
 
-function Callout({
+/**
+ * Copy for the 3 file-bar controls — order: + · field · send.
+ * `sub` is shown on desktop (sm+) only; mobile uses `label` alone so columns stay short.
+ */
+const FILE_BAR_CALLOUTS: {
+  align: 'left' | 'center' | 'right'
+  label: string
+  sub: string
+}[] = [
+  { align: 'left', label: 'Add a file', sub: 'Tap + for PDF, DOCX, and more' },
+  { align: 'center', label: 'Your file', sub: 'File name appears here' },
+  { align: 'right', label: 'Start translation', sub: 'After you see the estimate' },
+]
+
+/** Same 3 column template as the file bar + arrow row: + · field · send (index.css, max-width: 639px). */
+const FILE_BAR_HINT_GRID = cn(
+  'mx-auto grid w-full min-w-0 max-w-[42rem] grid-cols-[2.75rem_1fr_2.75rem] gap-y-1.5',
+  'gap-x-[0.35rem] px-[0.4rem]',
+)
+
+/** Desktop (sm+): one narrow column per control, arrow in that column. */
+function CalloutWithArrow({
   label,
   sub,
   align,
 }: {
   label: string
-  sub?: string
+  sub: string
   align: 'left' | 'center' | 'right'
 }) {
   return (
     <div
       className={cn(
-        'flex max-w-[9.5rem] flex-col gap-1',
+        'flex w-full min-w-0 max-w-[9.5rem] flex-col gap-1.5',
         align === 'left' && 'items-start text-left',
         align === 'center' && 'items-center text-center',
         align === 'right' && 'items-end text-right',
       )}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-800">
-        {label}
-      </p>
-      {sub ? <p className="text-[11px] leading-snug text-zinc-600">{sub}</p> : null}
-      <ArrowToBar
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-800">{label}</p>
+      <p className="w-full text-[11px] leading-snug text-stone-600 sm:max-w-none">{sub}</p>
+      <div
         className={cn(
-          align === 'left' && 'self-start',
-          align === 'center' && 'self-center',
-          align === 'right' && 'self-end',
+          'mt-0.5 flex w-full shrink-0',
+          align === 'left' && 'justify-start',
+          align === 'center' && 'justify-center',
+          align === 'right' && 'justify-end',
         )}
-      />
+      >
+        <ArrowToBar />
+      </div>
     </div>
   )
 }
@@ -104,6 +128,57 @@ function SendIcon() {
         strokeLinejoin="round"
       />
     </svg>
+  )
+}
+
+/**
+ * Mobile: one grid — row 1 = short label only per column, row 2 = ↓.
+ * Subtitles (Tap +…, File name…, After you see…) are desktop-only — see CalloutWithArrow.
+ */
+function MobileFileBarHintBlock() {
+  return (
+    <div className={cn(FILE_BAR_HINT_GRID, 'sm:hidden')}>
+      {FILE_BAR_CALLOUTS.map((c, i) => (
+        <div
+          key={c.label}
+          className={cn(
+            'flex min-h-0 min-w-0 flex-col justify-end text-balance text-center',
+            i === 1 && 'px-0.5',
+          )}
+        >
+          <p
+            className={cn(
+              'font-semibold uppercase tracking-[0.12em] text-stone-800',
+              i === 1 ? 'text-[11px] tracking-[0.14em]' : 'text-[9px] leading-tight',
+            )}
+          >
+            {c.label}
+          </p>
+        </div>
+      ))}
+      {FILE_BAR_CALLOUTS.map((c) => (
+        <div key={`arrow-${c.label}`} className="flex min-w-0 justify-center">
+          <ArrowToBar />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Estimate (step 0) explainers above the file bar.
+ * Mobile: text + arrows share one 2-row grid. Desktop: 3 narrow columns with inline ↓.
+ */
+function EstimateStepCallouts() {
+  return (
+    <div className="relative z-[1] w-full min-w-0 sm:mb-1 sm:max-w-[42rem]">
+      <MobileFileBarHintBlock />
+      <div className="mb-0 hidden w-full min-w-0 sm:grid sm:grid-cols-3 sm:items-stretch sm:gap-x-3">
+        {FILE_BAR_CALLOUTS.map((c) => (
+          <CalloutWithArrow key={c.label} label={c.label} sub={c.sub} align={c.align} />
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -166,7 +241,7 @@ export function LandingUploadPreview() {
 
   return (
     <div
-      className="landing-upload-preview rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.12)] ring-1 ring-zinc-100 sm:p-8"
+      className="landing-upload-preview relative z-[1] w-full min-w-0 max-w-full overflow-x-clip rounded-2xl border border-orange-200/80 bg-white p-4 shadow-[0_28px_64px_-20px_rgba(234,88,12,0.18),0_16px_40px_-24px_rgba(15,23,42,0.12)] ring-2 ring-orange-100/90 ring-offset-2 ring-offset-[#f6f4f1] xs:p-5 sm:rounded-[1.25rem] sm:p-8"
       role="region"
       aria-label={liveLabel}
     >
@@ -174,43 +249,47 @@ export function LandingUploadPreview() {
         <div className="landing-upload-preview__filmstrip-inner" />
       </div>
 
-      <div className="dashboard-home mx-auto flex w-full max-w-xl flex-col items-center px-0 pb-2 pt-1">
-        <h2 className="font-display text-center text-[clamp(1.5rem,3.8vw,2rem)] font-normal leading-tight tracking-[-0.02em] text-zinc-900">
+      <div className="dashboard-home mx-auto flex w-full min-w-0 max-w-xl flex-col items-center px-0 pb-2 pt-1">
+        <h2 className="font-display text-center text-[clamp(1.5rem,3.8vw,2rem)] font-normal leading-tight tracking-[-0.02em] text-stone-900">
           {greeting}
         </h2>
-        <div className="mx-auto mt-2 max-w-[26rem] space-y-1 text-center text-sm leading-relaxed text-zinc-700 sm:text-[0.9375rem]">
+        <div className="mx-auto mt-2 max-w-[26rem] space-y-1 text-center text-sm leading-relaxed text-stone-700 sm:text-[0.9375rem]">
           <p className="mb-0">Upload your file to get instant word count & price</p>
           <p className="mb-0">Translate when you're ready</p>
         </div>
 
         <div className="relative mt-8 w-full sm:mt-10">
           <div
-            className="pointer-events-none absolute -inset-px rounded-[calc(999px+4px)] bg-gradient-to-b from-zinc-300/35 via-transparent to-transparent opacity-80"
+            className="pointer-events-none absolute -inset-px rounded-[calc(999px+4px)] bg-gradient-to-b from-orange-200/50 via-amber-100/20 to-transparent opacity-95"
             aria-hidden
           />
 
           {!reducedMotion ? (
             <div className="mb-4 flex flex-col items-center gap-2">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-zinc-600">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-stone-600">
                 How it runs
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-2" aria-hidden>
+              <div
+                className="flex max-w-full flex-wrap items-center justify-center gap-x-1 gap-y-1.5 px-0.5 sm:gap-x-2 sm:gap-y-2 sm:px-0"
+                aria-hidden
+              >
                 {STEP_LABELS.map((label, i) => (
-                  <div key={label} className="flex items-center gap-2">
+                  <div key={label} className="flex min-w-0 items-center gap-1 sm:gap-2">
                     {i > 0 ? (
-                      <span className="text-zinc-500" aria-hidden>
+                      <span className="shrink-0 text-orange-600/80" aria-hidden>
                         →
                       </span>
                     ) : null}
                     <span
                       className={cn(
-                        'rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors duration-500',
+                        'rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] transition-colors duration-500 sm:px-2.5 sm:text-[10px] sm:tracking-[0.12em]',
                         step === i
-                          ? 'bg-zinc-900 text-white'
-                          : 'text-zinc-600',
+                          ? 'bg-stone-900 text-white shadow-sm shadow-stone-900/20'
+                          : 'bg-orange-50/90 text-stone-700 ring-1 ring-orange-200/70',
                       )}
                     >
-                      {label}
+                      <span className="sm:hidden">{STEP_LABELS_MOBILE[i]}</span>
+                      <span className="hidden sm:inline">{label}</span>
                     </span>
                   </div>
                 ))}
@@ -227,21 +306,19 @@ export function LandingUploadPreview() {
             {/* Reduced motion: show full story without cycling */}
             {reducedMotion ? (
               <>
-                <div className="relative z-[1] mb-1 grid w-full max-w-[42rem] grid-cols-3 gap-x-1 sm:gap-x-3">
-                  <Callout align="left" label="Add a file" sub="Tap + for PDF, DOCX, and more" />
-                  <Callout align="center" label="Your file" sub="File name appears here" />
-                  <Callout align="right" label="Start translation" sub="After you see the estimate" />
+                <div className="relative z-[1] w-full min-w-0 max-sm:mb-1.5">
+                  <EstimateStepCallouts />
                 </div>
                 <div className="relative z-[1] w-full">
                   <div className="file-input-bar-stack">
                     <EstimateFileBar />
                     <div className="mt-3 flex w-full max-w-[42rem] flex-col items-center gap-1">
                       <div className="flex flex-col items-center text-center">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-800">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-800">
                           Words &amp; price
                         </p>
                         <svg
-                          className="mt-1 h-7 w-5 text-zinc-600"
+                          className="mt-1 h-7 w-5 text-orange-700/85"
                           viewBox="0 0 20 28"
                           fill="none"
                           aria-hidden
@@ -260,8 +337,8 @@ export function LandingUploadPreview() {
                   </div>
                 </div>
 
-                <div className="border-t border-zinc-200/80 pt-8 text-center">
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-zinc-600">
+                <div className="border-t border-orange-200/50 pt-8 text-center">
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-stone-600">
                     After translation completes
                   </p>
                   <DownloadDonePanel />
@@ -276,21 +353,19 @@ export function LandingUploadPreview() {
                   )}
                   aria-hidden={step !== 0}
                 >
-                  <div className="relative z-[1] mb-1 grid w-full max-w-[42rem] grid-cols-3 gap-x-1 sm:gap-x-3">
-                    <Callout align="left" label="Add a file" sub="Tap + for PDF, DOCX, and more" />
-                    <Callout align="center" label="Your file" sub="File name appears here" />
-                    <Callout align="right" label="Start translation" sub="After you see the estimate" />
+                  <div className="relative z-[1] w-full min-w-0 max-sm:mb-1.5">
+                    <EstimateStepCallouts />
                   </div>
                   <div className="relative z-[1] w-full">
                     <div className="file-input-bar-stack">
                       <EstimateFileBar />
                       <div className="mt-3 flex w-full max-w-[42rem] flex-col items-center gap-1">
                         <div className="flex flex-col items-center text-center">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-800">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-800">
                             Words &amp; price
                           </p>
                           <svg
-                            className="mt-1 h-7 w-5 text-zinc-600"
+                            className="mt-1 h-7 w-5 text-orange-700/85"
                             viewBox="0 0 20 28"
                             fill="none"
                             aria-hidden
@@ -319,7 +394,7 @@ export function LandingUploadPreview() {
                   )}
                   aria-hidden={step !== 1}
                 >
-                  <p className="mb-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-800">
+                  <p className="mb-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-800">
                     Translating on the job page
                   </p>
                   <div className="file-input-bar-stack w-full max-w-[42rem]">
@@ -353,7 +428,7 @@ export function LandingUploadPreview() {
                       >
                         <div className="processing-flow__bar-fill" style={{ width: '68%' }} />
                       </div>
-                      <p className="mt-3 text-center text-xs leading-relaxed text-zinc-600">
+                      <p className="mt-3 text-center text-xs leading-relaxed text-stone-600">
                         Same progress bar as the live job page — then your files are ready to download.
                       </p>
                     </div>
@@ -384,16 +459,17 @@ function DownloadDonePanel() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 px-1 pt-2">
       <div className="text-center">
-        <p className="font-display text-lg font-normal tracking-tight text-zinc-900 sm:text-xl">
+        <p className="font-display text-lg font-normal tracking-tight text-stone-900 sm:text-xl">
           Your Hinglish version is ready 🎉
         </p>
-        <p className="mt-1 text-sm text-zinc-700">Download your translated file below</p>
+        <p className="mt-1 text-sm text-stone-700">Download your translated file below</p>
       </div>
       <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
         <span
           className={cn(
-            'inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold',
-            'bg-zinc-900 text-white shadow-sm',
+            'font-display inline-flex flex-1 items-center justify-center gap-2 rounded-xl border-0 px-4 py-3 text-sm font-normal tracking-tight',
+            'bg-[var(--text-h)] text-white shadow-md shadow-black/20',
+            'dark:bg-zinc-950 dark:shadow-black/40',
           )}
         >
           <Download className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
@@ -401,8 +477,8 @@ function DownloadDonePanel() {
         </span>
         <span
           className={cn(
-            'inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3',
-            'text-sm font-semibold text-zinc-800',
+            'font-display inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-sm',
+            'text-sm font-normal tracking-tight text-stone-800',
           )}
         >
           <Download className="size-4 shrink-0 opacity-90" strokeWidth={2.25} aria-hidden />

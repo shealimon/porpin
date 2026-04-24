@@ -2,7 +2,11 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
-import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
+import {
+  isSupabaseConfigured,
+  supabase,
+  supabaseConfigMissingUserMessage,
+} from '@/lib/supabaseClient'
 import { useAuthStore } from '@/stores/authStore'
 
 function parseHashParams(): Record<string, string> {
@@ -23,9 +27,7 @@ export function AuthConfirmPage() {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
-      toast.error(
-        'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to frontend/.env.',
-      )
+      toast.error(supabaseConfigMissingUserMessage)
       navigate('/login', { replace: true })
       return
     }
