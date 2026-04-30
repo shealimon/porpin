@@ -40,6 +40,8 @@ export type JobDetailDto = {
   preview_eligible?: boolean | null
   document_page_count?: number | null
   preview_pages_cap?: number | null
+  translation_target?: string | null
+  translation_target_label?: string | null
 }
 
 export type MilestoneJob = {
@@ -70,6 +72,8 @@ export type MilestoneJob = {
   previewEligible?: boolean | null
   documentPageCount?: number | null
   previewPagesCap?: number | null
+  translationTarget?: string | null
+  translationTargetLabel?: string | null
 }
 
 export function mapMilestoneJob(d: JobDetailDto): MilestoneJob {
@@ -102,6 +106,8 @@ export function mapMilestoneJob(d: JobDetailDto): MilestoneJob {
     previewEligible: d.preview_eligible ?? null,
     documentPageCount: d.document_page_count ?? null,
     previewPagesCap: d.preview_pages_cap ?? null,
+    translationTarget: d.translation_target ?? null,
+    translationTargetLabel: d.translation_target_label ?? null,
   }
 }
 
@@ -194,26 +200,28 @@ export async function fetchMilestoneJob(jobId: string): Promise<MilestoneJob> {
   return mapMilestoneJob(data)
 }
 
-export type MilestoneInputLang = 'en' | 'hi'
+export type MilestoneTranslationTarget = 'hinglish' | 'hindi'
 
 export async function confirmMilestoneJob(
   jobId: string,
-  inputLang: MilestoneInputLang = 'en',
+  translationTarget: MilestoneTranslationTarget = 'hinglish',
 ): Promise<JobConfirmResponse> {
   const { data } = await backendClient.post<JobConfirmResponse>('/job/confirm', {
     job_id: jobId,
-    input_lang: inputLang,
+    input_lang: 'en',
+    translation_target: translationTarget,
   })
   return data
 }
 
 export async function startMilestonePreviewJob(
   jobId: string,
-  inputLang: MilestoneInputLang = 'en',
+  translationTarget: MilestoneTranslationTarget = 'hinglish',
 ): Promise<void> {
   await backendClient.post('/job/preview-start', {
     job_id: jobId,
-    input_lang: inputLang,
+    input_lang: 'en',
+    translation_target: translationTarget,
   })
 }
 
@@ -222,10 +230,10 @@ export async function startMilestonePreviewJob(
  */
 export async function confirmMilestoneJobSafe(
   jobId: string,
-  inputLang: MilestoneInputLang = 'en',
+  translationTarget: MilestoneTranslationTarget = 'hinglish',
 ): Promise<JobConfirmResponse | 'already_started'> {
   try {
-    return await confirmMilestoneJob(jobId, inputLang)
+    return await confirmMilestoneJob(jobId, translationTarget)
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 409) return 'already_started'
     throw e

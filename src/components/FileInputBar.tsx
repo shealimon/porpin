@@ -14,9 +14,9 @@ import toast from 'react-hot-toast'
 import { useDropzone, type FileRejection } from 'react-dropzone'
 import { postPdfUpload, getUploadErrorMessage } from '@/features/upload/api'
 import {
-  readStoredSourceLang,
-  writeStoredSourceLang,
-  type SourceLang,
+  readStoredTranslationTarget,
+  writeStoredTranslationTarget,
+  type TranslationTarget,
 } from '@/features/upload/sourceLang'
 import { SourceLangChips } from '@/components/SourceLangChips'
 import { PaygPricingCalculator } from '@/components/PaygPricingCalculator'
@@ -30,7 +30,7 @@ const PAYG_ACCEPT: Record<string, string[]> = {
   'application/pdf': ['.pdf'],
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
   'text/plain': ['.txt'],
-  'application/epub+zip': ['.epub'],
+  'application/epub+zip': ['.epub', '.ebup'],
   'text/markdown': ['.md'],
 }
 
@@ -64,6 +64,7 @@ function isPaygAllowedFile(file: File): boolean {
     n.endsWith('.docx') ||
     n.endsWith('.txt') ||
     n.endsWith('.epub') ||
+    n.endsWith('.ebup') ||
     n.endsWith('.md')
   )
 }
@@ -101,7 +102,9 @@ export function FileInputBar({
     user_plan_type: string
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [sourceLang, setSourceLang] = useState<SourceLang>(() => readStoredSourceLang())
+  const [translationTarget, setTranslationTarget] = useState<TranslationTarget>(() =>
+    readStoredTranslationTarget(),
+  )
   const estimateReqId = useRef(0)
   const progressRaf = useRef<number | null>(null)
   const progressPending = useRef<number | null>(null)
@@ -139,10 +142,22 @@ export function FileInputBar({
     } as const
   }, [])
 
-  const onSourceLangChange = useCallback((v: SourceLang) => {
-    writeStoredSourceLang(v)
-    setSourceLang(v)
-  }, [])
+  const onTranslationTargetChange = useCallback(
+    (v: TranslationTarget) => {
+      writeStoredTranslationTarget(v)
+      setTranslationTarget(v)
+      const jobId = estimate?.job_id
+      if (!jobId) return
+      const store = useJobStore.getState()
+      const existing = store.history.find((h) => h.id === jobId)
+      if (!existing) return
+      store.upsertHistory({
+        ...existing,
+        translationTarget: v,
+      })
+    },
+    [estimate?.job_id],
+  )
 
   useEffect(() => {
     onWorkingFileChange?.(file)
@@ -247,11 +262,13 @@ export function FileInputBar({
         // request’s `finally` skips (estimateReqId mismatch) after a race or abort.
         setUploadUi(null)
         setEstimating(false)
+        const latestTarget = readStoredTranslationTarget()
         useJobStore.getState().upsertHistory({
           id: data.job_id,
           fileName: data.file_name,
           status: 'estimated',
           createdAt: new Date().toISOString(),
+          translationTarget: latestTarget,
           amountCents: Math.round(data.estimated_cost * 100),
           currency: 'INR',
         })
@@ -315,11 +332,13 @@ export function FileInputBar({
         amount_to_pay: data.amount_to_pay,
         user_plan_type: data.user_plan_type,
       })
+      const latestTarget = readStoredTranslationTarget()
       useJobStore.getState().upsertHistory({
         id: data.job_id,
         fileName: data.file_name,
         status: 'estimated',
         createdAt: new Date().toISOString(),
+        translationTarget: latestTarget,
         amountCents: Math.round(data.estimated_cost * 100),
         currency: 'INR',
       })
@@ -537,8 +556,8 @@ export function FileInputBar({
       ) : null}
 
       <SourceLangChips
-        value={sourceLang}
-        onChange={onSourceLangChange}
+        value={translationTarget}
+        onChange={onTranslationTargetChange}
         disabled={waitingForEstimate}
       />
 

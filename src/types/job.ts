@@ -32,6 +32,8 @@ export interface JobListItem {
   fileName: string
   status: JobStatus
   createdAt: string
+  /** Output mode captured at upload time (used when starting the job). */
+  translationTarget?: 'hinglish' | 'hindi'
   /** Present when the job row has ``completed_at`` (e.g. History from DB). */
   completedAt?: string
   amountCents?: number

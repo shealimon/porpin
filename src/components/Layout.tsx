@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
+import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
+
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `nav-link${isActive ? ' nav-link--active' : ''}`
 
@@ -8,7 +10,7 @@ export function Layout() {
     <div className="app-shell">
       <header className="app-header">
         <NavLink to="/" className="app-brand">
-          Porpin
+          <PorpinWordmark />
         </NavLink>
         <nav className="app-nav" aria-label="Main">
           <NavLink to="/" className={linkClass} end>

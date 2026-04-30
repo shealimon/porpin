@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentProps } from 'react'
+import { useEffect, useState, type ComponentProps, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Mail, Save, User } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -16,6 +16,7 @@ import { supabaseUserToAuthUser } from '@/lib/mapSupabaseUser'
 import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
 import { useAuthStore } from '@/stores/authStore'
 import {
+  appPageDescriptionClass,
   appPageHeaderClass,
   appPageShellClass,
   appPageTitleClass,
@@ -41,6 +42,25 @@ function SectionCard({
     >
       {children}
     </section>
+  )
+}
+
+function ProfileField({
+  id,
+  label,
+  children,
+}: {
+  id: string
+  label: string
+  children: ReactNode
+}) {
+  return (
+    <div className="min-w-0 space-y-2">
+      <Label htmlFor={id} className="text-zinc-700 dark:text-zinc-300">
+        {label}
+      </Label>
+      {children}
+    </div>
   )
 }
 
@@ -159,44 +179,60 @@ export function SettingsPage() {
     <div className={cn(appPageShellClass, 'space-y-8 sm:space-y-10')}>
       <header className={appPageHeaderClass}>
         <h1 className={appPageTitleClass}>Account</h1>
+        <p className={appPageDescriptionClass}>
+          Keep your profile details up to date for a faster, personalized experience.
+        </p>
       </header>
 
       <SectionCard aria-labelledby="profile-heading">
         <div className="border-b border-zinc-100 pb-5 dark:border-zinc-800">
-          <h2
-            id="profile-heading"
-            className="flex items-center gap-2 font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-50"
-          >
-            <User className="size-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
-            Profile
-          </h2>
-          <p className="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Saved to your account. Name fields sync with your sign-in when possible.
-          </p>
-        </div>
-
-        {user?.email ? (
-          <div
-            className={cn(
-              'mt-5 flex min-h-11 items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-2.5 text-sm',
-              'dark:border-zinc-800 dark:bg-zinc-900/50',
-            )}
-          >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2
+                id="profile-heading"
+                className="flex items-center gap-2 font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-50"
+              >
+                <User className="size-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
+                Profile
+              </h2>
+              <p className="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                Saved to your account. Name fields sync with your sign-in when possible.
+              </p>
+            </div>
             <span
               className={cn(
-                'inline-flex size-7 shrink-0 items-center justify-center rounded-lg border',
-                'border-brand-200/80 bg-brand-50/90 dark:border-brand-500/30 dark:bg-brand-950/50',
+                'inline-flex h-7 shrink-0 items-center rounded-full border px-2.5 text-xs font-medium',
+                'border-emerald-200 bg-emerald-50 text-emerald-700',
+                'dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300',
               )}
-              aria-hidden
             >
-              <Mail className="size-[0.9rem] text-brand-600 dark:text-brand-400" />
+              Secure profile
             </span>
-            <p className="min-w-0 py-0.5 leading-snug">
-              <span className="text-zinc-500 dark:text-zinc-400">Signed in as </span>
-              <span className="break-all font-medium text-zinc-900 dark:text-zinc-100">{user.email}</span>
-            </p>
           </div>
-        ) : null}
+
+          {user?.email ? (
+            <div
+              className={cn(
+                'mt-4 flex min-h-11 items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-2.5 text-sm',
+                'dark:border-zinc-800 dark:bg-zinc-900/50',
+              )}
+            >
+              <span
+                className={cn(
+                  'inline-flex size-7 shrink-0 items-center justify-center rounded-lg border',
+                  'border-brand-200/80 bg-brand-50/90 dark:border-brand-500/30 dark:bg-brand-950/50',
+                )}
+                aria-hidden
+              >
+                <Mail className="size-[0.9rem] text-brand-600 dark:text-brand-400" />
+              </span>
+              <p className="min-w-0 py-0.5 leading-snug">
+                <span className="text-zinc-500 dark:text-zinc-400">Signed in as </span>
+                <span className="break-all font-medium text-zinc-900 dark:text-zinc-100">{user.email}</span>
+              </p>
+            </div>
+          ) : null}
+        </div>
 
         {profileQuery.isError && canFetchProfile ? (
           <div
@@ -229,11 +265,8 @@ export function SettingsPage() {
           </div>
         ) : (
           <div className="mt-6 flex flex-col gap-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-4">
-              <div className="min-w-0 space-y-2">
-                <Label htmlFor="profile-first" className="text-zinc-700 dark:text-zinc-300">
-                  First name
-                </Label>
+            <div className="grid grid-cols-1 gap-4">
+              <ProfileField id="profile-first" label="First name">
                 <Input
                   id="profile-first"
                   value={firstName}
@@ -242,11 +275,8 @@ export function SettingsPage() {
                   className={fieldControlInputCompactClassName}
                   placeholder="First name"
                 />
-              </div>
-              <div className="min-w-0 space-y-2">
-                <Label htmlFor="profile-last" className="text-zinc-700 dark:text-zinc-300">
-                  Last name
-                </Label>
+              </ProfileField>
+              <ProfileField id="profile-last" label="Last name">
                 <Input
                   id="profile-last"
                   value={lastName}
@@ -255,12 +285,12 @@ export function SettingsPage() {
                   className={fieldControlInputCompactClassName}
                   placeholder="Last name"
                 />
-              </div>
+              </ProfileField>
             </div>
 
             <div className="min-w-0 space-y-2">
               <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300" id="profile-mobile-group">
-                Mobile <span className="font-normal text-zinc-500">(optional)</span>
+                Mobile
               </div>
               <div
                 className="flex min-w-0 items-stretch gap-2"
@@ -269,7 +299,7 @@ export function SettingsPage() {
               >
                 <div
                   className={cn(
-                    'flex h-9 min-h-9 shrink-0 items-center justify-center gap-1 rounded-lg border border-zinc-300 px-2 text-xs tabular-nums',
+                    'flex h-9 min-h-9 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-zinc-300 px-2 text-xs tabular-nums leading-none',
                     'text-zinc-600 dark:border-zinc-600 dark:text-zinc-300',
                   )}
                   title={`${IN_CODE_LABEL} ${IN_DIAL}`}
@@ -291,11 +321,8 @@ export function SettingsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-4">
-              <div className="min-w-0 space-y-2">
-                <Label htmlFor="profile-city" className="text-zinc-700 dark:text-zinc-300">
-                  City
-                </Label>
+            <div className="grid grid-cols-1 gap-4">
+              <ProfileField id="profile-city" label="City">
                 <Input
                   id="profile-city"
                   value={city}
@@ -304,11 +331,8 @@ export function SettingsPage() {
                   className={fieldControlInputCompactClassName}
                   placeholder="City"
                 />
-              </div>
-              <div className="min-w-0 space-y-2">
-                <Label htmlFor="profile-country" className="text-zinc-700 dark:text-zinc-300">
-                  Country
-                </Label>
+              </ProfileField>
+              <ProfileField id="profile-country" label="Country">
                 <Input
                   id="profile-country"
                   value={country}
@@ -317,23 +341,23 @@ export function SettingsPage() {
                   className={fieldControlInputCompactClassName}
                   placeholder="Country"
                 />
-              </div>
+              </ProfileField>
             </div>
 
-            <div className="flex justify-center border-t border-zinc-100 pt-5 dark:border-zinc-800">
+            <div className="sticky bottom-0 -mx-5 border-t border-zinc-100 bg-white/95 px-5 pb-1 pt-4 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-zinc-800 dark:bg-zinc-950/90 dark:supports-[backdrop-filter]:bg-zinc-950/70 sm:static sm:mx-0 sm:flex sm:justify-center sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-5 sm:backdrop-blur-0">
               <button
                 type="button"
                 onClick={() => void onSaveProfile()}
                 disabled={saving}
                 className={cn(
-                  'inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border-0 px-5',
+                  'inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border-0 px-5',
                   'text-sm font-semibold text-white',
                   'bg-emerald-600 shadow-md shadow-black/10',
                   'transition hover:bg-emerald-700 hover:shadow-lg hover:shadow-black/15 active:scale-[0.98]',
                   'dark:bg-emerald-500 dark:hover:bg-emerald-400',
                   'outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400/50 dark:focus-visible:outline-zinc-500/50',
                   'disabled:pointer-events-none disabled:opacity-60',
-                  'sm:min-w-[10rem] sm:w-auto',
+                  'sm:min-w-[8.5rem] sm:w-auto',
                 )}
               >
                 {saving ? (
@@ -344,7 +368,7 @@ export function SettingsPage() {
                 ) : (
                   <>
                     <Save className="size-4 shrink-0" aria-hidden />
-                    Save Changes
+                    Save
                   </>
                 )}
               </button>

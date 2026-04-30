@@ -20,6 +20,7 @@ import {
   appPageTitleClass,
 } from '@/lib/appPageLayout'
 import { cn } from '@/lib/utils'
+import { SITE_ORIGIN } from '@/seo/site'
 import { useProfileExtrasStore } from '@/stores/profileExtrasStore'
 
 const REFEREE_SIGNUP_BONUS_WORDS = 10_000
@@ -72,7 +73,12 @@ export function InviteFriendsPage() {
   const [invites, setInvites] = useState<ReferralInviteRow[]>([])
   const [loading, setLoading] = useState(true)
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  const origin =
+    typeof window !== 'undefined'
+      ? import.meta.env.PROD || Boolean(import.meta.env.VITE_SITE_ORIGIN?.trim())
+        ? SITE_ORIGIN
+        : window.location.origin
+      : ''
   const shareUrl = referralCode ? `${origin}/signup?ref=${referralCode}` : ''
 
   useEffect(() => {

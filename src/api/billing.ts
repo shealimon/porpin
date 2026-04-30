@@ -30,6 +30,21 @@ export type RazorpayVerifyCapturedResult = {
   job_id: string | null
 }
 
+export type RazorpayYearlyOrder = {
+  order_id: string
+  key_id: string
+  amount_inr: number
+  amount_paise: number
+  currency: string
+}
+
+export type RazorpayVerifyYearlyResult = {
+  ok: boolean
+  already_applied: boolean
+  plan: string
+  subscription_active: boolean
+}
+
 export function createRazorpaySubscription(
   kind: 'monthly' | 'yearly' = 'monthly',
 ): Promise<RazorpaySubscriptionStart> {
@@ -73,6 +88,24 @@ export function verifyRazorpayCapturedPayment(
   return backendClient
     .post<RazorpayVerifyCapturedResult>(
       '/api/billing/razorpay/verify-captured-payment',
+      body,
+    )
+    .then((r) => r.data)
+}
+
+/** One-time yearly plan order (supports UPI QR scan). */
+export function createRazorpayYearlyOrder(): Promise<RazorpayYearlyOrder> {
+  return backendClient
+    .post<RazorpayYearlyOrder>('/api/billing/razorpay/create-yearly-order')
+    .then((r) => r.data)
+}
+
+export function verifyRazorpayYearlyPayment(
+  body: RazorpayVerifyCapturedBody,
+): Promise<RazorpayVerifyYearlyResult> {
+  return backendClient
+    .post<RazorpayVerifyYearlyResult>(
+      '/api/billing/razorpay/verify-yearly-payment',
       body,
     )
     .then((r) => r.data)

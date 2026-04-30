@@ -24,11 +24,11 @@ function HistoryRow({ row }: { row: JobListItem }) {
       : null
 
   return (
-    <li className="min-w-0 max-w-full">
+    <li className="min-w-0 max-w-full list-none overflow-hidden">
       <Link
         to={`/app/jobs/${encodeURIComponent(row.id)}`}
         className={cn(
-          'group box-border flex w-full min-w-0 max-w-full min-h-[4.25rem] items-center gap-1.5 rounded-2xl border border-zinc-200/90 bg-white p-2.5 pr-1.5 shadow-sm',
+          'group box-border flex w-full min-w-0 max-w-full min-h-[4.25rem] items-center gap-1 overflow-hidden rounded-2xl border border-zinc-200/90 bg-white p-2 pr-1 shadow-sm',
           'no-underline decoration-transparent outline-none transition duration-200',
           'visited:text-inherit hover:no-underline',
           'hover:border-brand-500/35 hover:shadow-md',
@@ -81,7 +81,7 @@ function HistoryRow({ row }: { row: JobListItem }) {
         <span
           className={cn(
             'box-border flex shrink-0 select-none items-center justify-center self-center',
-            'gap-1 rounded-lg px-2.5 py-2 text-xs font-semibold leading-tight',
+            'gap-1 rounded-lg px-2 py-2 text-xs font-semibold leading-tight',
             'whitespace-nowrap min-h-10',
             'sm:min-h-0 sm:rounded-xl sm:px-3 sm:py-2 sm:text-sm',
             'text-brand-800 dark:text-brand-200',
@@ -89,7 +89,7 @@ function HistoryRow({ row }: { row: JobListItem }) {
             'dark:bg-brand-500/20 dark:group-hover:bg-brand-500',
           )}
         >
-          Open
+          <span className="hidden min-[380px]:inline">Open</span>
           <ChevronRight className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
         </span>
       </Link>
@@ -124,7 +124,7 @@ function HistoryPagination({
   return (
     <nav
       className={cn(
-        'mt-6 w-full min-w-0 max-w-full',
+        'mt-6 box-border w-full min-w-0 max-w-full overflow-x-hidden',
         'flex flex-col gap-3 rounded-2xl border border-zinc-200/90 bg-zinc-50/80 px-3 py-3',
         'sm:flex-row sm:items-center sm:justify-between sm:px-4',
         'dark:border-zinc-800 dark:bg-zinc-900/50',
@@ -143,9 +143,9 @@ function HistoryPagination({
           disabled={safePage <= 1 || isBusy}
           onClick={() => onPageChange(safePage - 1)}
           className={cn(
-            'inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-800 shadow-sm transition',
-            'hover:border-zinc-400 hover:bg-zinc-50 disabled:pointer-events-none disabled:opacity-40',
-            'dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-900',
+            'inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded-xl border border-transparent bg-transparent px-2 text-sm font-semibold text-zinc-800 shadow-none transition',
+            'hover:bg-zinc-100/80 disabled:pointer-events-none disabled:opacity-40',
+            'dark:bg-transparent dark:text-zinc-100 dark:hover:bg-zinc-800/70',
             'sm:min-h-10 sm:min-w-0',
           )}
         >
@@ -169,9 +169,9 @@ function HistoryPagination({
           disabled={safePage >= totalPages || isBusy}
           onClick={() => onPageChange(safePage + 1)}
           className={cn(
-            'inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-800 shadow-sm transition',
-            'hover:border-zinc-400 hover:bg-zinc-50 disabled:pointer-events-none disabled:opacity-40',
-            'dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-900',
+            'inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded-xl border border-transparent bg-transparent px-2 text-sm font-semibold text-zinc-800 shadow-none transition',
+            'hover:bg-zinc-100/80 disabled:pointer-events-none disabled:opacity-40',
+            'dark:bg-transparent dark:text-zinc-100 dark:hover:bg-zinc-800/70',
             'sm:min-h-10 sm:min-w-0',
           )}
         >
@@ -185,7 +185,7 @@ function HistoryPagination({
 
 function HistorySkeleton() {
   return (
-    <ul className="min-w-0 space-y-3" aria-hidden>
+    <ul className="m-0 min-w-0 list-none space-y-3 p-0" aria-hidden>
       {[1, 2, 3, 4, 5].map((i) => (
         <li
           key={i}
@@ -230,7 +230,7 @@ export function HistoryPage() {
       : null
 
   return (
-    <div className={cn(appPageShellClass, 'w-full min-w-0 max-w-full')}>
+    <div className={cn(appPageShellClass, 'w-full min-w-0 max-w-full overflow-x-hidden')}>
       <header className={cn(appPageHeaderClass, 'min-w-0 max-w-full')}>
         <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-3 sm:gap-y-1">
           <h1 className={cn(appPageTitleClass, 'min-w-0')}>History</h1>
@@ -337,7 +337,7 @@ export function HistoryPage() {
         <>
           <ul
             className={cn(
-              'min-w-0 space-y-3 transition-opacity duration-200',
+              'm-0 min-w-0 list-none space-y-3 p-0 transition-opacity duration-200',
               pageIsLoading && 'pointer-events-none opacity-50',
             )}
             aria-busy={pageIsLoading}

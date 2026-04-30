@@ -14,7 +14,9 @@ import toast from 'react-hot-toast'
 
 import {
   createRazorpaySubscription,
+  createRazorpayYearlyOrder,
   syncRazorpaySubscriptionAfterCheckout,
+  verifyRazorpayYearlyPayment,
 } from '@/api/billing'
 import { usePricingConfig } from '@/hooks/usePricingConfig'
 import { loadRazorpayScript } from '@/lib/razorpayScript'
@@ -23,6 +25,7 @@ import { appPageHeaderClass, appPageShellClass, appPageTitleClass } from '@/lib/
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/utils/format'
 import { useProfileExtrasStore } from '@/stores/profileExtrasStore'
+import type { RazorpayHandlerResponse } from '@/types/razorpay-checkout'
 
 function formatInr(amount: number): string {
   return new Intl.NumberFormat('en-IN', {
@@ -43,22 +46,66 @@ export function BillingPage() {
   const subCredits = useProfileExtrasStore((s) => s.subscriptionCredits)
   const subExpiry = useProfileExtrasStore((s) => s.subscriptionExpiry)
 
-  const [subBusy, setSubBusy] = useState(false)
+  const [busyPlan, setBusyPlan] = useState<'monthly' | 'yearly' | null>(null)
 
   const startSubscription = useCallback(
     async (plan: 'monthly' | 'yearly') => {
-      setSubBusy(true)
+      setBusyPlan(plan)
       try {
         await loadRazorpayScript()
-        const start = await createRazorpaySubscription(plan)
         const Ctor = window.Razorpay
         if (!Ctor) {
           throw new Error('Razorpay SDK missing after load.')
         }
-        const isYear = plan === 'yearly'
-        const desc = isYear
-          ? `Yearly · ${formatInr(pricing.subscription_inr_yearly)}`
-          : `Monthly · ${formatInr(pricing.subscription_inr_monthly)}`
+
+        if (plan === 'yearly') {
+          // Yearly uses a one-time order checkout so UPI QR scan works reliably.
+          const order = await createRazorpayYearlyOrder()
+          const rzp = new Ctor({
+            key: order.key_id,
+            order_id: order.order_id,
+            amount: order.amount_paise,
+            currency: order.currency,
+            name: 'Porpin',
+            description: `Yearly · ${formatInr(pricing.subscription_inr_yearly)}`,
+            handler: async (response: RazorpayHandlerResponse) => {
+              const orderId = response.razorpay_order_id
+              const payId = response.razorpay_payment_id
+              const sig = response.razorpay_signature
+              if (!orderId || !payId || !sig) {
+                toast.error('Invalid payment response from gateway.')
+                return
+              }
+              try {
+                await verifyRazorpayYearlyPayment({
+                  razorpay_order_id: orderId,
+                  razorpay_payment_id: payId,
+                  razorpay_signature: sig,
+                })
+                await refreshProfileExtras()
+                toast.success('Yearly plan activated. Credits refresh shortly.')
+              } catch (e) {
+                toast.error(
+                  e instanceof Error
+                    ? e.message
+                    : 'Payment succeeded but verification failed. Contact support with your payment id.',
+                  { duration: 8000 },
+                )
+              }
+            },
+            modal: {
+              ondismiss() {
+                void refreshProfileExtras()
+              },
+            },
+          })
+          rzp.open()
+          return
+        }
+
+        // Monthly stays on Razorpay subscriptions (recurring).
+        const start = await createRazorpaySubscription(plan)
+        const desc = `Monthly · ${formatInr(pricing.subscription_inr_monthly)}`
         const rzp = new Ctor({
           key: start.key_id,
           subscription_id: start.subscription_id,
@@ -86,7 +133,7 @@ export function BillingPage() {
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Could not start checkout.')
       } finally {
-        setSubBusy(false)
+        setBusyPlan(null)
       }
     },
     [pricing.subscription_inr_monthly, pricing.subscription_inr_yearly],
@@ -126,9 +173,10 @@ export function BillingPage() {
   const subWordsPerCycle = pricing.subscription_words_per_cycle.toLocaleString('en-IN')
   const isMonthlySub = planSlug === 'monthly'
   const isYearlySub = planSlug === 'yearly'
+  const busyAny = busyPlan !== null
   const monthlySubscribeDisabled =
-    subBusy || (subActive && isMonthlySub) || (subActive && isYearlySub)
-  const yearlySubscribeDisabled = subBusy || (subActive && isYearlySub)
+    busyAny || (subActive && isMonthlySub) || (subActive && isYearlySub)
+  const yearlySubscribeDisabled = busyAny || (subActive && isYearlySub)
 
   return (
     <div
@@ -362,7 +410,7 @@ export function BillingPage() {
               'touch-manipulation',
             )}
           >
-            {subBusy ? (
+            {busyPlan === 'monthly' ? (
               <>
                 <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
                 <span>Opening…</span>
@@ -389,7 +437,7 @@ export function BillingPage() {
               'touch-manipulation',
             )}
           >
-            {subBusy ? (
+            {busyPlan === 'yearly' ? (
               <>
                 <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
                 <span>Opening…</span>

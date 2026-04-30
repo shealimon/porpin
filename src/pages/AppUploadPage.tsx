@@ -11,8 +11,8 @@ export function AppUploadPage() {
   return (
     <div
       className={cn(
-        /* items-stretch + self-center inner avoids flex “shrink-to-fit” that shifts the upload bar on mobile */
-        'dashboard-home relative box-border flex w-full min-w-0 max-w-full flex-col items-stretch justify-start overflow-x-hidden',
+        /* Keep the dashboard column horizontally centered on all breakpoints. */
+        'dashboard-home relative box-border flex w-full min-w-0 max-w-full flex-col items-center justify-start overflow-x-hidden',
         'pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]',
         'sm:pt-9 sm:pb-12',
         'has-[.file-input-bar__estimate-card]:pb-3 has-[.file-input-bar__estimate-card]:sm:pb-6',

@@ -1,22 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Loader2, Lock } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-import { AuthShell } from '@/components/marketing/AuthShell'
+import { AuthCardEyebrow, AUTH_EYEBROW_ACCOUNT_ACCESS } from '@/components/auth/AuthCardEyebrow'
+import { AuthLightPageSurface } from '@/components/auth/AuthLightPageSurface'
+import { PorpinMark } from '@/components/brand/PorpinMark'
+import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { formatAuthError } from '@/lib/authErrors'
+import {
+  authFormFieldPasswordLightClass,
+  authFormLabelLightClass,
+  authFormPrimaryButtonLightClass,
+} from '@/lib/authFormStyles'
 import { resolveAuthUser, supabaseUserToAuthUser } from '@/lib/mapSupabaseUser'
-import { publicNavActiveClass } from '@/lib/publicHeaderNavStyles'
 import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
 import { syncBackendProfile } from '@/lib/syncBackendProfile'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
-
-const fieldClass =
-  'box-border h-12 max-w-full rounded-xl border border-white/15 bg-white/[0.06] pl-11 pr-3 text-base text-zinc-100 transition-colors placeholder:text-zinc-500 focus-visible:border-[#c8ff00]/45 focus-visible:ring-2 focus-visible:ring-[#c8ff00]/20 sm:text-sm'
 
 /** Wait for Supabase to parse hash/query recovery tokens before deciding the link is invalid. */
 const RECOVERY_POLL_MS = 200
@@ -121,130 +126,230 @@ export function ResetPasswordPage() {
   }
 
   if (!checked) {
+    // Keep the same page chrome as login/signup while we wait for Supabase.
     return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-[#050506] text-zinc-400">
-        Loading…
-      </div>
+      <AuthLightPageSurface>
+        <div className="-translate-y-4 flex flex-1 flex-col items-center justify-center px-4 py-10 sm:-translate-y-7 sm:py-12">
+          <Link
+            to="/"
+            className={cn(
+              'group mb-10 flex items-center gap-2.5 text-zinc-900 no-underline transition-opacity hover:opacity-80',
+            )}
+          >
+            <span
+              className="flex size-10 shrink-0 items-center justify-center transition duration-200 group-hover:opacity-90"
+              aria-hidden
+            >
+              <PorpinMark className="size-full" aria-hidden />
+            </span>
+            <PorpinWordmark />
+          </Link>
+
+          <Card className="w-full max-w-[380px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
+            <CardHeader className="space-y-3 border-b border-zinc-100 px-6 pb-6 pt-8 text-center sm:px-8 sm:pt-8">
+              <AuthCardEyebrow label={AUTH_EYEBROW_ACCOUNT_ACCESS} variant="light" />
+              <CardTitle className="font-display text-xl font-normal !leading-snug tracking-tight text-zinc-900 sm:text-2xl">
+                Loading…
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-8 pt-8 text-center text-sm text-zinc-600 sm:px-8">
+              Please wait a moment.
+            </CardContent>
+          </Card>
+        </div>
+      </AuthLightPageSurface>
     )
   }
 
   if (!isSupabaseConfigured()) {
     return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 bg-[#050506] px-4 text-center text-zinc-400">
-        <p>Supabase env vars are missing. Add them to frontend/.env</p>
-        <Link to="/login" className="text-[#dfff7a] underline">
-          Back to sign in
-        </Link>
-      </div>
+      <AuthLightPageSurface>
+        <div className="-translate-y-4 flex flex-1 flex-col items-center justify-center px-4 py-10 sm:-translate-y-7 sm:py-12">
+          <Link
+            to="/"
+            className={cn(
+              'group mb-10 flex items-center gap-2.5 text-zinc-900 no-underline transition-opacity hover:opacity-80',
+            )}
+          >
+            <span
+              className="flex size-10 shrink-0 items-center justify-center transition duration-200 group-hover:opacity-90"
+              aria-hidden
+            >
+              <PorpinMark className="size-full" aria-hidden />
+            </span>
+            <PorpinWordmark />
+          </Link>
+
+          <Card className="w-full max-w-[380px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
+            <CardHeader className="space-y-3 border-b border-zinc-100 px-6 pb-6 pt-8 text-center sm:px-8 sm:pt-8">
+              <AuthCardEyebrow label={AUTH_EYEBROW_ACCOUNT_ACCESS} variant="light" />
+              <CardTitle className="font-display text-xl font-normal !leading-snug tracking-tight text-zinc-900 sm:text-2xl">
+                Supabase is not configured
+              </CardTitle>
+              <p className="text-sm leading-relaxed text-zinc-600">
+                Supabase env vars are missing. Add them to <span className="font-mono">frontend/.env</span>.
+              </p>
+            </CardHeader>
+            <CardFooter className="flex flex-col border-0 bg-transparent px-6 pb-8 pt-6 sm:px-8">
+              <p className="text-center text-sm text-zinc-600">
+                <Link
+                  to="/login"
+                  className="font-semibold text-zinc-900 no-underline underline-offset-4 transition hover:underline"
+                >
+                  Back to sign in
+                </Link>
+              </p>
+            </CardFooter>
+          </Card>
+        </div>
+      </AuthLightPageSurface>
     )
   }
 
   if (!sessionReady) {
     return (
-      <AuthShell
-        accent="login"
-        title="Link expired or invalid"
-        subtitle="Request a new reset link from the forgot password page."
-        footer={
-          <p className="w-full text-center text-sm text-zinc-400">
-            <Link
-              to="/forgot-password"
-              className="font-semibold text-[#dfff7a] no-underline hover:text-[#c8ff00] hover:underline"
+      <AuthLightPageSurface>
+        <div className="-translate-y-4 flex flex-1 flex-col items-center justify-center px-4 py-10 sm:-translate-y-7 sm:py-12">
+          <Link
+            to="/"
+            className={cn(
+              'group mb-10 flex items-center gap-2.5 text-zinc-900 no-underline transition-opacity hover:opacity-80',
+            )}
+          >
+            <span
+              className="flex size-10 shrink-0 items-center justify-center transition duration-200 group-hover:opacity-90"
+              aria-hidden
             >
-              Forgot password
-            </Link>
-            {' · '}
-            <Link
-              to="/login"
-              className="font-semibold text-[#dfff7a] no-underline hover:text-[#c8ff00] hover:underline"
-            >
-              Sign in
-            </Link>
-          </p>
-        }
-      >
-        <p className="text-sm text-zinc-400">
-          Open the link from your email in this browser. If you already reset your password,
-          sign in normally.
-        </p>
-      </AuthShell>
+              <PorpinMark className="size-full" aria-hidden />
+            </span>
+            <PorpinWordmark />
+          </Link>
+
+          <Card className="w-full max-w-[380px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
+            <CardHeader className="space-y-3 border-b border-zinc-100 px-6 pb-6 pt-8 text-center sm:px-8 sm:pt-8">
+              <AuthCardEyebrow label={AUTH_EYEBROW_ACCOUNT_ACCESS} variant="light" />
+              <CardTitle className="font-display text-xl font-normal !leading-snug tracking-tight text-zinc-900 sm:text-2xl">
+                Link expired or invalid
+              </CardTitle>
+              <p className="text-sm leading-relaxed text-zinc-600">
+                Request a new reset link from the forgot password page.
+              </p>
+            </CardHeader>
+
+            <CardContent className="px-6 pb-0 pt-8 sm:px-8">
+              <p className="text-sm leading-relaxed text-zinc-600">
+                Open the link from your email in this browser. If you already reset your password,
+                sign in normally.
+              </p>
+            </CardContent>
+
+            <CardFooter className="flex flex-col border-0 bg-transparent px-6 pb-8 pt-5 sm:px-8">
+              <p className="text-center text-sm text-zinc-600">
+                <Link
+                  to="/forgot-password"
+                  className="font-semibold text-zinc-900 no-underline underline-offset-4 transition hover:underline"
+                >
+                  Forgot password
+                </Link>
+                {' · '}
+                <Link
+                  to="/login"
+                  className="font-semibold text-zinc-900 no-underline underline-offset-4 transition hover:underline"
+                >
+                  Sign in
+                </Link>
+              </p>
+            </CardFooter>
+          </Card>
+        </div>
+      </AuthLightPageSurface>
     )
   }
 
   return (
-    <AuthShell
-      accent="login"
-      title="Choose a new password"
-      subtitle="Use at least 8 characters."
-      footer={
-        <p className="w-full text-center text-sm text-zinc-400">
-          <Link
-            to="/login"
-            className="font-semibold text-[#dfff7a] no-underline hover:text-[#c8ff00] hover:underline"
-          >
-            Back to sign in
-          </Link>
-        </p>
-      }
-    >
-      <form onSubmit={onSubmit} className="space-y-5">
-        <div className="grid min-w-0 gap-2">
-          <Label htmlFor="reset-password" className="text-sm font-medium text-zinc-200">
-            New password
-          </Label>
-          <div className="relative min-w-0">
-            <Lock
-              className="pointer-events-none absolute left-3.5 top-1/2 z-10 size-[18px] -translate-y-1/2 text-zinc-500"
-              strokeWidth={1.75}
-              aria-hidden
-            />
-            <Input
-              id="reset-password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="At least 8 characters"
-              value={password}
-              onChange={(ev) => setPassword(ev.target.value)}
-              className={fieldClass}
-            />
-          </div>
-        </div>
-        <div className="grid min-w-0 gap-2">
-          <Label htmlFor="reset-confirm" className="text-sm font-medium text-zinc-200">
-            Confirm password
-          </Label>
-          <div className="relative min-w-0">
-            <Lock
-              className="pointer-events-none absolute left-3.5 top-1/2 z-10 size-[18px] -translate-y-1/2 text-zinc-500"
-              strokeWidth={1.75}
-              aria-hidden
-            />
-            <Input
-              id="reset-confirm"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Repeat password"
-              value={confirm}
-              onChange={(ev) => setConfirm(ev.target.value)}
-              className={fieldClass}
-            />
-          </div>
-        </div>
-        <Button
-          type="submit"
-          disabled={busy}
-          className={cn(publicNavActiveClass, 'w-full gap-2')}
-        >
-          {busy ? (
-            <>
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-              Saving…
-            </>
-          ) : (
-            'Update password'
+    <AuthLightPageSurface>
+      <div className="-translate-y-4 flex flex-1 flex-col items-center justify-center px-4 py-10 sm:-translate-y-7 sm:py-12">
+        <Link
+          to="/"
+          className={cn(
+            'group mb-10 flex items-center gap-2.5 text-zinc-900 no-underline transition-opacity hover:opacity-80',
           )}
-        </Button>
-      </form>
-    </AuthShell>
+        >
+          <span
+            className="flex size-10 shrink-0 items-center justify-center transition duration-200 group-hover:opacity-90"
+            aria-hidden
+          >
+            <PorpinMark className="size-full" aria-hidden />
+          </span>
+          <PorpinWordmark />
+        </Link>
+
+        <Card className="w-full max-w-[380px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
+          <CardHeader className="space-y-3 border-b border-zinc-100 px-6 pb-6 pt-8 text-center sm:px-8 sm:pt-8">
+            <AuthCardEyebrow label={AUTH_EYEBROW_ACCOUNT_ACCESS} variant="light" />
+            <CardTitle className="font-display text-xl font-normal !leading-snug tracking-tight !text-stone-900 dark:!text-stone-100 sm:text-2xl">
+              Choose a new password
+            </CardTitle>
+            <p className="text-sm leading-relaxed text-zinc-600">Use at least 8 characters.</p>
+          </CardHeader>
+
+          <CardContent className="px-6 pb-0 pt-8 sm:px-8">
+            <form onSubmit={onSubmit} className="min-w-0 space-y-5">
+              <div className="grid min-w-0 gap-2">
+                <Label htmlFor="reset-password" className={authFormLabelLightClass}>
+                  New password
+                </Label>
+                <Input
+                  id="reset-password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(ev) => setPassword(ev.target.value)}
+                  className={authFormFieldPasswordLightClass}
+                />
+              </div>
+
+              <div className="grid min-w-0 gap-2">
+                <Label htmlFor="reset-confirm" className={authFormLabelLightClass}>
+                  Confirm password
+                </Label>
+                <Input
+                  id="reset-confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Repeat password"
+                  value={confirm}
+                  onChange={(ev) => setConfirm(ev.target.value)}
+                  className={authFormFieldPasswordLightClass}
+                />
+              </div>
+
+              <Button type="submit" disabled={busy} className={cn(authFormPrimaryButtonLightClass, 'gap-2')}>
+                {busy ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                    Saving…
+                  </>
+                ) : (
+                  'Update password'
+                )}
+              </Button>
+            </form>
+          </CardContent>
+
+          <CardFooter className="flex flex-col border-0 bg-transparent px-6 pb-8 pt-5 sm:px-8">
+            <p className="text-center text-sm text-zinc-600">
+              <Link
+                to="/login"
+                className="font-semibold text-zinc-900 no-underline underline-offset-4 transition hover:underline"
+              >
+                Back to sign in
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
+    </AuthLightPageSurface>
   )
 }

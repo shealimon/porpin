@@ -1,5 +1,10 @@
 /// <reference types="vite/client" />
 
+declare module "*.hbs?raw" {
+  const src: string;
+  export default src;
+}
+
 interface ImportMetaEnv {
   /** Public site URL for canonicals, JSON-LD, and OG (no trailing slash), e.g. https://www.porpin.com */
   readonly VITE_SITE_ORIGIN?: string

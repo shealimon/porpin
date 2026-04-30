@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Download } from 'lucide-react'
+import { ArrowLeft, Download } from 'lucide-react'
 import { estimatePaygInrWholeRupees } from '@/lib/paygPricing'
 import { cn } from '@/lib/utils'
 import { getGreetingPhrase } from '@/utils/greeting'
+import {
+  dashboardLabelForTranslationTarget,
+  readStoredTranslationTarget,
+} from '@/features/upload/sourceLang'
 
 /** Matches `FileInputBar` / billing copy (en-IN). */
 function formatInr(amount: number): string {
@@ -67,6 +71,7 @@ const FILE_BAR_CALLOUTS: {
   { align: 'center', label: 'Your file', sub: 'File name appears here' },
   { align: 'right', label: 'Start translation', sub: 'After you see the estimate' },
 ]
+const FILE_BAR_CALLOUTS_MOBILE = ['Add file', 'Your file', 'Start'] as const
 
 /** Same 3 column template as the file bar + arrow row: + · field · send (index.css, max-width: 639px). */
 const FILE_BAR_HINT_GRID = cn(
@@ -149,10 +154,10 @@ function MobileFileBarHintBlock() {
           <p
             className={cn(
               'font-semibold uppercase tracking-[0.12em] text-stone-800',
-              i === 1 ? 'text-[11px] tracking-[0.14em]' : 'text-[9px] leading-tight',
+              i === 1 ? 'text-[11px] tracking-[0.14em]' : 'text-[8px] leading-tight',
             )}
           >
-            {c.label}
+            {FILE_BAR_CALLOUTS_MOBILE[i]}
           </p>
         </div>
       ))}
@@ -207,6 +212,9 @@ export function LandingUploadPreview() {
   const chargeDisplay = formatInr(DEMO_CHARGE_INR)
   const reducedMotion = usePrefersReducedMotion()
   const [step, setStep] = useState(0)
+  const [translationTargetLabel, setTranslationTargetLabel] = useState<'Easy Hinglish' | 'Pure Hindi'>(
+    dashboardLabelForTranslationTarget(readStoredTranslationTarget()),
+  )
 
   useEffect(() => {
     if (reducedMotion) return
@@ -215,6 +223,13 @@ export function LandingUploadPreview() {
     }, STEP_MS)
     return () => window.clearInterval(id)
   }, [reducedMotion])
+
+  useEffect(() => {
+    const update = () => setTranslationTargetLabel(dashboardLabelForTranslationTarget(readStoredTranslationTarget()))
+    update()
+    window.addEventListener('storage', update)
+    return () => window.removeEventListener('storage', update)
+  }, [])
 
   const liveLabel = reducedMotion
     ? 'Preview: upload, estimate, translate, then download DOCX or PDF.'
@@ -241,7 +256,7 @@ export function LandingUploadPreview() {
 
   return (
     <div
-      className="landing-upload-preview relative z-[1] w-full min-w-0 max-w-full overflow-x-clip rounded-2xl border border-orange-200/80 bg-white p-4 shadow-[0_28px_64px_-20px_rgba(234,88,12,0.18),0_16px_40px_-24px_rgba(15,23,42,0.12)] ring-2 ring-orange-100/90 ring-offset-2 ring-offset-[#f6f4f1] xs:p-5 sm:rounded-[1.25rem] sm:p-8"
+      className="landing-upload-preview relative z-[1] w-full min-w-0 max-w-full overflow-x-visible rounded-2xl border border-orange-200/80 bg-white p-4 shadow-[0_28px_64px_-20px_rgba(234,88,12,0.18),0_16px_40px_-24px_rgba(15,23,42,0.12)] ring-2 ring-orange-100/90 ring-offset-2 ring-offset-[#f6f4f1] xs:p-5 sm:rounded-[1.25rem] sm:p-8"
       role="region"
       aria-label={liveLabel}
     >
@@ -270,11 +285,11 @@ export function LandingUploadPreview() {
                 How it runs
               </p>
               <div
-                className="flex max-w-full flex-wrap items-center justify-center gap-x-1 gap-y-1.5 px-0.5 sm:gap-x-2 sm:gap-y-2 sm:px-0"
+                className="mx-auto flex w-full min-w-0 max-w-[26rem] flex-wrap items-center justify-center gap-x-1 gap-y-1.5 px-1 sm:max-w-full sm:gap-x-2 sm:gap-y-2 sm:px-0"
                 aria-hidden
               >
                 {STEP_LABELS.map((label, i) => (
-                  <div key={label} className="flex min-w-0 items-center gap-1 sm:gap-2">
+                  <div key={label} className="flex min-w-0 max-w-full items-center gap-1 sm:gap-2">
                     {i > 0 ? (
                       <span className="shrink-0 text-orange-600/80" aria-hidden>
                         →
@@ -404,7 +419,7 @@ export function LandingUploadPreview() {
                       </div>
                       <div className="file-input-bar__field">
                         <span className="file-input-bar__filename text-center">
-                          Converting your document into natural Hinglish…
+                          Converting your document into {translationTargetLabel}…
                         </span>
                       </div>
                       <div className="file-input-bar__action file-input-bar__action--send" aria-hidden>
@@ -439,7 +454,7 @@ export function LandingUploadPreview() {
                   className={cn(
                     'flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out',
                     step === 2
-                      ? 'relative z-[2] min-h-[280px] opacity-100 sm:min-h-[300px]'
+                      ? 'relative z-[2] min-h-[360px] opacity-100 sm:min-h-[390px]'
                       : 'pointer-events-none absolute inset-0 z-0 opacity-0',
                   )}
                   aria-hidden={step !== 2}
@@ -457,32 +472,52 @@ export function LandingUploadPreview() {
 
 function DownloadDonePanel() {
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 px-1 pt-2">
-      <div className="text-center">
-        <p className="font-display text-lg font-normal tracking-tight text-stone-900 sm:text-xl">
-          Your Hinglish version is ready 🎉
+    <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-6 px-1 pt-2 sm:gap-7">
+      <div className="w-full text-center">
+        <p className="font-display text-[clamp(1.35rem,3.8vw,1.85rem)] font-normal leading-snug tracking-tight text-stone-900 sm:text-2xl">
+          Your translated version is ready 🎉
         </p>
-        <p className="mt-1 text-sm text-stone-700">Download your translated file below</p>
+        <p className="mt-3 font-sans text-sm leading-relaxed text-zinc-500">
+          Download your translated file below
+        </p>
       </div>
-      <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
+      <div className="flex w-full flex-col gap-5">
+        <p className="text-center font-sans text-sm font-normal text-zinc-500">Processing time: 1m 10s</p>
+        <div className="flex w-full flex-col items-center gap-2.5 sm:flex-row sm:items-stretch sm:justify-center sm:gap-3">
+          <span
+            className={cn(
+              'inline-flex h-9 w-full max-w-[18rem] min-w-0 shrink-0 items-center justify-center gap-2 rounded-lg border-0 px-4 text-[13px] font-semibold text-white shadow-md shadow-black/10 sm:h-10 sm:max-w-none sm:px-5 sm:text-sm',
+              'bg-brand-600 transition hover:bg-brand-700 hover:shadow-lg hover:shadow-black/15 active:scale-[0.98]',
+              'dark:bg-brand-600 dark:hover:bg-brand-500',
+              'sm:w-auto',
+            )}
+          >
+            <Download className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
+            Download PDF
+          </span>
+          <span
+            className={cn(
+              'inline-flex h-9 w-full max-w-[18rem] min-w-0 shrink-0 items-center justify-center gap-2 rounded-lg border-0 px-4 text-[13px] font-semibold text-white shadow-md shadow-black/10 sm:h-10 sm:max-w-none sm:px-5 sm:text-sm',
+              'bg-emerald-600 transition hover:bg-emerald-700 hover:shadow-lg hover:shadow-black/15 active:scale-[0.98]',
+              'dark:bg-emerald-500 dark:hover:bg-emerald-400',
+              'sm:w-auto',
+            )}
+          >
+            <Download className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
+            Download DOCX
+          </span>
+        </div>
+      </div>
+      <div className="flex w-full justify-center pt-1">
         <span
           className={cn(
-            'font-display inline-flex flex-1 items-center justify-center gap-2 rounded-xl border-0 px-4 py-3 text-sm font-normal tracking-tight',
-            'bg-[var(--text-h)] text-white shadow-md shadow-black/20',
-            'dark:bg-zinc-950 dark:shadow-black/40',
+            'inline-flex h-9 w-full max-w-[18rem] min-w-0 items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-zinc-100 px-4 text-[13px] font-semibold text-zinc-800 shadow-md shadow-black/10 sm:h-10 sm:w-auto sm:max-w-none sm:px-5 sm:text-sm',
+            'dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:shadow-black/15',
+            'transition hover:border-zinc-300 hover:bg-zinc-200/80 dark:hover:border-zinc-500 dark:hover:bg-zinc-700',
           )}
         >
-          <Download className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
-          Download PDF
-        </span>
-        <span
-          className={cn(
-            'font-display inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-sm',
-            'text-sm font-normal tracking-tight text-stone-800',
-          )}
-        >
-          <Download className="size-4 shrink-0 opacity-90" strokeWidth={2.25} aria-hidden />
-          Download DOCX
+          <ArrowLeft className="size-4 shrink-0 text-zinc-700 dark:text-zinc-200" strokeWidth={2.25} aria-hidden />
+          Back to upload
         </span>
       </div>
     </div>
