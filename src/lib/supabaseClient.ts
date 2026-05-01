@@ -3,9 +3,10 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 /** Where the next auth session write goes; read merges both storages. */
 const AUTH_SESSION_WRITE_TARGET_KEY = 'porpin-auth-session-write-target'
 
-/** Shown in auth UI when Vite has no Supabase env (or dev server not restarted after editing `.env`). */
-export const supabaseConfigMissingUserMessage =
-  'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in frontend/.env, then restart the dev server (Vite only loads these at startup).'
+/** Shown in auth UI when Supabase env was missing at build/dev startup. */
+export const supabaseConfigMissingUserMessage = import.meta.env.DEV
+  ? 'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in frontend/.env, then restart the dev server (Vite only loads these at startup).'
+  : 'Supabase env missing on this deployment. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to frontend/.env.production (and redeploy), or set them as build-time variables on your host (e.g. Vercel → Settings → Environment Variables).'
 
 function readEnv(): { url: string | undefined; anon: string | undefined } {
   return {
@@ -84,7 +85,9 @@ function getOrCreateClient(): SupabaseClient {
   if (!url || !anon) {
     // eslint-disable-next-line no-console -- dev configuration hint
     console.warn(
-      '[auth] VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are not set. Copy them from Supabase → Project Settings → API, save as frontend/.env, and restart Vite.',
+      import.meta.env.DEV
+        ? '[auth] VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are not set. Copy them from Supabase → Project Settings → API, save as frontend/.env, and restart Vite.'
+        : '[auth] VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY were empty at build time. Add frontend/.env.production or set these on your CI/host, then redeploy.',
     )
     throw new Error(supabaseConfigMissingUserMessage)
   }
