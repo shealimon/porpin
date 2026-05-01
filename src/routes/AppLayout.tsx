@@ -129,12 +129,19 @@ export function AppLayout() {
   }, [navigate])
 
   return (
-    <div className="manus-app-shell flex h-svh max-h-svh min-h-0 flex-col overflow-hidden font-sans text-[0.9375rem] antialiased tab:text-base">
+    <div
+      className={cn(
+        'manus-app-shell flex h-svh max-h-svh min-h-0 flex-col overflow-hidden font-sans text-[0.9375rem] antialiased tab:text-base',
+        isUploadRoute && 'manus-app-shell--upload-chat-mobile',
+      )}
+    >
       <header
         className={cn(
           'relative z-[110] flex min-h-[3.25rem] shrink-0 items-center justify-between gap-2 border-b border-sidebar-border bg-[var(--manus-canvas)]',
           /* Match main pane: same horizontal gutter on both sides (avoids lopsided header on mobile) */
           'px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] pt-[max(0px,env(safe-area-inset-top))]',
+          isUploadRoute &&
+            'upload-chat-mobile-header border-zinc-200/85 desk:border-sidebar-border desk:bg-[var(--manus-canvas)]',
         )}
       >
         <div className="flex min-w-0 flex-1 items-center">
@@ -156,7 +163,16 @@ export function AppLayout() {
             <PorpinWordmark className="truncate" />
           </Link>
         </div>
-        <div ref={menuSurfaceRef} className="relative flex shrink-0 items-center gap-1">
+
+        <div
+          ref={menuSurfaceRef}
+          className={cn(
+            'relative flex items-center gap-1',
+            isUploadRoute
+              ? 'min-h-[44px] flex-1 justify-end gap-1 desk:min-h-0 desk:flex-initial desk:shrink-0 desk:justify-end'
+              : 'shrink-0',
+          )}
+        >
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
@@ -424,7 +440,7 @@ export function AppLayout() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--manus-canvas)]">
         <div
           className={cn(
-            'app-main-scroll font-outfit mx-auto flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain py-6 text-zinc-900 antialiased dark:text-zinc-50',
+            'app-main-scroll font-outfit mx-auto flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain text-zinc-900 antialiased dark:text-zinc-50',
             /* Upload: full-width scroll area (matches narrow viewport); other routes: centered max width */
             isUploadRoute ? 'max-w-none' : 'max-w-5xl',
             isHiddenScrollbarMainRoute && [
@@ -434,8 +450,9 @@ export function AppLayout() {
               '[&::-webkit-scrollbar]:hidden',
             ],
             /* Single px using max of both safe insets so left/right gutters match on narrow viewports */
-            'px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))]',
-            'sm:px-6 sm:py-8',
+            'px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))]',
+            'sm:px-6',
+            isUploadRoute ? 'py-3 sm:py-4 desk:py-6 desk:sm:py-8' : 'py-6 sm:py-8',
           )}
           style={
             isHiddenScrollbarMainRoute

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { X } from 'lucide-react'
 
 import { PorpinMark } from '@/components/brand/PorpinMark'
 import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
@@ -10,6 +10,7 @@ import {
   publicNavInactiveClass,
   publicNavSignupClass,
 } from '@/lib/publicHeaderNavStyles'
+import { PublicNavHamburgerGlyph } from '@/components/public-nav/PublicNavHamburgerGlyph'
 
 function normalizePublicPath(pathname: string) {
   const trimmed = pathname.replace(/\/index\.html$/i, '')
@@ -90,30 +91,73 @@ export function PublicLayout() {
     'border-zinc-900 bg-zinc-900 font-semibold text-white hover:bg-zinc-800 hover:text-white',
   )
 
+  /** Light marketing mobile: floating card below header (Littlebird-style: plain links, no CTA fill). */
+  const lightMobileDropdownRow = cn(
+    'flex min-h-[3.5rem] w-full min-w-0 items-center rounded-2xl px-6 py-[1.0625rem] text-left font-outfit text-lg font-medium leading-snug tracking-normal text-stone-800 antialiased no-underline transition-colors',
+    'hover:text-stone-950 active:bg-stone-100/35',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/30 focus-visible:ring-inset focus-visible:rounded-2xl',
+  )
+  const lightMobileDropdownRowActive = cn(lightMobileDropdownRow, 'font-semibold text-stone-950')
+
+  const headerLightMobilePill = onLightMarketing
+  const mobileMenuId = headerLightMobilePill ? 'public-nav-menu-sheet' : 'public-nav-drawer'
+
   return (
     <div
       data-public-shell={onLightMarketing ? 'voltix-marketing-light' : 'voltix-marketing-dark'}
-      className="flex min-h-svh min-w-0 flex-col overflow-x-clip bg-background font-outfit text-[0.9375rem] text-foreground antialiased tab:text-base"
+      className={cn(
+        'flex min-h-svh min-w-0 flex-col bg-background font-outfit text-[0.9375rem] text-foreground antialiased tab:text-base',
+        onLightMarketing ? 'overflow-x-visible' : 'overflow-x-clip',
+      )}
     >
-      <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex max-w-6xl min-w-0 items-center justify-between gap-3 px-4 py-3 tab:px-6 tab:py-4">
+      <header
+        className={cn(
+          'sticky top-0 z-50 overflow-visible',
+          headerLightMobilePill
+            ? 'border-0 bg-transparent supports-[backdrop-filter]:bg-transparent desk:border-b desk:border-border desk:bg-background/90 desk:backdrop-blur-xl supports-[backdrop-filter]:desk:bg-background/80'
+            : 'border-b border-border bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80',
+        )}
+      >
+        <div
+          ref={menuSurfaceRef}
+          className={cn(
+            'mx-auto flex w-full min-w-0 max-w-6xl',
+            headerLightMobilePill
+              ? 'relative flex-col items-stretch overflow-visible px-4 pt-4 pb-2 tab:px-6 desk:flex-row desk:items-center desk:justify-between desk:gap-3 desk:overflow-visible desk:px-6 desk:py-4 desk:pt-3 desk:pb-2'
+              : 'items-center justify-between gap-3 px-4 py-3 tab:px-6 tab:py-4',
+          )}
+        >
+          <div
+            className={cn(
+              headerLightMobilePill
+                ? 'relative w-full min-w-0 desk:contents'
+                : 'contents',
+            )}
+          >
+            <div
+              className={cn(
+                headerLightMobilePill
+                  ? 'box-border flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-visible rounded-full border border-stone-200/80 bg-[#faf9f7] px-4 py-3 shadow-[0_6px_24px_-8px_rgba(28,25,23,0.12),0_2px_8px_-4px_rgba(28,25,23,0.06)] tab:gap-3 tab:px-5 tab:py-3.5 desk:contents desk:w-auto desk:gap-3 desk:overflow-visible desk:border-0 desk:bg-transparent desk:p-0 desk:shadow-none desk:backdrop-blur-none'
+                  : 'contents',
+              )}
+            >
           <Link
             to="/"
             onClick={onHomeLogoClick}
             className={cn(
-              'group relative flex min-w-0 max-w-[min(100%,14rem)] shrink-0 items-center gap-2.5 no-underline transition duration-200',
+              'group relative flex min-w-0 max-w-[min(100%,14rem)] shrink items-center gap-2 no-underline transition duration-200 sm:gap-2.5',
+              'overflow-hidden desk:shrink-0',
               'hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               'active:scale-[0.97]',
               onLightMarketing ? 'text-zinc-950' : 'text-white',
+              headerLightMobilePill && 'focus-visible:ring-stone-400/35 focus-visible:ring-offset-[#faf9f7]',
             )}
             aria-label="Porpin home"
           >
             <span className="relative flex size-10 shrink-0 items-center justify-center">
               <PorpinMark className="size-full" aria-hidden />
             </span>
-            {onLanding ? (
-              <PorpinWordmark />
-            ) : null}
+            {onLanding ? <PorpinWordmark className="min-w-0 truncate" /> : null}
           </Link>
 
           <nav
@@ -148,22 +192,42 @@ export function PublicLayout() {
             </Link>
           </nav>
 
-          <div ref={menuSurfaceRef} className="relative flex shrink-0 desk:hidden">
+          <div
+            className={cn(
+              'relative z-[2] flex shrink-0 items-center justify-center desk:hidden',
+            )}
+          >
             <button
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
               className={cn(
-                'inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/90 text-foreground transition',
-                'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                'inline-flex shrink-0 items-center justify-center overflow-visible text-foreground transition',
+                'border-0 bg-transparent shadow-none [appearance:button] outline-none',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
+                headerLightMobilePill
+                  ? menuOpen
+                    ? 'min-h-11 min-w-11 items-center justify-center text-stone-950 hover:bg-stone-200/25 focus-visible:ring-stone-400/40'
+                    : 'min-h-11 min-w-11 items-center justify-center px-1 text-stone-950 hover:bg-stone-200/25 focus-visible:ring-stone-400/40 tab:px-1.5'
+                  : 'min-h-11 min-w-11 rounded-full border border-border bg-background/90 px-0 hover:bg-muted',
               )}
               aria-expanded={menuOpen}
-              aria-controls="public-nav-drawer"
+              aria-controls={mobileMenuId}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             >
-              {menuOpen ? <X className="size-5 shrink-0" aria-hidden /> : <Menu className="size-5 shrink-0" aria-hidden />}
+              {headerLightMobilePill ? (
+                <PublicNavHamburgerGlyph />
+              ) : menuOpen ? (
+                <X
+                  className="size-5 shrink-0 text-zinc-50"
+                  strokeWidth={2.25}
+                  aria-hidden
+                />
+              ) : (
+                <PublicNavHamburgerGlyph darkBg />
+              )}
             </button>
 
-            {menuOpen ? (
+            {menuOpen && !headerLightMobilePill ? (
               <>
                 <button
                   type="button"
@@ -232,9 +296,72 @@ export function PublicLayout() {
               </>
             ) : null}
           </div>
+            </div>
+
+            {menuOpen && headerLightMobilePill ? (
+              <>
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  aria-hidden
+                  className="fixed inset-0 z-[80] bg-black/35"
+                  onClick={closeMenu}
+                />
+                <div
+                  id="public-nav-menu-sheet"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Site navigation"
+                  className={cn(
+                    'fixed z-[90] box-border max-h-[min(75dvh,calc(100dvh-7rem))] min-w-0 overflow-y-auto overscroll-contain',
+                    'left-4 right-4 w-auto max-w-none tab:left-6 tab:right-6',
+                    'top-[calc(env(safe-area-inset-top,0px)+1rem+4.5rem+0.5rem)]',
+                    'desk:hidden',
+                  )}
+                >
+                  <div className="box-border w-full max-w-none rounded-[1.35rem] border border-stone-200/25 bg-[#fefdfb] p-2 shadow-[0_10px_40px_-12px_rgba(28,25,23,0.18),0_4px_16px_-8px_rgba(28,25,23,0.08)]">
+                    <nav
+                      className="flex w-full min-w-0 flex-col gap-0.5"
+                      aria-label="Marketing mobile menu"
+                    >
+                      <Link
+                        to="/#pricing"
+                        className={onPricing ? lightMobileDropdownRowActive : lightMobileDropdownRow}
+                        aria-current={onPricing ? 'page' : undefined}
+                        onClick={closeMenu}
+                      >
+                        Pricing
+                      </Link>
+                      <Link
+                        to="/login"
+                        className={loginNavActive ? lightMobileDropdownRowActive : lightMobileDropdownRow}
+                        aria-current={onLogin ? 'page' : undefined}
+                        onClick={closeMenu}
+                      >
+                        Log in
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className={onSignup ? lightMobileDropdownRowActive : lightMobileDropdownRow}
+                        aria-current={onSignup ? 'page' : undefined}
+                        onClick={closeMenu}
+                      >
+                        Sign up
+                      </Link>
+                    </nav>
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
       </header>
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip">
+      <main
+        className={cn(
+          'flex min-h-0 min-w-0 flex-1 flex-col',
+          onLightMarketing ? 'overflow-x-visible' : 'overflow-x-clip',
+        )}
+      >
         <Outlet />
       </main>
     </div>

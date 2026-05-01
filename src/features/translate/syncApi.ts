@@ -1,3 +1,5 @@
+import { resolveBackendAxiosBaseUrl } from '@/api/viteDevProxy'
+
 /**
  * Direct sync translation against FastAPI POST /translate (no job queue).
  */
@@ -5,7 +7,7 @@ export type TranslateExportFormat = 'docx' | 'pdf' | 'both'
 
 /** Empty string = same origin (Vite proxy to backend in dev). */
 function apiBase(): string {
-  return import.meta.env.VITE_BACKEND_ORIGIN?.replace(/\/$/, '') ?? ''
+  return resolveBackendAxiosBaseUrl()
 }
 
 export async function postTranslateSync(

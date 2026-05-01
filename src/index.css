@@ -1271,36 +1271,47 @@ code {
   box-sizing: border-box;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 768px) {
+  /* Larger touch-friendly composer on upload home; fills column (parent already handles safe-area padding). */
   .dashboard-home .file-input-bar {
-    gap: 0.35rem;
-    padding: 0.45rem 0.4rem;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    gap: 0.5rem;
+    padding: 0.7rem 0.85rem;
+    box-sizing: border-box;
   }
 
-  /* ~44px touch targets (accessibility) */
   .dashboard-home .file-input-bar__action {
-    width: 2.75rem;
-    height: 2.75rem;
-    min-width: 2.75rem;
-    min-height: 2.75rem;
+    width: 3.125rem;
+    height: 3.125rem;
+    min-width: 3.125rem;
+    min-height: 3.125rem;
+  }
+
+  .dashboard-home .file-input-bar__action--plus svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .dashboard-home .file-input-bar__action--send svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .dashboard-home .file-input-bar__action .file-input-bar__spinner {
+    width: 1.28rem;
+    height: 1.28rem;
   }
 
   .dashboard-home .file-input-bar__field {
-    padding: 0.5rem 0.45rem;
-    min-height: 2.75rem;
+    padding: 0.65rem 0.55rem;
+    min-height: 3.25rem;
   }
 
   .dashboard-home .file-input-bar__field:has(.file-input-bar__placeholder) {
     min-height: auto;
-    padding-block: 0.55rem;
-  }
-
-  .dashboard-home .file-input-bar__placeholder {
-    font-size: 0.8125rem;
-    line-height: 1.35;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    hyphens: auto;
+    padding-block: 0.72rem;
   }
 }
 
@@ -1317,6 +1328,49 @@ code {
   box-shadow:
     0 0 0 3px var(--primary-soft),
     0 12px 32px -8px var(--primary-glow);
+}
+
+.dashboard-home .file-input-bar-composer {
+  max-width: 42rem;
+  width: min(42rem, calc(100vw - 2rem));
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .dashboard-home .file-input-bar-composer {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-inline: 0;
+    box-sizing: border-box;
+  }
+}
+
+.dashboard-home .upload-home__composer-chips {
+  width: 100%;
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+@media (max-width: 768px) {
+  .dashboard-home .upload-home__composer-chips {
+    max-width: 100%;
+    justify-content: center;
+  }
+}
+
+.dashboard-home .upload-home__composer-chips .file-input-bar__source-chip {
+  padding-block: 0.32rem;
+  padding-inline: 0.8rem;
+  font-size: 0.8125rem;
+  letter-spacing: -0.018em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dashboard-home .upload-home__composer-chips .file-input-bar__source-chip:not(.file-input-bar__source-chip--active) {
+    background: rgb(9 9 11 / 0.72);
+  }
 }
 
 .dashboard-home .file-input-bar__field {
@@ -1345,6 +1399,20 @@ code {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .dashboard-home .file-input-bar__placeholder {
+    font-size: 1rem;
+    line-height: 1.45;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+
+  .dashboard-home .file-input-bar__filename {
+    font-size: 1rem;
+  }
 }
 
 .dashboard-home .file-input-bar__estimate-card {
@@ -1430,14 +1498,14 @@ code {
 
 .dashboard-home:has(.file-input-bar__estimate-card) .dashboard-home__lede {
   margin-top: 0.375rem;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   line-height: 1.45;
 }
 
 @media (min-width: 640px) {
   .dashboard-home:has(.file-input-bar__estimate-card) .dashboard-home__lede {
     margin-top: 0.5rem;
-    font-size: 0.9375rem;
+    font-size: 1rem;
   }
 }
 
@@ -1447,6 +1515,33 @@ code {
 
 .dashboard-home:has(.file-input-bar__estimate-card) .dashboard-job-panel {
   margin-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  /*
+   * While uploading / estimating / billing: hero must keep its natural height (flex-basis auto,
+   * flex-shrink 0). Otherwise flex-1 + min-h-0 lets the greeting shrink under the pill bar.
+   */
+  .dashboard-home:has(.file-input-bar__estimate-card) .dashboard-home__mobile-upload-hero,
+  .dashboard-home:has(.file-input-bar__upload-progress) .dashboard-home__mobile-upload-hero,
+  .dashboard-home:has(.file-input-bar--busy) .dashboard-home__mobile-upload-hero {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    padding-top: 0.35rem;
+    padding-bottom: 0;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Same as mobile: keep greeting + lede visible when the bottom composer grows (estimate, progress). */
+  .dashboard-home:has(.file-input-bar__estimate-card) .dashboard-home__hero,
+  .dashboard-home:has(.file-input-bar__upload-progress) .dashboard-home__hero,
+  .dashboard-home:has(.file-input-bar--busy) .dashboard-home__hero {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    padding-top: 0.35rem;
+    padding-bottom: 0;
+  }
 }
 
 .file-input-bar__action {
@@ -1905,6 +2000,20 @@ code {
     --sidebar-accent-foreground: #fafafa;
     --sidebar-border: rgba(255, 255, 255, 0.1);
     --sidebar-ring: #fafafa;
+  }
+}
+
+@media (max-width: 768px) {
+  .manus-app-shell--upload-chat-mobile {
+    --manus-canvas: #f9f7f2;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @media (max-width: 768px) {
+    .manus-app-shell--upload-chat-mobile {
+      --manus-canvas: #09090b;
+    }
   }
 }
 

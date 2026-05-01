@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
+import { resolveBackendAxiosBaseUrl } from './viteDevProxy'
 import { normalizeAxiosError } from './axiosError'
 
 /**
@@ -23,8 +24,8 @@ export function getConfiguredBackendOrigin(): string {
   )
 }
 
-/** Same origin + Vite proxy in dev / preview, or full origin in production. */
-const baseURL = getConfiguredBackendOrigin()
+/** Same origin + Vite proxy in dev when env points at a remote host; else full origin. */
+const baseURL = resolveBackendAxiosBaseUrl()
 
 export const backendClient = axios.create({
   baseURL,

@@ -36,6 +36,15 @@ export function getGreetingPhrase(date: Date = new Date()): string {
   return 'Good night'
 }
 
+/** Short leading word for compact UI (e.g. Claude-style “Evening, Alex”). */
+export function getCompactGreetingLead(date: Date = new Date()): string {
+  const h = date.getHours()
+  if (h >= 5 && h < 12) return 'Morning'
+  if (h >= 12 && h < 17) return 'Afternoon'
+  if (h >= 17 && h < 21) return 'Evening'
+  return 'Night'
+}
+
 function firstWord(name: string): string {
   const t = name.trim()
   if (!t) return ''

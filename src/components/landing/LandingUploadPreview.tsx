@@ -269,8 +269,8 @@ export function LandingUploadPreview() {
           {greeting}
         </h2>
         <div className="mx-auto mt-2 max-w-[26rem] space-y-1 text-center text-sm leading-relaxed text-stone-700 sm:text-[0.9375rem]">
-          <p className="mb-0">Upload your file to get instant word count & price</p>
-          <p className="mb-0">Translate when you're ready</p>
+          <p className="mb-0">Add any file - instant word count & price.</p>
+          <p className="mb-0">Convert when you're ready</p>
         </div>
 
         <div className="relative mt-8 w-full sm:mt-10">

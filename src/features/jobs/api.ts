@@ -1,5 +1,10 @@
 import axios from 'axios'
 
+import { backendClient } from '@/api/backendClient'
+import { normalizeAxiosError } from '@/api/axiosError'
+import { resolveBackendAxiosBaseUrl } from '@/api/viteDevProxy'
+import { downloadBlob } from '@/features/translate/syncApi'
+
 /** Response from `POST /job/confirm` (breakdown may include billing fields from backend). */
 export type JobConfirmResponse = {
   ok: boolean
@@ -7,9 +12,6 @@ export type JobConfirmResponse = {
   amount_to_pay?: number
   [key: string]: unknown
 }
-import { backendClient } from '@/api/backendClient'
-import { normalizeAxiosError } from '@/api/axiosError'
-import { downloadBlob } from '@/features/translate/syncApi'
 
 export type JobDetailDto = {
   job_id: string
@@ -113,7 +115,7 @@ export function mapMilestoneJob(d: JobDetailDto): MilestoneJob {
 
 /** Matches backend ``translation_download_url_prefix`` default: ``/api/translation-outputs``. */
 function translationOutputsBaseUrl(): string {
-  const origin = import.meta.env.VITE_BACKEND_ORIGIN?.replace(/\/$/, '') ?? ''
+  const origin = resolveBackendAxiosBaseUrl()
   const path = '/api/translation-outputs'
   return origin ? `${origin}${path}` : path
 }

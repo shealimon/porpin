@@ -1,5 +1,9 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
+import {
+  devShouldUseViteProxy,
+  isLoopbackHttpOrigin,
+} from './viteDevProxy'
 import { normalizeAxiosError } from './axiosError'
 
 /**
@@ -10,10 +14,22 @@ import { normalizeAxiosError } from './axiosError'
  */
 export function resolvePublicApiBaseUrl(): string {
   const explicit = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '').trim()
-  if (explicit.length > 0) return explicit
-  const backend = (import.meta.env.VITE_BACKEND_ORIGIN ?? '').replace(/\/$/, '').trim()
-  if (backend.length > 0) return `${backend}/api`
-  return '/api'
+  let resolved: string
+  if (explicit.length > 0) resolved = explicit
+  else {
+    const backend = (import.meta.env.VITE_BACKEND_ORIGIN ?? '').replace(/\/$/, '').trim()
+    if (backend.length > 0) resolved = `${backend}/api`
+    else resolved = '/api'
+  }
+  if (
+    devShouldUseViteProxy() &&
+    resolved.length > 0 &&
+    /^https?:\/\//i.test(resolved) &&
+    !isLoopbackHttpOrigin(resolved)
+  ) {
+    return '/api'
+  }
+  return resolved
 }
 
 const baseURL = resolvePublicApiBaseUrl()

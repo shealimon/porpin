@@ -4,7 +4,8 @@ import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 
-const backendTarget = 'http://40.192.24.109'
+/** Local FastAPI from `npm run dev` / `dev:api` — not the production VM (that path uses vercel.json rewrites). */
+const defaultDevProxyTarget = 'http://127.0.0.1:8000'
 
 /** Pooled keep-alive to the API reduces stray ECONNRESET during dev (Node proxy ↔ uvicorn). */
 const backendProxyAgent = new http.Agent({
@@ -18,6 +19,12 @@ const projectRoot = fileURLToPath(new URL('.', import.meta.url))
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const v = loadEnv(mode, projectRoot, 'VITE_')
+  const envFiles = loadEnv(mode, projectRoot, '')
+  const devProxyTarget = (
+    envFiles.DEV_PROXY_TARGET?.trim() ||
+    envFiles.VITE_DEV_PROXY_TARGET?.trim() ||
+    defaultDevProxyTarget
+  ).replace(/\/$/, '')
   const supabaseUrl = (v.VITE_SUPABASE_URL ?? '').trim()
   const supabaseAnon = (v.VITE_SUPABASE_ANON_KEY ?? '').trim()
   const backendOrigin = (v.VITE_BACKEND_ORIGIN ?? '').trim()
@@ -47,42 +54,42 @@ export default defineConfig(({ mode }) => {
   /** Same as dev: without this, `vite preview` serves `/api/*` as static 404. */
   const devLikeProxy: Record<string, import('vite').ProxyOptions> = {
     '/api': {
-      target: backendTarget,
+      target: devProxyTarget,
       changeOrigin: true,
       agent: backendProxyAgent,
       timeout: 120_000,
       proxyTimeout: 120_000,
     },
     '/upload': {
-      target: backendTarget,
+      target: devProxyTarget,
       changeOrigin: true,
       agent: backendProxyAgent,
       timeout: 120_000,
       proxyTimeout: 120_000,
     },
     '/job': {
-      target: backendTarget,
+      target: devProxyTarget,
       changeOrigin: true,
       agent: backendProxyAgent,
       timeout: 120_000,
       proxyTimeout: 120_000,
     },
     '/translate': {
-      target: backendTarget,
+      target: devProxyTarget,
       changeOrigin: true,
       agent: backendProxyAgent,
       timeout: 600_000,
       proxyTimeout: 600_000,
     },
     '/jobs': {
-      target: backendTarget,
+      target: devProxyTarget,
       changeOrigin: true,
       agent: backendProxyAgent,
       timeout: 120_000,
       proxyTimeout: 120_000,
     },
     '/download': {
-      target: backendTarget,
+      target: devProxyTarget,
       changeOrigin: true,
       agent: backendProxyAgent,
       timeout: 120_000,

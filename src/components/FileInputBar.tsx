@@ -76,12 +76,18 @@ type FileInputBarProps = {
   top?: ReactNode
   /** Classes for the outer drop target (e.g. dashboard inner width wrapper). */
   dropTargetClassName?: string
+  /** Extra classes on the pill / chips / estimate column (e.g. mobile bottom anchoring). */
+  uploadStackClassName?: string
+  /** Large bordered composer card + chips like Claude.ai new chat (dashboard upload only). */
+  composerStyle?: boolean
 }
 
 export function FileInputBar({
   onWorkingFileChange,
   top,
   dropTargetClassName,
+  uploadStackClassName,
+  composerStyle = false,
 }: FileInputBarProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
@@ -416,114 +422,231 @@ export function FileInputBar({
         className={cn(
           'dashboard-home__upload-stack relative mt-7 w-full min-w-0 sm:mt-11',
           'has-[.file-input-bar__estimate-card]:mt-4 has-[.file-input-bar__estimate-card]:sm:mt-7',
+          composerStyle && '!mt-5 sm:!mt-7',
+          uploadStackClassName,
         )}
       >
-        <div
-          className={cn(
-            'pointer-events-none absolute -inset-px rounded-[calc(999px+4px)] opacity-90',
-            'bg-gradient-to-b from-amber-100/35 via-violet-50/15 to-transparent',
-            'dark:from-amber-950/25 dark:via-violet-950/10 dark:to-transparent',
-          )}
-          aria-hidden
-        />
+        {!composerStyle ? (
+          <div
+            className="pointer-events-none absolute -inset-px rounded-[calc(999px+4px)] bg-gradient-to-b from-amber-100/35 via-violet-50/15 to-transparent opacity-90 dark:from-amber-950/25 dark:via-violet-950/10 dark:to-transparent"
+            aria-hidden
+          />
+        ) : null}
         <div className="relative w-full">
-          <div className="file-input-bar-stack">
-        <div
-          className={`file-input-bar${isDragActive ? ' file-input-bar--drag' : ''}${waitingForEstimate ? ' file-input-bar--busy' : ''}`}
-        >
-          <Tooltip>
-            <TooltipTrigger
-              nativeButton={false}
-              render={
-                <span className="inline-flex shrink-0 rounded-full">
-                  <button
-                    type="button"
-                    className="file-input-bar__action file-input-bar__action--plus"
-                    aria-label="Add file"
-                    disabled={waitingForEstimate}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      fileInputRef.current?.click()
-                    }}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <path
-                        d="M12 5v14M5 12h14"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                </span>
-              }
-            />
-            <TooltipContent side="top" align="center">
-              {uploadTooltipText}
-            </TooltipContent>
-          </Tooltip>
-
-          <div className="file-input-bar__field" title={file?.name}>
-            <span
-              className={
-                file
-                  ? 'file-input-bar__filename'
-                  : 'file-input-bar__placeholder'
-              }
-            >
-              {waitingForEstimate && file
-                ? 'Calculating estimate…'
-                : file
-                  ? file.name
-                  : 'Drag & drop a file here, or use + to browse'}
-            </span>
-          </div>
-
-          <Tooltip>
-            <TooltipTrigger
-              nativeButton={false}
-              render={
-                <span className="inline-flex shrink-0 rounded-full">
-                  <button
-                    type="button"
-                    className={`file-input-bar__action file-input-bar__action--send${canStart ? ' file-input-bar__action--send-active' : ''}`}
-                    aria-label={
-                      estimate
-                        ? needsPayAck
-                          ? 'Pay & Start'
-                          : 'Start'
-                        : error
-                          ? 'Retry estimate'
-                          : 'Waiting for estimate'
-                    }
-                    disabled={rightDisabled}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onRightAction()
-                    }}
-                  >
-                    {showRightSpinner ? (
-                      <span className="file-input-bar__spinner" aria-hidden />
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path
-                          d="M5 12h14M13 6l6 6-6 6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+          <div className={cn('file-input-bar-stack', composerStyle && '!gap-5 sm:!gap-6')}>
+            {composerStyle ? (
+              <div
+                className={cn(
+                  'file-input-bar-composer outline-none ring-1 ring-black/[0.04] transition-[border-color,box-shadow,opacity] dark:ring-white/[0.045]',
+                  'w-full overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_2px_8px_-2px_rgba(15,23,42,.08),0_8px_28px_-8px_rgba(15,23,42,.1)]',
+                  'dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-[0_1px_0_rgba(255,255,255,.04)_inset,0_16px_40px_-16px_rgba(0,0,0,.55)]',
+                  isDragActive &&
+                    'border-brand-400/65 ring-brand-400/35 shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary-soft)_80%,transparent)] dark:border-brand-500/55',
+                  waitingForEstimate && 'file-input-bar--busy opacity-[0.97]',
+                  isDragActive && 'file-input-bar--drag',
+                )}
+              >
+                <div className="min-h-[4.375rem] px-4 pb-2 pt-3.5 text-left sm:min-h-[5.125rem] sm:px-5 sm:pb-3 sm:pt-4">
+                  <p
+                    className={cn(
+                      'line-clamp-4 text-[0.9375rem] leading-snug sm:text-base sm:leading-normal',
+                      file
+                        ? 'font-medium text-zinc-900 dark:text-zinc-100'
+                        : 'font-normal text-zinc-400 dark:text-zinc-500',
                     )}
-                  </button>
-                </span>
-              }
-            />
-            <TooltipContent side="top" align="center">
-              {startActionTooltipText}
-            </TooltipContent>
-          </Tooltip>
-        </div>
+                    title={file?.name}
+                  >
+                    {waitingForEstimate && file
+                      ? 'Calculating estimate…'
+                      : file
+                        ? file.name
+                        : 'Upload a document to translate — PDF, DOCX, TXT, EPUB, or Markdown.'}
+                  </p>
+                  {!file ? (
+                    <p className="mt-2 text-xs leading-relaxed text-zinc-400 dark:text-zinc-500">
+                      Drag and drop here, or use the + button to browse.
+                    </p>
+                  ) : null}
+                </div>
+                <div className="flex items-center gap-2 border-t border-zinc-200/80 px-3 py-2.5 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-900/50">
+                  <Tooltip>
+                    <TooltipTrigger
+                      nativeButton={false}
+                      render={
+                        <span className="inline-flex shrink-0 rounded-full">
+                          <button
+                            type="button"
+                            className="file-input-bar__action file-input-bar__action--plus"
+                            aria-label="Add file"
+                            disabled={waitingForEstimate}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              fileInputRef.current?.click()
+                            }}
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                              <path
+                                d="M12 5v14M5 12h14"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          </button>
+                        </span>
+                      }
+                    />
+                    <TooltipContent side="top" align="center">
+                      {uploadTooltipText}
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="min-w-0 flex-1 text-right">
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                      {estimate ? 'Ready' : file ? 'Estimate' : 'New upload'}
+                    </span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger
+                      nativeButton={false}
+                      render={
+                        <span className="inline-flex shrink-0 rounded-full">
+                          <button
+                            type="button"
+                            className={`file-input-bar__action file-input-bar__action--send${canStart ? ' file-input-bar__action--send-active' : ''}`}
+                            aria-label={
+                              estimate
+                                ? needsPayAck
+                                  ? 'Pay & Start'
+                                  : 'Start'
+                                : error
+                                  ? 'Retry estimate'
+                                  : 'Waiting for estimate'
+                            }
+                            disabled={rightDisabled}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onRightAction()
+                            }}
+                          >
+                            {showRightSpinner ? (
+                              <span className="file-input-bar__spinner" aria-hidden />
+                            ) : (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                                <path
+                                  d="M5 12h14M13 6l6 6-6 6"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        </span>
+                      }
+                    />
+                    <TooltipContent side="top" align="center">
+                      {startActionTooltipText}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            ) : (
+              <div
+                className={`file-input-bar${isDragActive ? ' file-input-bar--drag' : ''}${waitingForEstimate ? ' file-input-bar--busy' : ''}`}
+              >
+                <Tooltip>
+                  <TooltipTrigger
+                    nativeButton={false}
+                    render={
+                      <span className="inline-flex shrink-0 rounded-full">
+                        <button
+                          type="button"
+                          className="file-input-bar__action file-input-bar__action--plus"
+                          aria-label="Add file"
+                          disabled={waitingForEstimate}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            fileInputRef.current?.click()
+                          }}
+                        >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                            <path
+                              d="M12 5v14M5 12h14"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        </button>
+                      </span>
+                    }
+                  />
+                  <TooltipContent side="top" align="center">
+                    {uploadTooltipText}
+                  </TooltipContent>
+                </Tooltip>
+
+                <div className="file-input-bar__field" title={file?.name}>
+                  <span
+                    className={
+                      file ? 'file-input-bar__filename' : 'file-input-bar__placeholder'
+                    }
+                  >
+                    {waitingForEstimate && file
+                      ? 'Calculating estimate…'
+                      : file
+                        ? file.name
+                        : 'Drag & drop a file here, or use + to browse'}
+                  </span>
+                </div>
+
+                <Tooltip>
+                  <TooltipTrigger
+                    nativeButton={false}
+                    render={
+                      <span className="inline-flex shrink-0 rounded-full">
+                        <button
+                          type="button"
+                          className={`file-input-bar__action file-input-bar__action--send${canStart ? ' file-input-bar__action--send-active' : ''}`}
+                          aria-label={
+                            estimate
+                              ? needsPayAck
+                                ? 'Pay & Start'
+                                : 'Start'
+                              : error
+                                ? 'Retry estimate'
+                                : 'Waiting for estimate'
+                          }
+                          disabled={rightDisabled}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onRightAction()
+                          }}
+                        >
+                          {showRightSpinner ? (
+                            <span className="file-input-bar__spinner" aria-hidden />
+                          ) : (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                              <path
+                                d="M5 12h14M13 6l6 6-6 6"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      </span>
+                    }
+                  />
+                  <TooltipContent side="top" align="center">
+                    {startActionTooltipText}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
 
       {uploadUi && !estimate ? (
         <div
@@ -559,6 +682,10 @@ export function FileInputBar({
         value={translationTarget}
         onChange={onTranslationTargetChange}
         disabled={waitingForEstimate}
+        className={cn(
+          'file-input-bar__source-row',
+          composerStyle && 'upload-home__composer-chips',
+        )}
       />
 
       {estimate && (

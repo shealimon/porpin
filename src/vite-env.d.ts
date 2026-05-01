@@ -15,6 +15,11 @@ interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string
   /** Full backend origin for /upload and /job when not using Vite proxy, e.g. http://127.0.0.1:8000 */
   readonly VITE_BACKEND_ORIGIN?: string
+  /**
+   * Dev only: when `true` (default), remote `VITE_BACKEND_ORIGIN` is ignored and requests use
+   * same-origin paths so Vite's server.proxy reaches local uvicorn. Set to `false` to hit `.env` API from the browser.
+   */
+  readonly VITE_DEV_USE_VITE_PROXY?: string
   /** Razorpay Key ID (public) for Standard Checkout — must match RAZORPAY_KEY_ID on the API */
   readonly VITE_RAZORPAY_KEY_ID?: string
   /** Optional greeting name, e.g. `VITE_USER_DISPLAY_NAME=Alex` */

@@ -19,8 +19,9 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
   return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
 }
 
-/** Base UI forwards `nativeButton` with `render` at runtime; package types omit it on Trigger. */
+/** Wraps Base UI Trigger; strips `nativeButton` so it is never forwarded onto a DOM node (React warning). */
 function TooltipTrigger({
+  nativeButton: _nativeButton,
   ...props
 }: TooltipPrimitive.Trigger.Props & { nativeButton?: boolean }) {
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
