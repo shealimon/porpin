@@ -12,13 +12,15 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-import { apiClient } from '@/api/client'
+import { apiClient, explainIfLikelyMixedContent } from '@/api/client'
+import { isApiRequestError } from '@/api/axiosError'
 import {
   appPageDescriptionClass,
   appPageHeaderClass,
   appPageShellClass,
   appPageTitleClass,
 } from '@/lib/appPageLayout'
+import { refreshProfileExtras } from '@/lib/syncBackendProfile'
 import { cn } from '@/lib/utils'
 import { SITE_ORIGIN } from '@/seo/site'
 import { useProfileExtrasStore } from '@/stores/profileExtrasStore'
@@ -83,22 +85,35 @@ export function InviteFriendsPage() {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    void Promise.all([
-      apiClient.get<ReferralStats>('/referrals/stats'),
-      apiClient.get<{ invites: ReferralInviteRow[] }>('/referrals/invites'),
-    ])
-      .then(([st, inv]) => {
+    async function load() {
+      setLoading(true)
+      try {
+        await refreshProfileExtras()
+        if (cancelled) return
+        const [st, inv] = await Promise.all([
+          apiClient.get<ReferralStats>('/referrals/stats'),
+          apiClient.get<{ invites: ReferralInviteRow[] }>('/referrals/invites'),
+        ])
         if (cancelled) return
         setStats(st.data)
         setInvites(inv.data.invites ?? [])
-      })
-      .catch(() => {
-        if (!cancelled) toast.error('Could not load referral stats.')
-      })
-      .finally(() => {
+      } catch (e: unknown) {
+        if (!cancelled) {
+          const hint = explainIfLikelyMixedContent(e)
+          const msg =
+            hint ??
+            (isApiRequestError(e)
+              ? e.message
+              : e instanceof Error
+                ? e.message
+                : 'Could not load referral stats.')
+          toast.error(msg)
+        }
+      } finally {
         if (!cancelled) setLoading(false)
-      })
+      }
+    }
+    void load()
     return () => {
       cancelled = true
     }

@@ -58,12 +58,13 @@ export function applySyncProfileResponse(data: SyncProfileResponse): void {
 }
 
 /** POST /api/me/sync-profile and map referral fields into the store. Silent failure (e.g. tab restore). */
-export async function refreshProfileExtras(): Promise<void> {
+export async function refreshProfileExtras(): Promise<boolean> {
   try {
     const { data } = await apiClient.post<SyncProfileResponse>('/me/sync-profile')
     applySyncProfileResponse(data)
+    return true
   } catch {
-    /* ignore */
+    return false
   }
 }
 
