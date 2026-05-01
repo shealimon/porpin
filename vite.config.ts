@@ -20,10 +20,22 @@ export default defineConfig(({ mode }) => {
   const v = loadEnv(mode, projectRoot, 'VITE_')
   const supabaseUrl = (v.VITE_SUPABASE_URL ?? '').trim()
   const supabaseAnon = (v.VITE_SUPABASE_ANON_KEY ?? '').trim()
+  const backendOrigin = (v.VITE_BACKEND_ORIGIN ?? '').trim()
+  const apiBaseUrl = (v.VITE_API_BASE_URL ?? '').trim()
+  const razorpayKeyId = (v.VITE_RAZORPAY_KEY_ID ?? '').trim()
+  const siteOrigin = (v.VITE_SITE_ORIGIN ?? '').trim()
+
   if (mode === 'development' && (!supabaseUrl || !supabaseAnon)) {
     // eslint-disable-next-line no-console -- dev-only configuration nudge
     console.warn(
       '[vite] Supabase: add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to frontend/.env, then restart Vite.',
+    )
+  }
+
+  if (mode === 'production' && (!backendOrigin || !apiBaseUrl)) {
+    // eslint-disable-next-line no-console -- production misconfiguration nudge
+    console.warn(
+      '[vite] Production: add VITE_BACKEND_ORIGIN and VITE_API_BASE_URL to frontend/.env.production — Razorpay + /api/me,/jobs,/billing hit your FastAPI host.',
     )
   }
 
@@ -69,9 +81,21 @@ export default defineConfig(({ mode }) => {
   return {
   envDir: projectRoot,
   // Inline explicitly so the client always sees these after .env is saved (avoids empty import.meta.env when env load order/cwd differ on Windows).
+  // Same for API base + backend origin: all Razorpay order/verify routes use backendClient → VITE_BACKEND_ORIGIN;
+  // /me, /jobs, /referrals use apiClient → VITE_API_BASE_URL.
   define: {
     'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(supabaseUrl),
     'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(supabaseAnon),
+    ...(backendOrigin
+      ? { 'import.meta.env.VITE_BACKEND_ORIGIN': JSON.stringify(backendOrigin) }
+      : {}),
+    ...(apiBaseUrl
+      ? { 'import.meta.env.VITE_API_BASE_URL': JSON.stringify(apiBaseUrl) }
+      : {}),
+    ...(razorpayKeyId
+      ? { 'import.meta.env.VITE_RAZORPAY_KEY_ID': JSON.stringify(razorpayKeyId) }
+      : {}),
+    ...(siteOrigin ? { 'import.meta.env.VITE_SITE_ORIGIN': JSON.stringify(siteOrigin) } : {}),
   },
   plugins: [react()],
   resolve: {
