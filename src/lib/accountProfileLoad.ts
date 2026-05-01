@@ -123,6 +123,13 @@ export async function loadAccountProfileForQuery(): Promise<SyncProfileResponse>
         )
         throw e
       }
+      if (e.status === 404) {
+        toast.error(
+          'Could not load your profile (404). The request likely hit the wrong host — redeploy with frontend/.env.production (VITE_BACKEND_ORIGIN + VITE_API_BASE_URL), or remove blank VITE_* overrides on Vercel.',
+          { duration: 9500 },
+        )
+        throw e
+      }
       toast.error(`Could not load your profile: ${e.message}`)
       throw e
     }

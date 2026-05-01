@@ -81,8 +81,8 @@ export default defineConfig(({ mode }) => {
   return {
   envDir: projectRoot,
   // Inline explicitly so the client always sees these after .env is saved (avoids empty import.meta.env when env load order/cwd differ on Windows).
-  // Same for API base + backend origin: all Razorpay order/verify routes use backendClient → VITE_BACKEND_ORIGIN;
-  // /me, /jobs, /referrals use apiClient → VITE_API_BASE_URL.
+  // Same for API base + backend origin: Razorpay order/verify uses backendClient → VITE_BACKEND_ORIGIN;
+  // /me, /jobs, /referrals use apiClient → VITE_API_BASE_URL (client falls back to BACKEND_ORIGIN + "/api" if API URL blank).
   define: {
     'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(supabaseUrl),
     'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(supabaseAnon),

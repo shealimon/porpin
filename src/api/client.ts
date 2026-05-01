@@ -2,8 +2,21 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
 import { normalizeAxiosError } from './axiosError'
 
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ?? '/api'
+/**
+ * `/me`, `/jobs`, `/referrals` live under FastAPI `/api/...`.
+ * If `VITE_API_BASE_URL` is unset or blank (e.g. empty env on Vercel), fall back to
+ * `VITE_BACKEND_ORIGIN + '/api'` so production never silently uses same-origin `/api`
+ * (that hits www.porpin.com and returns 404).
+ */
+export function resolvePublicApiBaseUrl(): string {
+  const explicit = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '').trim()
+  if (explicit.length > 0) return explicit
+  const backend = (import.meta.env.VITE_BACKEND_ORIGIN ?? '').replace(/\/$/, '').trim()
+  if (backend.length > 0) return `${backend}/api`
+  return '/api'
+}
+
+const baseURL = resolvePublicApiBaseUrl()
 
 export const apiClient = axios.create({
   baseURL,
