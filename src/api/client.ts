@@ -18,6 +18,20 @@ export function resolvePublicApiBaseUrl(): string {
 
 const baseURL = resolvePublicApiBaseUrl()
 
+/** Extra hint when HTTPS page + http:// API triggers mixed-content blocking (Axios "Network Error"). */
+export function explainIfLikelyMixedContent(error: unknown): string | undefined {
+  if (typeof window === 'undefined') return undefined
+  if (window.location.protocol !== 'https:') return undefined
+  const msg = error instanceof Error ? error.message : String(error)
+  if (!/\bNetwork Error\b/i.test(msg)) return undefined
+  const api = resolvePublicApiBaseUrl()
+  const bo = (import.meta.env.VITE_BACKEND_ORIGIN ?? '').replace(/\/$/, '').trim()
+  if (api.startsWith('http://') || bo.startsWith('http://')) {
+    return `${msg} — HTTPS sites cannot call http:// APIs from the browser. Use vercel.json rewrites + same-origin paths (see frontend/.env.production), or put HTTPS on your API.`
+  }
+  return undefined
+}
+
 export const apiClient = axios.create({
   baseURL,
   headers: { Accept: 'application/json' },

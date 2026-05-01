@@ -32,10 +32,15 @@ export default defineConfig(({ mode }) => {
     )
   }
 
-  if (mode === 'production' && (!backendOrigin || !apiBaseUrl)) {
+  const siteHttps = siteOrigin.startsWith('https://')
+  if (
+    mode === 'production' &&
+    siteHttps &&
+    (apiBaseUrl.startsWith('http://') || backendOrigin.startsWith('http://'))
+  ) {
     // eslint-disable-next-line no-console -- production misconfiguration nudge
     console.warn(
-      '[vite] Production: add VITE_BACKEND_ORIGIN and VITE_API_BASE_URL to frontend/.env.production — Razorpay + /api/me,/jobs,/billing hit your FastAPI host.',
+      '[vite] HTTPS deploys: http:// in VITE_API_BASE_URL / VITE_BACKEND_ORIGIN is blocked by browsers (mixed content). Prefer vercel.json rewrites + same-origin `VITE_API_BASE_URL=/api` (omit backend origin).',
     )
   }
 
@@ -70,6 +75,13 @@ export default defineConfig(({ mode }) => {
       proxyTimeout: 600_000,
     },
     '/jobs': {
+      target: backendTarget,
+      changeOrigin: true,
+      agent: backendProxyAgent,
+      timeout: 120_000,
+      proxyTimeout: 120_000,
+    },
+    '/download': {
       target: backendTarget,
       changeOrigin: true,
       agent: backendProxyAgent,

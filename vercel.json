@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://40.192.24.109/api/:path*"
+    },
+    {
+      "source": "/upload",
+      "destination": "http://40.192.24.109/upload"
+    },
+    {
+      "source": "/job/:path*",
+      "destination": "http://40.192.24.109/job/:path*"
+    },
+    {
+      "source": "/translate",
+      "destination": "http://40.192.24.109/translate"
+    },
+    {
+      "source": "/download/:path*",
+      "destination": "http://40.192.24.109/download/:path*"
+    },
+    {
+      "source": "/jobs/:path*",
+      "destination": "http://40.192.24.109/jobs/:path*"
+    }
+  ]
+}

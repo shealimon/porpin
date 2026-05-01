@@ -3,6 +3,7 @@ import { Calendar, ChevronLeft, ChevronRight, FileText, History, Loader2 } from 
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { explainIfLikelyMixedContent } from '@/api/client'
 import { HISTORY_PAGE_SIZE, listCompletedJobsPage } from '@/api/jobs'
 import {
   appPageDescriptionClass,
@@ -253,7 +254,8 @@ export function HistoryPage() {
         >
           <p className="font-medium">Couldn&apos;t load history</p>
           <p className="mt-1 opacity-90">
-            {error instanceof Error ? error.message : 'Something went wrong.'}
+            {explainIfLikelyMixedContent(error) ??
+              (error instanceof Error ? error.message : 'Something went wrong.')}
           </p>
           <button
             type="button"
