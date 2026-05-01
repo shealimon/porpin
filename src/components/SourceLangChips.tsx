@@ -1,8 +1,11 @@
-import type { SourceLang } from '@/features/upload/sourceLang'
+import {
+  dashboardLabelForTranslationTarget,
+  type TranslationTarget,
+} from '@/features/upload/sourceLang'
 
 type Props = {
-  value: SourceLang
-  onChange: (v: SourceLang) => void
+  value: TranslationTarget
+  onChange: (v: TranslationTarget) => void
   disabled?: boolean
   className?: string
 }
@@ -12,27 +15,27 @@ export function SourceLangChips({ value, onChange, disabled, className }: Props)
     <div
       className={className ?? 'file-input-bar__source-row'}
       role="radiogroup"
-      aria-label="Source language"
+      aria-label="Translation style"
     >
       <button
         type="button"
         role="radio"
-        aria-checked={value === 'en'}
+        aria-checked={value === 'hinglish'}
         disabled={disabled}
-        className={`file-input-bar__source-chip${value === 'en' ? ' file-input-bar__source-chip--active' : ''}`}
-        onClick={() => onChange('en')}
+        className={`file-input-bar__source-chip${value === 'hinglish' ? ' file-input-bar__source-chip--active' : ''}`}
+        onClick={() => onChange('hinglish')}
       >
-        English → Hinglish
+        {dashboardLabelForTranslationTarget('hinglish')}
       </button>
       <button
         type="button"
         role="radio"
-        aria-checked={value === 'hi'}
+        aria-checked={value === 'hindi'}
         disabled={disabled}
-        className={`file-input-bar__source-chip${value === 'hi' ? ' file-input-bar__source-chip--active' : ''}`}
-        onClick={() => onChange('hi')}
+        className={`file-input-bar__source-chip${value === 'hindi' ? ' file-input-bar__source-chip--active' : ''}`}
+        onClick={() => onChange('hindi')}
       >
-        Hindi → Hinglish
+        {dashboardLabelForTranslationTarget('hindi')}
       </button>
     </div>
   )

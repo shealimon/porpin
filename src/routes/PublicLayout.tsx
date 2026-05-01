@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 
 import { PorpinMark } from '@/components/brand/PorpinMark'
+import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
 import { cn } from '@/lib/utils'
 import {
   publicNavActiveClass,
@@ -111,7 +112,7 @@ export function PublicLayout() {
               <PorpinMark className="size-full" aria-hidden />
             </span>
             {onLanding ? (
-              <span className="text-sm font-semibold tracking-tight tab:text-base">Porpin</span>
+              <PorpinWordmark />
             ) : null}
           </Link>
 

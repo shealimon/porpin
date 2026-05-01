@@ -1,0 +1,18 @@
+<section class="doc-chapter">
+  {{#if title}}
+  <h2 class="doc-heading doc-heading--2">{{title}}</h2>
+  {{/if}}
+  {{#each headings}}
+  <h{{hLevel}} class="doc-heading doc-heading--{{hLevel}}">{{text}}</h{{hLevel}}>
+  {{/each}}
+  {{#each paragraphs}}
+  <p class="doc-paragraph">{{this}}</p>
+  {{/each}}
+  {{#each lists}}
+  {{#if ordered}}
+  <ol class="doc-list doc-list--ordered">{{#each items}}<li class="doc-list-item">{{this}}</li>{{/each}}</ol>
+  {{else}}
+  <ul class="doc-list">{{#each items}}<li class="doc-list-item">{{this}}</li>{{/each}}</ul>
+  {{/if}}
+  {{/each}}
+</section>

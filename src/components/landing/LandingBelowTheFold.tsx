@@ -12,7 +12,7 @@ export function LandingBelowTheFold() {
       <div
         id="demo"
         className={cn(
-          'voltix-fade-in animate-fade-up-delay-3 relative mx-auto mt-10 w-full min-w-0 max-w-4xl scroll-mt-28 overflow-x-clip opacity-0 motion-reduce:opacity-100 [animation-fill-mode:forwards] sm:mt-14',
+          'voltix-fade-in animate-fade-up-delay-3 relative mx-auto mt-8 w-full min-w-0 max-w-4xl scroll-mt-28 overflow-x-visible opacity-0 motion-reduce:opacity-100 [animation-fill-mode:forwards] sm:mt-10 lg:-mt-4',
         )}
       >
         <div

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 
 import { PorpinMark } from '@/components/brand/PorpinMark'
+import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
 import { qk } from '@/lib/queryKeys'
@@ -152,7 +153,7 @@ export function AppLayout() {
             <span className="inline-flex size-9 shrink-0 items-center justify-center text-zinc-900 dark:text-zinc-50 desk:size-8">
               <PorpinMark className="size-full" aria-hidden />
             </span>
-            <span className="truncate text-sm font-semibold tracking-tight">Porpin</span>
+            <PorpinWordmark className="truncate" />
           </Link>
         </div>
         <div ref={menuSurfaceRef} className="relative flex shrink-0 items-center gap-1">

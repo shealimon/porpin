@@ -1,0 +1,10 @@
+{{> title-landmark}}
+{{#if chapters}}
+{{#each chapters}}
+{{> chapter}}
+{{/each}}
+{{else}}
+{{#each blocks}}
+{{> (blockPartial this)}}
+{{/each}}
+{{/if}}

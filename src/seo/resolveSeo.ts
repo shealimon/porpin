@@ -68,7 +68,7 @@ export function resolveSeo(pathname: string): SeoModel {
       return {
         title: 'Hinglish translate — Porpin',
         description:
-          'Upload PDF, DOCX, or TXT and download natural Hinglish in Roman script. Fast document translation from Porpin.',
+          'Upload PDF, DOCX, EPUB, or TXT and download natural Hinglish in Roman script. Fast document translation from Porpin.',
         canonicalPath: '/translate',
       }
     case '/login':

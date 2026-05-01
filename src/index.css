@@ -205,6 +205,20 @@ canvas {
   background: transparent;
 }
 
+/* Desktop: force-hide rail for history/settings/billing/invite/upload main pane. */
+@media (min-width: 1024px) {
+  .app-main-scroll.app-main-scroll--scrollbar-none {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .app-main-scroll.app-main-scroll--scrollbar-none::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
 body {
   margin: 0;
 }
@@ -466,14 +480,32 @@ code {
   }
 }
 
+@keyframes porpin-mark-orbit-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .porpin-loading-mark {
   animation: porpin-loading-breathe 0.85s ease-in-out infinite;
+}
+
+/* Loading variant: keep the logo, animate only the inner orbit dots. */
+.porpin-mark--loading .porpin-mark__orbit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: porpin-mark-orbit-rotate 1.15s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .porpin-loading-mark {
     animation: none;
     opacity: 1;
+    transform: none;
+  }
+
+  .porpin-mark--loading .porpin-mark__orbit {
+    animation: none;
     transform: none;
   }
 }
@@ -1123,6 +1155,10 @@ code {
 
 .landing-upload-preview .dashboard-home .file-input-bar {
   min-width: 0;
+  width: min(100%, 42rem);
+  max-width: 100%;
+  margin-inline: auto;
+  overflow: hidden;
   border-color: #d6d3d1;
   background: #fafaf9;
   box-shadow:
@@ -1224,6 +1260,8 @@ code {
 .dashboard-home .file-input-bar {
   max-width: 42rem;
   width: 100%;
+  /* Keep equal visual gutter on both sides in narrow/mobile viewports. */
+  width: min(42rem, calc(100vw - 2rem));
   margin-inline: auto;
   padding: 0.55rem 0.65rem;
   border-color: #e4e4e7;
@@ -1562,9 +1600,9 @@ code {
   z-index: 0;
   background: linear-gradient(
     165deg,
-    #faf7f2 0%,
-    #ecf8f6 42%,
-    #f0f1f8 100%
+    #fbf9f5 0%,
+    #e9f3f5 45%,
+    #f0edf6 100%
   );
 }
 
@@ -1583,7 +1621,8 @@ code {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: min(32rem, 100%);
+  /* Align with Tailwind max-w-xl (36rem) for job complete / download layout */
+  max-width: min(36rem, 100%);
   text-align: center;
 }
 
@@ -1625,6 +1664,43 @@ code {
   box-shadow: 0 0 12px var(--primary-glow);
 }
 
+@keyframes processing-flow-bar-shimmer {
+  0% {
+    transform: translateX(-140%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+.processing-flow__bar-fill--active {
+  position: relative;
+  overflow: hidden;
+}
+
+.processing-flow__bar-fill--active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: processing-flow-bar-shimmer 1.35s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .processing-flow__bar-fill--active::after {
+    animation: none;
+    opacity: 0.2;
+    transform: none;
+  }
+}
+
 .processing-flow__hint {
   margin: 0;
   font-size: 0.88rem;
@@ -1651,6 +1727,14 @@ code {
   max-width: min(18rem, 100%);
   min-height: 44px;
   box-sizing: border-box;
+}
+
+/* Buttons: full width on mobile, compact on sm+ (Tailwind classes alone can't override `width: 100%` above). */
+@media (min-width: 640px) {
+  .processing-flow__download {
+    width: auto;
+    max-width: none;
+  }
 }
 
 /* Job complete: one column — match heading, copy, and actions to same width */
@@ -1871,6 +1955,24 @@ code {
 
 .manus-app-shell .app-main-scroll.app-main-scroll--scrollbar-none::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Desktop app pages (incl. History): keep scrolling, hide scrollbar chrome completely. */
+@media (min-width: 1024px) {
+  .manus-app-shell .app-main-scroll.app-main-scroll--scrollbar-none {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    scrollbar-color: transparent transparent !important;
+  }
+
+  .manus-app-shell .app-main-scroll.app-main-scroll--scrollbar-none::-webkit-scrollbar,
+  .manus-app-shell .app-main-scroll.app-main-scroll--scrollbar-none::-webkit-scrollbar-thumb,
+  .manus-app-shell .app-main-scroll.app-main-scroll--scrollbar-none::-webkit-scrollbar-track {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
 }
 
 /* Marketing homepage: aligned with app canvas (--manus-canvas) */

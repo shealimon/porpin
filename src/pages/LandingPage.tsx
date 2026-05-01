@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { PorpinMark } from '@/components/brand/PorpinMark'
+import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
 import { cn } from '@/lib/utils'
 
 const LandingBelowTheFold = lazy(() =>
@@ -42,7 +43,7 @@ export function LandingPage() {
 
       <section
         aria-labelledby="landing-hero-heading"
-        className="mx-auto flex min-h-[calc(100svh-4.5rem)] w-full min-w-0 max-w-6xl flex-col justify-center px-4 pb-10 pt-14 sm:min-h-[calc(100svh-4.75rem)] sm:pb-12 sm:pt-20 tab:px-6"
+        className="mx-auto flex min-h-[calc(100svh-4.5rem)] w-full min-w-0 max-w-6xl flex-col justify-center px-4 pb-10 pt-14 sm:min-h-[calc(100svh-4.75rem)] sm:pb-12 sm:pt-20 lg:min-h-[calc(76svh-4.75rem)] lg:pb-8 lg:pt-14 tab:px-6"
       >
         <div className="mx-auto max-w-5xl text-center">
           <h1
@@ -128,7 +129,7 @@ export function LandingPage() {
             <span className="flex size-10 shrink-0 items-center justify-center">
               <PorpinMark className="size-full" aria-hidden />
             </span>
-            <span className="text-sm font-semibold tracking-tight tab:text-base">Porpin</span>
+            <PorpinWordmark />
           </Link>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm tab:gap-x-8 tab:text-base">
             <p className="m-0 text-stone-500">© 2026 Porpin</p>

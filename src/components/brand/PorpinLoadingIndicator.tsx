@@ -48,7 +48,7 @@ export function PorpinLoadingIndicator() {
       aria-busy="true"
     >
       <span className="porpin-loading-mark flex size-8 shrink-0 items-center justify-center text-foreground">
-        <PorpinMark className="size-full" aria-hidden />
+        <PorpinMark className="size-full porpin-mark--loading" aria-hidden />
       </span>
       <span className="max-w-[10rem] truncate text-xs font-medium text-muted-foreground tab:max-w-none">
         Loading…

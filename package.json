@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n api,vite -c blue,green \"npm run dev:api\" \"wait-on -t 120000 http-get://127.0.0.1:8000/health && vite\"",
+    "dev": "concurrently -k -n api,vite -c blue,green \"npm run dev:api\" \"wait-on -c dev-wait-on.config.cjs && vite\"",
     "dev:client": "vite",
     "dev:api": "cd ../backend && venv\\Scripts\\python.exe -m uvicorn app.main:app --reload --reload-dir ./app --host 127.0.0.1 --port 8000",
     "build": "tsc -b && vite build",
@@ -20,6 +20,8 @@
     "axios": "^1.13.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "docx": "^9.0.0",
+    "handlebars": "^4.7.8",
     "lucide-react": "^1.6.0",
     "postcss": "^8.5.8",
     "react": "^19.2.4",

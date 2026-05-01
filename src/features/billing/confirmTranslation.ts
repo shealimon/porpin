@@ -12,16 +12,16 @@ export type ConfirmTranslationArgs = {
   /** Pay-as-you-go INR actually due for this job (after free / subscription words). */
   amountToPay: number
   fileName?: string
-  /** Source language for the translation pipeline (stored on confirm). */
-  inputLang?: 'en' | 'hi'
+  /** Output: Roman Hinglish vs Devanagari Hindi (sent on confirm). */
+  translationTarget?: 'hinglish' | 'hindi'
 }
 
 export async function confirmTranslationJob(args: ConfirmTranslationArgs): Promise<void> {
-  const { jobId, inputLang = 'en' } = args
+  const { jobId, translationTarget = 'hinglish' } = args
 
   let result: Awaited<ReturnType<typeof confirmMilestoneJobSafe>>
   try {
-    result = await confirmMilestoneJobSafe(jobId, inputLang)
+    result = await confirmMilestoneJobSafe(jobId, translationTarget)
   } catch (e: unknown) {
     if (axios.isAxiosError(e) && e.response?.status === 402) {
       const d = e.response.data as { detail?: string } | undefined

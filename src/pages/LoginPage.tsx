@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { AuthCardEyebrow, AUTH_EYEBROW_ACCOUNT_ACCESS } from '@/components/auth/AuthCardEyebrow'
 import { AuthLightPageSurface } from '@/components/auth/AuthLightPageSurface'
 import { PorpinMark } from '@/components/brand/PorpinMark'
+import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -111,7 +112,7 @@ export function LoginPage() {
           >
             <PorpinMark className="size-full" aria-hidden />
           </span>
-          <span className="text-sm font-semibold tracking-tight">Porpin</span>
+          <PorpinWordmark />
         </Link>
 
         <Card className="w-full max-w-[380px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">

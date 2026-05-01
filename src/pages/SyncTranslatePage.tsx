@@ -47,7 +47,7 @@ export function SyncTranslatePage() {
         Hinglish translate
       </h1>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Upload PDF, DOCX, or TXT. With sync mode enabled on the server, you get a direct
+        Upload PDF, DOCX, EPUB, or TXT. With sync mode enabled on the server, you get a direct
         DOCX/PDF download. By default the API queues a job instead — use{' '}
         <Link
           to="/app/upload"
@@ -65,7 +65,7 @@ export function SyncTranslatePage() {
           </label>
           <input
             type="file"
-            accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+            accept=".pdf,.docx,.epub,.ebup,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/epub+zip,text/plain"
             className={cn(
               'mt-1 block w-full text-sm text-zinc-600 file:mr-4 file:rounded-md file:border-0 file:bg-zinc-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-zinc-800 dark:text-zinc-400 dark:file:bg-zinc-100 dark:file:text-zinc-900',
             )}
@@ -94,7 +94,8 @@ export function SyncTranslatePage() {
             ))}
           </select>
           <p className="mt-1 text-xs text-zinc-500">
-            PDF/ZIP needs LibreOffice or docx2pdf on the server.
+            PDF is generated with WeasyPrint from the structured translation; if that fails, the
+            server falls back to DOCX→PDF (LibreOffice, ReportLab, or Word).
           </p>
         </div>
 

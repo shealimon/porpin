@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 
-const backendTarget = 'http://127.0.0.1:8000'
+const backendTarget = 'http://40.192.24.109'
 
 /** Pooled keep-alive to the API reduces stray ECONNRESET during dev (Node proxy ↔ uvicorn). */
 const backendProxyAgent = new http.Agent({
