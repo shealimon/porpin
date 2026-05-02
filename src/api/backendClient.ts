@@ -1,34 +1,9 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
-import { resolveBackendAxiosBaseUrl } from './viteDevProxy'
 import { normalizeAxiosError } from './axiosError'
 
-/**
- * API origin (no path suffix). Strips a trailing `/api` so paths like
- * `/api/create-order` are not double-prefixed when VITE_BACKEND_ORIGIN is
- * set to e.g. `https://api.example.com/api` by mistake.
- */
-export function normalizeBackendOrigin(value: string | undefined): string {
-  if (!value) return ''
-  const trimmed = value.replace(/\/$/, '')
-  if (trimmed.toLowerCase().endsWith('/api')) {
-    return trimmed.slice(0, -4) || ''
-  }
-  return trimmed
-}
-
-/** When set (e.g. production), fetch/axios must use this host instead of the static page origin. */
-export function getConfiguredBackendOrigin(): string {
-  return normalizeBackendOrigin(
-    (import.meta.env.VITE_BACKEND_ORIGIN as string | undefined) ?? undefined,
-  )
-}
-
-/** Same origin + Vite proxy in dev when env points at a remote host; else full origin. */
-const baseURL = resolveBackendAxiosBaseUrl()
-
 export const backendClient = axios.create({
-  baseURL,
+  baseURL: '',
   headers: { Accept: 'application/json' },
   timeout: 120_000,
 })

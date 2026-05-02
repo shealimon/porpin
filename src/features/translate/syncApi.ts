@@ -1,14 +1,9 @@
-import { resolveBackendAxiosBaseUrl } from '@/api/viteDevProxy'
+import { apiUrl } from '@/config/api.js'
 
 /**
  * Direct sync translation against FastAPI POST /translate (no job queue).
  */
 export type TranslateExportFormat = 'docx' | 'pdf' | 'both'
-
-/** Empty string = same origin (Vite proxy to backend in dev). */
-function apiBase(): string {
-  return resolveBackendAxiosBaseUrl()
-}
 
 export async function postTranslateSync(
   file: File,
@@ -17,9 +12,7 @@ export async function postTranslateSync(
 ): Promise<Blob> {
   const fd = new FormData()
   fd.append('file', file)
-  const base = apiBase()
-  const path = `/translate?export=${encodeURIComponent(exportFormat)}`
-  const url = base ? `${base}${path}` : path
+  const url = apiUrl(`/translate?export=${encodeURIComponent(exportFormat)}`)
   const res = await fetch(url, {
     method: 'POST',
     body: fd,

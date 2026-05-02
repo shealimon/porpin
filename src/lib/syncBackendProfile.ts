@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast'
 
 import { apiClient } from '@/api/client'
+import { apiUrl } from '@/config/api.js'
 import { getReferralDeviceId } from '@/lib/referralDeviceId'
 import { clearPendingReferralCode, peekPendingReferralCode } from '@/lib/referralCapture'
 import { useProfileExtrasStore } from '@/stores/profileExtrasStore'
@@ -60,7 +61,7 @@ export function applySyncProfileResponse(data: SyncProfileResponse): void {
 /** POST /api/me/sync-profile and map referral fields into the store. Silent failure (e.g. tab restore). */
 export async function refreshProfileExtras(): Promise<boolean> {
   try {
-    const { data } = await apiClient.post<SyncProfileResponse>('/me/sync-profile')
+    const { data } = await apiClient.post<SyncProfileResponse>(apiUrl('/api/me/sync-profile'))
     applySyncProfileResponse(data)
     return true
   } catch {
@@ -78,20 +79,20 @@ export async function syncBackendProfile(
 ): Promise<boolean> {
   const behavior = options?.behavior ?? 'soft'
   try {
-    const { data } = await apiClient.post<SyncProfileResponse>('/me/sync-profile')
+    const { data } = await apiClient.post<SyncProfileResponse>(apiUrl('/api/me/sync-profile'))
     applySyncProfileResponse(data)
 
     const code = peekPendingReferralCode()
     if (code) {
       try {
-        const claimRes = await apiClient.post<ClaimReferralResponse>('/referrals/claim', {
+        const claimRes = await apiClient.post<ClaimReferralResponse>(apiUrl('/api/referrals/claim'), {
           code,
           device_id: getReferralDeviceId() || undefined,
         })
         if (claimRes.data.outcome !== 'invalid_code') {
           clearPendingReferralCode()
         }
-        const { data: again } = await apiClient.post<SyncProfileResponse>('/me/sync-profile')
+        const { data: again } = await apiClient.post<SyncProfileResponse>(apiUrl('/api/me/sync-profile'))
         applySyncProfileResponse(again)
       } catch {
         /* keep pending ref for a later retry */

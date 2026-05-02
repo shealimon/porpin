@@ -1,4 +1,5 @@
 import { backendClient } from '@/api/backendClient'
+import { apiUrl } from '@/config/api.js'
 
 export type RazorpaySubscriptionStart = {
   subscription_id: string
@@ -50,7 +51,7 @@ export function createRazorpaySubscription(
 ): Promise<RazorpaySubscriptionStart> {
   return backendClient
     .post<RazorpaySubscriptionStart>(
-      '/api/billing/razorpay/create-subscription',
+      apiUrl('/api/billing/razorpay/create-subscription'),
       { kind },
     )
     .then((r) => r.data)
@@ -67,7 +68,7 @@ export function syncRazorpaySubscriptionAfterCheckout(): Promise<{
       ok: boolean
       plan: string
       subscription_active: boolean
-    }>('/api/billing/razorpay/sync-subscription-after-checkout')
+    }>(apiUrl('/api/billing/razorpay/sync-subscription-after-checkout'))
     .then((r) => r.data)
 }
 
@@ -76,7 +77,7 @@ export function createRazorpayPaygJobOrder(
   jobId: string,
 ): Promise<RazorpayPaygJobOrder> {
   return backendClient
-    .post<RazorpayPaygJobOrder>('/api/billing/razorpay/create-payg-translation-order', {
+    .post<RazorpayPaygJobOrder>(apiUrl('/api/billing/razorpay/create-payg-translation-order'), {
       job_id: jobId,
     })
     .then((r) => r.data)
@@ -87,7 +88,7 @@ export function verifyRazorpayCapturedPayment(
 ): Promise<RazorpayVerifyCapturedResult> {
   return backendClient
     .post<RazorpayVerifyCapturedResult>(
-      '/api/billing/razorpay/verify-captured-payment',
+      apiUrl('/api/billing/razorpay/verify-captured-payment'),
       body,
     )
     .then((r) => r.data)
@@ -96,7 +97,7 @@ export function verifyRazorpayCapturedPayment(
 /** One-time yearly plan order (supports UPI QR scan). */
 export function createRazorpayYearlyOrder(): Promise<RazorpayYearlyOrder> {
   return backendClient
-    .post<RazorpayYearlyOrder>('/api/billing/razorpay/create-yearly-order')
+    .post<RazorpayYearlyOrder>(apiUrl('/api/billing/razorpay/create-yearly-order'))
     .then((r) => r.data)
 }
 
@@ -105,7 +106,7 @@ export function verifyRazorpayYearlyPayment(
 ): Promise<RazorpayVerifyYearlyResult> {
   return backendClient
     .post<RazorpayVerifyYearlyResult>(
-      '/api/billing/razorpay/verify-yearly-payment',
+      apiUrl('/api/billing/razorpay/verify-yearly-payment'),
       body,
     )
     .then((r) => r.data)

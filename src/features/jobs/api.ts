@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import { backendClient } from '@/api/backendClient'
 import { normalizeAxiosError } from '@/api/axiosError'
-import { resolveBackendAxiosBaseUrl } from '@/api/viteDevProxy'
+import { apiUrl } from '@/config/api.js'
 import { downloadBlob } from '@/features/translate/syncApi'
 
 /** Response from `POST /job/confirm` (breakdown may include billing fields from backend). */
@@ -115,9 +115,7 @@ export function mapMilestoneJob(d: JobDetailDto): MilestoneJob {
 
 /** Matches backend ``translation_download_url_prefix`` default: ``/api/translation-outputs``. */
 function translationOutputsBaseUrl(): string {
-  const origin = resolveBackendAxiosBaseUrl()
-  const path = '/api/translation-outputs'
-  return origin ? `${origin}${path}` : path
+  return apiUrl('/api/translation-outputs')
 }
 
 export function milestoneTranslatedDocxUrl(jobId: string): string {
@@ -197,7 +195,7 @@ export async function downloadMilestoneTranslatedArtifact(
 
 export async function fetchMilestoneJob(jobId: string): Promise<MilestoneJob> {
   const { data } = await backendClient.get<JobDetailDto>(
-    `/job/${encodeURIComponent(jobId)}`,
+    apiUrl(`/job/${encodeURIComponent(jobId)}`),
   )
   return mapMilestoneJob(data)
 }
@@ -208,7 +206,7 @@ export async function confirmMilestoneJob(
   jobId: string,
   translationTarget: MilestoneTranslationTarget = 'hinglish',
 ): Promise<JobConfirmResponse> {
-  const { data } = await backendClient.post<JobConfirmResponse>('/job/confirm', {
+  const { data } = await backendClient.post<JobConfirmResponse>(apiUrl('/job/confirm'), {
     job_id: jobId,
     input_lang: 'en',
     translation_target: translationTarget,
@@ -220,7 +218,7 @@ export async function startMilestonePreviewJob(
   jobId: string,
   translationTarget: MilestoneTranslationTarget = 'hinglish',
 ): Promise<void> {
-  await backendClient.post('/job/preview-start', {
+  await backendClient.post(apiUrl('/job/preview-start'), {
     job_id: jobId,
     input_lang: 'en',
     translation_target: translationTarget,

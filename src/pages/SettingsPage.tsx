@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 import { apiClient } from '@/api/client'
+import { apiUrl } from '@/config/api.js'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { loadAccountProfileForQuery } from '@/lib/accountProfileLoad'
@@ -188,7 +189,7 @@ export function SettingsPage() {
         country: ctry,
       }
 
-      const { data } = await apiClient.patch<SyncProfileResponse>('/me/profile', body)
+      const { data } = await apiClient.patch<SyncProfileResponse>(apiUrl('/api/me/profile'), body)
       applySyncProfileResponse(data)
       if (userId) {
         queryClient.setQueryData(qk.me.syncProfile(userId || '__'), data)

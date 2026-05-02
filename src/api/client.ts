@@ -1,38 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
-import {
-  devShouldUseViteProxy,
-  isLoopbackHttpOrigin,
-} from './viteDevProxy'
 import { normalizeAxiosError } from './axiosError'
-
-/**
- * `/me`, `/jobs`, `/referrals` live under FastAPI `/api/...`.
- * If `VITE_API_BASE_URL` is unset or blank (e.g. empty env on Vercel), fall back to
- * `VITE_BACKEND_ORIGIN + '/api'` so production never silently uses same-origin `/api`
- * (that hits www.porpin.com and returns 404).
- */
-export function resolvePublicApiBaseUrl(): string {
-  const explicit = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '').trim()
-  let resolved: string
-  if (explicit.length > 0) resolved = explicit
-  else {
-    const backend = (import.meta.env.VITE_BACKEND_ORIGIN ?? '').replace(/\/$/, '').trim()
-    if (backend.length > 0) resolved = `${backend}/api`
-    else resolved = '/api'
-  }
-  if (
-    devShouldUseViteProxy() &&
-    resolved.length > 0 &&
-    /^https?:\/\//i.test(resolved) &&
-    !isLoopbackHttpOrigin(resolved)
-  ) {
-    return '/api'
-  }
-  return resolved
-}
-
-const baseURL = resolvePublicApiBaseUrl()
 
 /** Extra hint when HTTPS page + http:// API triggers mixed-content blocking (Axios "Network Error"). */
 export function explainIfLikelyMixedContent(error: unknown): string | undefined {
@@ -40,16 +8,17 @@ export function explainIfLikelyMixedContent(error: unknown): string | undefined 
   if (window.location.protocol !== 'https:') return undefined
   const msg = error instanceof Error ? error.message : String(error)
   if (!/\bNetwork Error\b/i.test(msg)) return undefined
-  const api = resolvePublicApiBaseUrl()
-  const bo = (import.meta.env.VITE_BACKEND_ORIGIN ?? '').replace(/\/$/, '').trim()
-  if (api.startsWith('http://') || bo.startsWith('http://')) {
-    return `${msg} — HTTPS sites cannot call http:// APIs from the browser. Use vercel.json rewrites + same-origin paths (see frontend/.env.production), or put HTTPS on your API.`
+  const bo = String(import.meta.env.VITE_BACKEND_ORIGIN ?? '')
+    .trim()
+    .replace(/\/$/, '')
+  if (bo.startsWith('http://')) {
+    return `${msg} — HTTPS sites cannot call http:// APIs from the browser. Put HTTPS on your API (e.g. api.porpin.com) and set VITE_BACKEND_ORIGIN to that HTTPS URL at build time.`
   }
   return undefined
 }
 
 export const apiClient = axios.create({
-  baseURL,
+  baseURL: '',
   headers: { Accept: 'application/json' },
   timeout: 120_000,
 })

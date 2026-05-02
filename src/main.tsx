@@ -1,3 +1,4 @@
+import '@/config/api.js'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { AppProviders } from './app/providers/AppProviders'

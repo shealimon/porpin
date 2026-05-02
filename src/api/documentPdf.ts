@@ -1,4 +1,5 @@
 import { backendClient } from './backendClient'
+import { apiUrl } from '@/config/api.js'
 import type {
   ChapteredDocumentModel,
   DocumentModel,
@@ -31,7 +32,7 @@ function safePdfDownloadName(filename: string | undefined): string {
 /** POST full HTML (e.g. from renderDocumentHtml) to WeasyPrint; returns PDF bytes. */
 export async function postHtmlToPdf(html: string, options?: HtmlToPdfOptions): Promise<Blob> {
   const res = await backendClient.post<ArrayBuffer>(
-    '/api/document/html-to-pdf',
+    apiUrl('/api/document/html-to-pdf'),
     { html, filename: options?.filename, base_url: options?.baseUrl },
     {
       responseType: 'arraybuffer',
@@ -50,7 +51,7 @@ export async function postStructuredDocumentToPdf(
   options?: DocumentToPdfOptions,
 ): Promise<Blob> {
   const res = await backendClient.post<ArrayBuffer>(
-    '/api/document/html-to-pdf',
+    apiUrl('/api/document/html-to-pdf'),
     {
       document,
       template_type: options?.templateType,

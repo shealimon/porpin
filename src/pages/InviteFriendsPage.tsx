@@ -13,6 +13,7 @@ import {
 import toast from 'react-hot-toast'
 
 import { apiClient, explainIfLikelyMixedContent } from '@/api/client'
+import { apiUrl } from '@/config/api.js'
 import { isApiRequestError } from '@/api/axiosError'
 import {
   appPageDescriptionClass,
@@ -91,8 +92,8 @@ export function InviteFriendsPage() {
         await refreshProfileExtras()
         if (cancelled) return
         const [st, inv] = await Promise.all([
-          apiClient.get<ReferralStats>('/referrals/stats'),
-          apiClient.get<{ invites: ReferralInviteRow[] }>('/referrals/invites'),
+          apiClient.get<ReferralStats>(apiUrl('/api/referrals/stats')),
+          apiClient.get<{ invites: ReferralInviteRow[] }>(apiUrl('/api/referrals/invites')),
         ])
         if (cancelled) return
         setStats(st.data)

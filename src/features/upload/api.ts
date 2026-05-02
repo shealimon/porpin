@@ -1,6 +1,7 @@
 import type { AxiosProgressEvent } from 'axios'
 import axios from 'axios'
 import { backendClient } from '@/api/backendClient'
+import { apiUrl } from '@/config/api.js'
 import { isApiRequestError } from '@/api/axiosError'
 
 export type UploadEstimateResponse = {
@@ -31,7 +32,7 @@ export async function postPdfUpload(
   const body = new FormData()
   body.append('file', file)
   const { data } = await backendClient.post<UploadEstimateResponse>(
-    '/upload',
+    apiUrl('/upload'),
     body,
     {
       timeout: UPLOAD_ESTIMATE_TIMEOUT_MS,
@@ -59,8 +60,8 @@ export function getUploadErrorMessage(err: unknown): string {
     return (
       '413: body too large for this route — usually the proxy in front of your site (e.g. Vercel rewrite ' +
       'to the VM), not FastAPI’s own limit. Fix: build with VITE_BACKEND_ORIGIN pointing at your API HTTPS URL ' +
-      'so uploads skip that proxy; allow your site origin in CORS_ORIGINS; unset or align VITE_API_BASE_URL ' +
-      'so /api uses the same host; raise nginx client_max_body_size and MAX_UPLOAD_BYTES to match.'
+      'so uploads skip that proxy; allow your site origin in CORS_ORIGINS; set VITE_BACKEND_ORIGIN to your API HTTPS URL ' +
+      'at build time; raise nginx client_max_body_size and MAX_UPLOAD_BYTES to match.'
     )
   }
   if (

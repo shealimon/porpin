@@ -2,6 +2,7 @@ import toast from 'react-hot-toast'
 
 import { apiClient } from '@/api/client'
 import { isApiRequestError } from '@/api/axiosError'
+import { apiUrl } from '@/config/api.js'
 import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
 import {
   applySyncProfileResponse,
@@ -11,7 +12,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 /** Successful API sync: updates billing extras + returns payload for the Account form. */
 export async function loadAccountProfileFromApi(): Promise<SyncProfileResponse> {
-  const { data } = await apiClient.post<SyncProfileResponse>('/me/sync-profile', undefined, {
+  const { data } = await apiClient.post<SyncProfileResponse>(apiUrl('/api/me/sync-profile'), undefined, {
     timeout: 45_000,
   })
   applySyncProfileResponse(data)
@@ -125,7 +126,7 @@ export async function loadAccountProfileForQuery(): Promise<SyncProfileResponse>
       }
       if (e.status === 404) {
         toast.error(
-          'Could not load your profile (404). The request likely hit the wrong host — redeploy with frontend/.env.production (VITE_BACKEND_ORIGIN + VITE_API_BASE_URL), or remove blank VITE_* overrides on Vercel.',
+          'Could not load your profile (404). The request likely hit the wrong host — redeploy with VITE_BACKEND_ORIGIN=https://api… in frontend/.env.production, or remove blank VITE_* overrides on Vercel.',
           { duration: 9500 },
         )
         throw e
