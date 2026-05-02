@@ -24,6 +24,10 @@
     {
       "source": "/jobs/:path*",
       "destination": "http://40.192.24.109/jobs/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

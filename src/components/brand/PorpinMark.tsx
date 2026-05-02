@@ -2,11 +2,32 @@ import type { SVGProps } from 'react'
 
 import { cn } from '@/lib/utils'
 
+const SATELLITE_RING_R = 33
+const SATELLITE_R = 8.25
+const CORE_R = 14.5
+
 /**
- * Porpin mark: balanced “spark” inside a circle (AI-assistant style).
- * Uses only currentColor. Pair with text-black or text-white on the parent.
+ * Porpin mark: solid core + eight satellites on a ring (geometric / icon-grid energy, original composition).
+ * `currentColor` on all shapes. Loading: `.porpin-mark--loading` spins only the satellite ring (`index.css`).
  */
 export function PorpinMark({ className, ...props }: SVGProps<SVGSVGElement>) {
+  const satellites = Array.from({ length: 8 }, (_, i) => {
+    const deg = i * 45 - 90
+    const rad = (deg * Math.PI) / 180
+    const x = SATELLITE_RING_R * Math.cos(rad)
+    const y = SATELLITE_RING_R * Math.sin(rad)
+    return (
+      <circle
+        key={i}
+        cx={x}
+        cy={y}
+        r={SATELLITE_R}
+        fill="currentColor"
+        fillOpacity="0.9"
+      />
+    )
+  })
+
   return (
     <svg
       viewBox="0 0 100 100"
@@ -18,40 +39,11 @@ export function PorpinMark({ className, ...props }: SVGProps<SVGSVGElement>) {
       )}
       {...props}
     >
-      {/* Outer halo: keeps the mark recognizable at tiny sizes */}
-      <circle
-        cx="50"
-        cy="50"
-        r="40"
-        stroke="currentColor"
-        strokeOpacity="0.92"
-        strokeWidth="6"
-        fill="none"
-      />
-
-      {/* Inner mark: symmetric spark + orbit dots (orbit group is animated in loading state). */}
-      <g className="porpin-mark__spark" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        {/* 8-ray spark */}
-        <path
-          d="M50 31.5V41.5M50 58.5V68.5M31.5 50H41.5M58.5 50H68.5"
-          strokeWidth="6.5"
-          opacity="0.95"
-        />
-        <path
-          d="M37.7 37.7L44.8 44.8M55.2 55.2L62.3 62.3M62.3 37.7L55.2 44.8M44.8 55.2L37.7 62.3"
-          strokeWidth="6.5"
-          opacity="0.95"
-        />
-
-        {/* Center dot */}
-        <circle cx="50" cy="50" r="3.6" fill="currentColor" stroke="none" opacity="0.98" />
-      </g>
-
-      <g className="porpin-mark__orbit" aria-hidden>
-        <circle cx="50" cy="23.5" r="2.9" fill="currentColor" opacity="0.92" />
-        <circle cx="76.5" cy="50" r="2.9" fill="currentColor" opacity="0.92" />
-        <circle cx="50" cy="76.5" r="2.9" fill="currentColor" opacity="0.92" />
-        <circle cx="23.5" cy="50" r="2.9" fill="currentColor" opacity="0.92" />
+      <g transform="translate(50 50)">
+        <circle cx={0} cy={0} r={CORE_R} fill="currentColor" fillOpacity="0.96" />
+        <g className="porpin-mark__orbit" aria-hidden>
+          {satellites}
+        </g>
       </g>
     </svg>
   )

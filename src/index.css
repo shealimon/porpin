@@ -205,6 +205,13 @@ canvas {
   background: transparent;
 }
 
+/* Settings (scrollbar hidden): `stable both-edges` reserves symmetric inline space so the
+   vertical scrollbar never sits on top of horizontal padding (fixes “padding on left only” on
+   Windows / classic scrollbars). Same rule applies at all widths including phones. */
+.app-main-scroll.app-main-scroll--scrollbar-none.app-main-scroll--settings-balanced {
+  scrollbar-gutter: stable both-edges;
+}
+
 /* Desktop: force-hide rail for history/settings/billing/invite/upload main pane. */
 @media (min-width: 1024px) {
   .app-main-scroll.app-main-scroll--scrollbar-none {
@@ -490,7 +497,7 @@ code {
   animation: porpin-loading-breathe 0.85s ease-in-out infinite;
 }
 
-/* Loading variant: keep the logo, animate only the inner orbit dots. */
+/* Loading variant: rotate the satellite ring around the static core. */
 .porpin-mark--loading .porpin-mark__orbit {
   transform-box: fill-box;
   transform-origin: center;
@@ -950,6 +957,19 @@ code {
     0 0 0 4px var(--primary-soft);
 }
 
+/*
+ * Desktop idle state: vertically center greeting + composer as one block (Claude-style).
+ * Once upload / estimate / busy begins, stack from the top so billing fits and scroll works.
+ */
+@media (min-width: 769px) {
+  .dashboard-home:not(:has(.file-input-bar__estimate-card)):not(:has(.file-input-bar__upload-progress)):not(
+      :has(.file-input-bar--busy)
+    )
+    .dashboard-home__inner.file-input-bar-drop-target {
+    justify-content: center;
+  }
+}
+
 /* Manus-style source language pills (below upload bar) */
 .file-input-bar__source-row,
 .job-estimate-source-chips {
@@ -957,7 +977,7 @@ code {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
   width: 100%;
   max-width: 100%;
 }
@@ -967,7 +987,8 @@ code {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  padding: 0.45rem 1rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.35rem;
   border-radius: 9999px;
   border: 1px solid var(--border);
   background: var(--bg);
@@ -977,10 +998,10 @@ code {
     system-ui,
     'Segoe UI',
     sans-serif;
-  font-size: 0.9rem;
-  font-weight: 400;
-  letter-spacing: -0.015em;
-  line-height: 1.3;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.35;
   color: var(--text);
   cursor: pointer;
   -webkit-font-smoothing: antialiased;
@@ -1260,8 +1281,8 @@ code {
 .dashboard-home .file-input-bar {
   max-width: 42rem;
   width: 100%;
-  /* Keep equal visual gutter on both sides in narrow/mobile viewports. */
-  width: min(42rem, calc(100vw - 2rem));
+  /* Use parent % width — 100vw is wider than the layout viewport when a scrollbar exists (preflight off → borders add to width). */
+  width: min(42rem, 100%);
   margin-inline: auto;
   padding: 0.55rem 0.65rem;
   border-color: #e4e4e7;
@@ -1332,7 +1353,7 @@ code {
 
 .dashboard-home .file-input-bar-composer {
   max-width: 42rem;
-  width: min(42rem, calc(100vw - 2rem));
+  width: min(42rem, 100%);
   margin-inline: auto;
   box-sizing: border-box;
 }
@@ -1358,13 +1379,6 @@ code {
     max-width: 100%;
     justify-content: center;
   }
-}
-
-.dashboard-home .upload-home__composer-chips .file-input-bar__source-chip {
-  padding-block: 0.32rem;
-  padding-inline: 0.8rem;
-  font-size: 0.8125rem;
-  letter-spacing: -0.018em;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -2003,6 +2017,22 @@ code {
   }
 }
 
+/*
+ * Upload route: preflight is off — without border-box, width:100% + border overflows the pane
+ * and the right edge of the composer / header can clip. Apply for all widths while this shell class is active.
+ */
+.manus-app-shell--upload-chat-mobile {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.manus-app-shell--upload-chat-mobile *,
+.manus-app-shell--upload-chat-mobile *::before,
+.manus-app-shell--upload-chat-mobile *::after {
+  box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
   .manus-app-shell--upload-chat-mobile {
     --manus-canvas: #f9f7f2;
@@ -2064,6 +2094,10 @@ code {
 
 .manus-app-shell .app-main-scroll.app-main-scroll--scrollbar-none::-webkit-scrollbar-track {
   background: transparent;
+}
+
+.manus-app-shell .app-main-scroll.app-main-scroll--scrollbar-none.app-main-scroll--settings-balanced {
+  scrollbar-gutter: stable both-edges;
 }
 
 /* Desktop app pages (incl. History): keep scrolling, hide scrollbar chrome completely. */

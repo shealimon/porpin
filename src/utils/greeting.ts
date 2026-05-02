@@ -45,6 +45,18 @@ export function getCompactGreetingLead(date: Date = new Date()): string {
   return 'Night'
 }
 
+/** Icon segment for the upload hero (local clock; finer buckets than the greeting word). */
+export type GreetingHeroIconKind = 'sunrise' | 'noon' | 'afternoon' | 'evening' | 'night'
+
+export function getGreetingHeroIconKind(date: Date = new Date()): GreetingHeroIconKind {
+  const h = date.getHours()
+  if (h >= 21 || h < 5) return 'night'
+  if (h >= 5 && h < 12) return 'sunrise'
+  if (h >= 12 && h < 14) return 'noon'
+  if (h >= 14 && h < 17) return 'afternoon'
+  return 'evening'
+}
+
 function firstWord(name: string): string {
   const t = name.trim()
   if (!t) return ''

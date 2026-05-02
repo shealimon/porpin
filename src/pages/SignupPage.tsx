@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Sparkles } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-import { AuthCardEyebrow, AUTH_EYEBROW_NEW_ACCOUNT } from '@/components/auth/AuthCardEyebrow'
 import { AuthLightPageSurface } from '@/components/auth/AuthLightPageSurface'
 import { PorpinMark } from '@/components/brand/PorpinMark'
-import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -20,9 +18,13 @@ import { Label } from '@/components/ui/label'
 import { formatAuthError } from '@/lib/authErrors'
 import {
   authFormFieldCompactLightClass,
+  authFormFieldPasswordLightClass,
   authFormLabelLightClass,
   authFormPrimaryButtonLightClass,
-  authFormFieldPasswordLightClass,
+  authLightMobileCardClass,
+  authLightMobileContentInsetClass,
+  authLightMobileHideCardLogoClass,
+  authLightMobilePageShellClass,
 } from '@/lib/authFormStyles'
 import { resolveAuthUser, supabaseUserToAuthUser } from '@/lib/mapSupabaseUser'
 import {
@@ -107,35 +109,71 @@ export function SignupPage() {
 
   return (
     <AuthLightPageSurface>
-      <div className="-translate-y-4 flex flex-1 flex-col items-center justify-center px-4 py-10 sm:-translate-y-7 sm:py-12">
-        <Link
-          to="/"
+      <div
+        className={cn(
+          'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain',
+          authLightMobilePageShellClass,
+          'sm:items-center sm:justify-start sm:bg-transparent',
+          'sm:pl-[max(1rem,env(safe-area-inset-left))] sm:pr-[max(1rem,env(safe-area-inset-right))]',
+          'sm:pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pt-5 sm:justify-center sm:-translate-y-7 sm:py-12 sm:pt-12',
+          'touch-manipulation [-webkit-tap-highlight-color:transparent]',
+        )}
+      >
+        <Card
           className={cn(
-            'group mb-10 flex items-center gap-2.5 text-zinc-900 no-underline transition-opacity hover:opacity-80',
+            'flex w-full flex-col gap-0 overflow-hidden bg-white py-0',
+            authLightMobileCardClass,
+            'sm:max-w-[380px] sm:rounded-xl sm:border sm:border-zinc-200 sm:shadow-sm lg:max-w-[440px]',
           )}
         >
-          <span
-            className="flex size-10 shrink-0 items-center justify-center transition duration-200 group-hover:opacity-90"
-            aria-hidden
+          <CardHeader
+            className={cn(
+              'flex flex-col items-center gap-3 border-b border-zinc-100 text-center sm:gap-4 lg:gap-5',
+              authLightMobileContentInsetClass,
+              'phone:gap-3 phone:border-zinc-100 phone:pb-5 phone:pt-6',
+              'sm:px-8 sm:pb-6 sm:pt-10 lg:pb-7 lg:pt-11',
+            )}
           >
-            <PorpinMark className="size-full" aria-hidden />
-          </span>
-          <PorpinWordmark />
-        </Link>
-
-        <Card className="w-full max-w-[380px] gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white py-0 shadow-sm">
-          <CardHeader className="space-y-3 border-b border-zinc-100 px-6 pb-6 pt-8 text-center sm:px-8 sm:pt-8">
-            <AuthCardEyebrow label={AUTH_EYEBROW_NEW_ACCOUNT} variant="light" />
-            <CardTitle className="font-display text-xl font-normal !leading-snug tracking-tight text-zinc-900 sm:text-2xl">
+            <Link
+              to="/"
+              aria-label="Porpin home"
+              className={cn(
+                'group flex items-center justify-center text-zinc-900 no-underline transition-opacity hover:opacity-85',
+                authLightMobileHideCardLogoClass,
+              )}
+            >
+              <span
+                className="flex size-[3.125rem] shrink-0 items-center justify-center transition duration-200 group-hover:opacity-90 sm:size-12 lg:size-[3.625rem]"
+                aria-hidden
+              >
+                <PorpinMark className="size-full text-zinc-900" aria-hidden />
+              </span>
+            </Link>
+            <CardTitle className="flex w-full flex-wrap items-center justify-center gap-2.5 font-display text-[1.5rem] font-semibold !leading-snug tracking-tight text-zinc-950 sm:gap-2.5 sm:text-2xl sm:font-normal lg:gap-3 lg:text-[1.75rem]">
+              <Sparkles
+                className="size-[1.25rem] shrink-0 text-zinc-400 sm:size-[1.3125rem] lg:size-[1.4375rem]"
+                strokeWidth={2}
+                aria-hidden
+              />
               Create your account
             </CardTitle>
+            <p className="mx-auto w-full max-w-[22rem] text-center text-[0.9375rem] leading-relaxed text-zinc-500 sm:max-w-none sm:text-sm sm:text-zinc-600">
+              Set up your workspace and get started.
+            </p>
           </CardHeader>
 
-          <CardContent className="px-6 pb-0 pt-8 sm:px-8">
-            <form onSubmit={onSubmit} className="min-w-0 space-y-5">
-              <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-                <div className="grid min-w-0 gap-2">
-                  <Label htmlFor="signup-first" className={authFormLabelLightClass}>
+          <CardContent
+            className={cn(
+              'flex flex-1 flex-col pb-0 sm:flex-none',
+              authLightMobileContentInsetClass,
+              'phone:pb-1 phone:pt-4',
+              'sm:px-8 sm:pt-4',
+            )}
+          >
+            <form onSubmit={onSubmit} className="min-w-0 space-y-5 sm:space-y-5">
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4">
+                <div className="grid min-w-0 gap-2 sm:gap-2">
+                  <Label htmlFor="signup-first" className={cn(authFormLabelLightClass, 'phone:text-zinc-600')}>
                     First name
                   </Label>
                   <Input
@@ -145,11 +183,14 @@ export function SignupPage() {
                     placeholder="John"
                     value={firstName}
                     onChange={(ev) => setFirstName(ev.target.value)}
-                    className={authFormFieldCompactLightClass}
+                    className={cn(
+                      authFormFieldCompactLightClass,
+                      'phone:h-14 phone:min-h-14 phone:rounded-xl phone:border-zinc-200 phone:px-4 phone:text-[1.0625rem] phone:shadow-none',
+                    )}
                   />
                 </div>
-                <div className="grid min-w-0 gap-2">
-                  <Label htmlFor="signup-last" className={authFormLabelLightClass}>
+                <div className="grid min-w-0 gap-2 sm:gap-2">
+                  <Label htmlFor="signup-last" className={cn(authFormLabelLightClass, 'phone:text-zinc-600')}>
                     Last name
                   </Label>
                   <Input
@@ -159,12 +200,15 @@ export function SignupPage() {
                     placeholder="Doe"
                     value={lastName}
                     onChange={(ev) => setLastName(ev.target.value)}
-                    className={authFormFieldCompactLightClass}
+                    className={cn(
+                      authFormFieldCompactLightClass,
+                      'phone:h-14 phone:min-h-14 phone:rounded-xl phone:border-zinc-200 phone:px-4 phone:text-[1.0625rem] phone:shadow-none',
+                    )}
                   />
                 </div>
               </div>
-              <div className="grid min-w-0 gap-2">
-                <Label htmlFor="signup-email" className={authFormLabelLightClass}>
+              <div className="grid min-w-0 gap-2 sm:gap-2">
+                <Label htmlFor="signup-email" className={cn(authFormLabelLightClass, 'phone:text-zinc-600')}>
                   Email
                 </Label>
                 <Input
@@ -175,11 +219,14 @@ export function SignupPage() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(ev) => setEmail(ev.target.value)}
-                  className={authFormFieldCompactLightClass}
+                  className={cn(
+                    authFormFieldCompactLightClass,
+                    'phone:h-14 phone:min-h-14 phone:rounded-xl phone:border-zinc-200 phone:px-4 phone:text-[1.0625rem] phone:shadow-none',
+                  )}
                 />
               </div>
-              <div className="grid min-w-0 gap-2">
-                <Label htmlFor="signup-password" className={authFormLabelLightClass}>
+              <div className="grid min-w-0 gap-2 sm:gap-2">
+                <Label htmlFor="signup-password" className={cn(authFormLabelLightClass, 'phone:text-zinc-600')}>
                   Password
                 </Label>
                 <Input
@@ -189,13 +236,23 @@ export function SignupPage() {
                   placeholder="Min. 8 characters"
                   value={password}
                   onChange={(ev) => setPassword(ev.target.value)}
-                  className={authFormFieldPasswordLightClass}
+                  className={cn(
+                    authFormFieldPasswordLightClass,
+                    'phone:h-14 phone:min-h-14 phone:rounded-xl phone:border-zinc-200 phone:px-4 phone:text-[1.0625rem] phone:shadow-none',
+                  )}
                 />
+                <p className="mt-2 text-xs leading-relaxed text-zinc-500 sm:mt-1.5 sm:text-xs">
+                  Use at least 8 characters.
+                </p>
               </div>
-              <p className="text-xs leading-relaxed text-zinc-500">
-                Use at least 8 characters.
-              </p>
-              <Button type="submit" disabled={busy} className={authFormPrimaryButtonLightClass}>
+              <Button
+                type="submit"
+                disabled={busy}
+                className={cn(
+                  authFormPrimaryButtonLightClass,
+                  'phone:h-14 phone:min-h-14 phone:rounded-xl phone:text-[1.0625rem] phone:font-semibold phone:shadow-sm',
+                )}
+              >
                 {busy ? (
                   <>
                     <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -208,38 +265,44 @@ export function SignupPage() {
             </form>
           </CardContent>
 
-          <CardFooter className="flex flex-col border-0 bg-transparent px-6 pb-8 pt-5 sm:px-8">
-            <p className="text-center text-sm text-zinc-600">
+          <CardFooter
+            className={cn(
+              'mt-auto flex flex-col gap-0 border-0 bg-transparent sm:mt-0',
+              authLightMobileContentInsetClass,
+              'phone:border-t phone:border-zinc-100 phone:bg-white phone:pb-[max(1rem,env(safe-area-inset-bottom))] phone:pt-5',
+              'sm:px-8 sm:pb-8 sm:pt-5',
+            )}
+          >
+            <p className="text-center text-[0.9375rem] leading-snug text-zinc-600 sm:text-sm">
               Already registered?{' '}
               <Link
                 to={loginHref}
-                className="font-semibold text-zinc-900 no-underline underline-offset-4 transition hover:underline"
+                className="font-semibold text-zinc-900 no-underline underline-offset-4 transition hover:underline active:opacity-80"
               >
                 Sign in
               </Link>
             </p>
+            <p className="mt-4 max-w-none text-center text-[0.75rem] leading-relaxed tracking-[0.01em] text-zinc-500 sm:mt-6 sm:max-w-[26rem] sm:text-xs">
+              By continuing you agree to our{' '}
+              <a
+                href="#"
+                className="text-zinc-600 underline decoration-zinc-300 underline-offset-2 transition hover:text-zinc-800"
+                onClick={(e) => e.preventDefault()}
+              >
+                Terms
+              </a>{' '}
+              and{' '}
+              <a
+                href="#"
+                className="text-zinc-600 underline decoration-zinc-300 underline-offset-2 transition hover:text-zinc-800"
+                onClick={(e) => e.preventDefault()}
+              >
+                Privacy Policy
+              </a>
+              .
+            </p>
           </CardFooter>
         </Card>
-
-        <p className="mt-8 max-w-[380px] text-center text-xs leading-relaxed text-zinc-500">
-          By continuing you agree to our{' '}
-          <a
-            href="#"
-            className="text-zinc-600 underline decoration-zinc-300 underline-offset-4 transition hover:text-zinc-800"
-            onClick={(e) => e.preventDefault()}
-          >
-            Terms
-          </a>{' '}
-          and{' '}
-          <a
-            href="#"
-            className="text-zinc-600 underline decoration-zinc-300 underline-offset-4 transition hover:text-zinc-800"
-            onClick={(e) => e.preventDefault()}
-          >
-            Privacy Policy
-          </a>
-          .
-        </p>
       </div>
     </AuthLightPageSurface>
   )

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { X } from 'lucide-react'
+import { LogIn, Sparkles, UserPlus, X } from 'lucide-react'
 
 import { PorpinMark } from '@/components/brand/PorpinMark'
 import { PorpinWordmark } from '@/components/brand/PorpinWordmark'
@@ -25,10 +25,13 @@ export function PublicLayout() {
   const onLogin = path === '/login'
   const onSignup = path === '/signup'
   const onForgotPassword = path === '/forgot-password'
+  const onResetPassword = path === '/reset-password'
   const onLightMarketing =
-    onLanding || onLogin || onSignup || onForgotPassword
+    onLanding || onLogin || onSignup || onForgotPassword || onResetPassword
   const onPricing = path === '/pricing' || (onLanding && hash === '#pricing')
   const loginNavActive = onLogin || onForgotPassword
+  /** Logo + wordmark on landing and light auth routes (login / signup / forgot). */
+  const showHeaderWordmark = onLightMarketing
   /** Black signup CTA only on home (no #pricing) and on /signup; muted when Pricing or Log in is current. */
   const signupProminent =
     onSignup || (onLanding && !onPricing && !onLogin && !onForgotPassword)
@@ -64,6 +67,16 @@ export function PublicLayout() {
 
   const closeMenu = () => setMenuOpen(false)
 
+  /** Match `AppLayout` menu alignment: fixed icon slot + label line-height. */
+  const publicMenuIconMutedClass = 'text-zinc-500 dark:text-zinc-400'
+  const publicMenuIconOnSolidClass = 'text-current opacity-90'
+  const publicMobileIconWrapClass =
+    'inline-flex size-[1.375rem] shrink-0 items-center justify-center [&_svg]:block [&_svg]:size-[1.125rem]'
+  const publicMobileMenuLabelClass =
+    'min-w-0 flex-1 text-base font-medium leading-[1.375rem] text-inherit'
+  const publicDrawerIconWrapClass =
+    'inline-flex size-5 shrink-0 items-center justify-center [&_svg]:block [&_svg]:size-3.5'
+
   const onHomeLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!onLanding) return
     e.preventDefault()
@@ -75,7 +88,7 @@ export function PublicLayout() {
 
   /** Drawer-only: compact so Pricing / Log in / Sign up fit small viewports; min 44px tap height. */
   const mobileDrawerLinkBase = cn(
-    'box-border flex min-h-11 w-full min-w-0 shrink-0 items-center justify-center rounded-full border-2 border-solid px-4 py-2.5 text-center font-outfit text-sm leading-tight no-underline transition-colors sm:px-5',
+    'box-border flex min-h-10 w-full min-w-0 shrink-0 items-center justify-start gap-2.5 rounded-full border-2 border-solid px-3.5 py-2 text-left font-outfit text-sm font-medium no-underline transition-colors sm:px-4',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
   )
   const mobileDrawerMuted = cn(
@@ -93,11 +106,14 @@ export function PublicLayout() {
 
   /** Light marketing mobile: floating card below header (Littlebird-style: plain links, no CTA fill). */
   const lightMobileDropdownRow = cn(
-    'flex min-h-[3.5rem] w-full min-w-0 items-center rounded-2xl px-6 py-[1.0625rem] text-left font-outfit text-lg font-medium leading-snug tracking-normal text-stone-800 antialiased no-underline transition-colors',
+    'flex min-h-11 w-full min-w-0 items-center gap-2.5 rounded-xl px-5 py-2 text-left font-outfit text-stone-800 antialiased no-underline transition-colors',
     'hover:text-stone-950 active:bg-stone-100/35',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/30 focus-visible:ring-inset focus-visible:rounded-2xl',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/30 focus-visible:ring-inset focus-visible:rounded-xl',
   )
-  const lightMobileDropdownRowActive = cn(lightMobileDropdownRow, 'font-semibold text-stone-950')
+  const lightMobileDropdownRowActive = cn(
+    lightMobileDropdownRow,
+    'font-semibold text-stone-950 [&_svg]:text-zinc-600 dark:[&_svg]:text-zinc-400',
+  )
 
   const headerLightMobilePill = onLightMarketing
   const mobileMenuId = headerLightMobilePill ? 'public-nav-menu-sheet' : 'public-nav-drawer'
@@ -145,19 +161,31 @@ export function PublicLayout() {
             to="/"
             onClick={onHomeLogoClick}
             className={cn(
-              'group relative flex min-w-0 max-w-[min(100%,14rem)] shrink items-center gap-2 no-underline transition duration-200 sm:gap-2.5',
+              'group relative flex min-w-0 max-w-[min(100%,21rem)] shrink items-center gap-2 no-underline transition duration-200 sm:gap-2.5',
               'overflow-hidden desk:shrink-0',
               'hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               'active:scale-[0.97]',
-              onLightMarketing ? 'text-zinc-950' : 'text-white',
+              onLightMarketing ? 'text-zinc-950 hover:text-zinc-800' : 'text-white',
               headerLightMobilePill && 'focus-visible:ring-stone-400/35 focus-visible:ring-offset-[#faf9f7]',
             )}
             aria-label="Porpin home"
           >
-            <span className="relative flex size-10 shrink-0 items-center justify-center">
+            <span
+              className={cn(
+                'relative flex shrink-0 items-center justify-center',
+                showHeaderWordmark ? 'size-12 sm:size-14' : 'size-10',
+              )}
+            >
               <PorpinMark className="size-full" aria-hidden />
             </span>
-            {onLanding ? <PorpinWordmark className="min-w-0 truncate" /> : null}
+            {showHeaderWordmark ? (
+              <PorpinWordmark
+                className={cn(
+                  'min-w-0 truncate',
+                  '!text-[1.7rem] !tracking-[-0.05em] tab:!text-[1.95rem] sm:!text-[2.2rem]',
+                )}
+              />
+            ) : null}
           </Link>
 
           <nav
@@ -259,7 +287,7 @@ export function PublicLayout() {
                     </button>
                   </div>
                   <nav
-                    className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-y-contain px-3 py-3"
+                    className="flex flex-1 flex-col gap-1.5 overflow-visible px-3 py-2"
                     aria-label="Marketing mobile"
                   >
                     <Link
@@ -268,7 +296,13 @@ export function PublicLayout() {
                       aria-current={onPricing ? 'page' : undefined}
                       onClick={closeMenu}
                     >
-                      Pricing
+                      <span className={publicDrawerIconWrapClass} aria-hidden>
+                        <Sparkles
+                          className={onPricing ? publicMenuIconOnSolidClass : publicMenuIconMutedClass}
+                          aria-hidden
+                        />
+                      </span>
+                      <span className="min-w-0 flex-1 leading-4">Pricing</span>
                     </Link>
                     <Link
                       to="/login"
@@ -276,7 +310,13 @@ export function PublicLayout() {
                       aria-current={onLogin ? 'page' : undefined}
                       onClick={closeMenu}
                     >
-                      Log in
+                      <span className={publicDrawerIconWrapClass} aria-hidden>
+                        <LogIn
+                          className={loginNavActive ? publicMenuIconOnSolidClass : publicMenuIconMutedClass}
+                          aria-hidden
+                        />
+                      </span>
+                      <span className="min-w-0 flex-1 leading-4">Log in</span>
                     </Link>
                     <Link
                       to="/signup"
@@ -289,7 +329,15 @@ export function PublicLayout() {
                       aria-current={onSignup ? 'page' : undefined}
                       onClick={closeMenu}
                     >
-                      Sign up
+                      <span className={publicDrawerIconWrapClass} aria-hidden>
+                        <UserPlus
+                          className={
+                            signupProminent ? publicMenuIconOnSolidClass : publicMenuIconMutedClass
+                          }
+                          aria-hidden
+                        />
+                      </span>
+                      <span className="min-w-0 flex-1 leading-4">Sign up</span>
                     </Link>
                   </nav>
                 </aside>
@@ -313,15 +361,15 @@ export function PublicLayout() {
                   aria-modal="true"
                   aria-label="Site navigation"
                   className={cn(
-                    'fixed z-[90] box-border max-h-[min(75dvh,calc(100dvh-7rem))] min-w-0 overflow-y-auto overscroll-contain',
+                    'fixed z-[90] box-border min-w-0 overflow-visible',
                     'left-4 right-4 w-auto max-w-none tab:left-6 tab:right-6',
                     'top-[calc(env(safe-area-inset-top,0px)+1rem+4.5rem+0.5rem)]',
                     'desk:hidden',
                   )}
                 >
-                  <div className="box-border w-full max-w-none rounded-[1.35rem] border border-stone-200/25 bg-[#fefdfb] p-2 shadow-[0_10px_40px_-12px_rgba(28,25,23,0.18),0_4px_16px_-8px_rgba(28,25,23,0.08)]">
+                  <div className="box-border w-full max-w-none rounded-[1.35rem] border border-stone-200/25 bg-[#fefdfb] p-1.5 shadow-[0_10px_40px_-12px_rgba(28,25,23,0.18),0_4px_16px_-8px_rgba(28,25,23,0.08)]">
                     <nav
-                      className="flex w-full min-w-0 flex-col gap-0.5"
+                      className="flex w-full min-w-0 flex-col gap-0"
                       aria-label="Marketing mobile menu"
                     >
                       <Link
@@ -330,7 +378,10 @@ export function PublicLayout() {
                         aria-current={onPricing ? 'page' : undefined}
                         onClick={closeMenu}
                       >
-                        Pricing
+                        <span className={publicMobileIconWrapClass} aria-hidden>
+                          <Sparkles className={publicMenuIconMutedClass} aria-hidden />
+                        </span>
+                        <span className={publicMobileMenuLabelClass}>Pricing</span>
                       </Link>
                       <Link
                         to="/login"
@@ -338,7 +389,10 @@ export function PublicLayout() {
                         aria-current={onLogin ? 'page' : undefined}
                         onClick={closeMenu}
                       >
-                        Log in
+                        <span className={publicMobileIconWrapClass} aria-hidden>
+                          <LogIn className={publicMenuIconMutedClass} aria-hidden />
+                        </span>
+                        <span className={publicMobileMenuLabelClass}>Log in</span>
                       </Link>
                       <Link
                         to="/signup"
@@ -346,7 +400,10 @@ export function PublicLayout() {
                         aria-current={onSignup ? 'page' : undefined}
                         onClick={closeMenu}
                       >
-                        Sign up
+                        <span className={publicMobileIconWrapClass} aria-hidden>
+                          <UserPlus className={publicMenuIconMutedClass} aria-hidden />
+                        </span>
+                        <span className={publicMobileMenuLabelClass}>Sign up</span>
                       </Link>
                     </nav>
                   </div>

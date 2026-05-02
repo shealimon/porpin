@@ -9,7 +9,7 @@ export function Layout() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <NavLink to="/" className="app-brand">
+        <NavLink to="/" className="app-brand" aria-label="Porpin home">
           <PorpinWordmark />
         </NavLink>
         <nav className="app-nav" aria-label="Main">

@@ -1,12 +1,18 @@
 import { useEffect, useState, type ComponentProps, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Loader2, Mail, Save, User } from 'lucide-react'
+import { ArrowLeft, Loader2, Mail, MapPin } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom'
 
 import { apiClient } from '@/api/client'
-import { fieldControlInputCompactClassName, Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { loadAccountProfileForQuery } from '@/lib/accountProfileLoad'
+import { appPageHeaderClass, appPageTitleClass } from '@/lib/appPageLayout'
+import {
+  authFormLabelLightClass,
+  authFormPrimaryButtonLightClass,
+} from '@/lib/authFormStyles'
 import { qk } from '@/lib/queryKeys'
 import {
   applySyncProfileResponse,
@@ -15,15 +21,53 @@ import {
 import { supabaseUserToAuthUser } from '@/lib/mapSupabaseUser'
 import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
 import { useAuthStore } from '@/stores/authStore'
-import {
-  appPageDescriptionClass,
-  appPageHeaderClass,
-  appPageShellClass,
-  appPageTitleClass,
-} from '@/lib/appPageLayout'
 import { cn } from '@/lib/utils'
-import { IN_CODE_LABEL, IN_DIAL, formatInMobileForApi, parseInMobileToLocal } from '@/lib/phoneCountryCodes'
+import { formatInMobileForApi, parseInMobileToLocal } from '@/lib/phoneCountryCodes'
 import { displayNameFromNameParts, setStoredUserName } from '@/utils/greeting'
+
+/** ≤480px horizontal rhythm — split L/R so insets match safe areas and stay symmetric. */
+const settingsPhoneInsetXClass = cn(
+  'phone:pl-[max(1rem,env(safe-area-inset-left))] phone:pr-[max(1rem,env(safe-area-inset-right))]',
+)
+
+/** Fixed footer: pin with explicit `left`+`right` (not `100vw` + padding) so width stays centered in the viewport. */
+const settingsPhoneSaveBarPositionClass = cn(
+  'phone:left-[max(1rem,env(safe-area-inset-left))] phone:right-[max(1rem,env(safe-area-inset-right))]',
+  'phone:w-auto phone:max-w-none phone:min-w-0',
+)
+
+/** Light “edit profile” fields — compact height on phones; standard from `tab` up. */
+const profileInputClassName = cn(
+  'box-border w-full max-w-full min-w-0 rounded-xl border border-zinc-200 bg-white py-0 text-left shadow-none outline-none transition-colors placeholder:text-zinc-400',
+  'h-12 min-h-12 px-4 text-base leading-normal text-zinc-900',
+  'hover:border-zinc-300 focus-visible:border-zinc-500 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-zinc-400/25 focus-visible:ring-offset-0',
+  'dark:border-zinc-600 dark:bg-zinc-900/90 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus-visible:border-zinc-400 dark:focus-visible:ring-zinc-500/25 dark:focus-visible:ring-inset',
+  /* Phone: slightly taller controls + soft depth (native-sheet feel) */
+  'phone:h-[3.25rem] phone:min-h-[3.25rem] phone:rounded-2xl phone:px-[1.0625rem] phone:shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
+  'tab:h-11 tab:min-h-11 tab:rounded-lg tab:px-3 tab:text-sm tab:leading-5',
+)
+
+function ProfileInputTrail({
+  className,
+  children,
+  trailing,
+}: {
+  className?: string
+  children: ReactNode
+  trailing: ReactNode
+}) {
+  return (
+    <div className={cn('relative min-w-0 w-full max-w-full', className)}>
+      {children}
+      <span
+        className="pointer-events-none absolute right-[0.6875rem] top-1/2 z-[1] flex size-9 shrink-0 -translate-y-1/2 items-center justify-center text-zinc-400 dark:text-zinc-500"
+        aria-hidden
+      >
+        <span className="[&_svg]:size-[1.125rem]">{trailing}</span>
+      </span>
+    </div>
+  )
+}
 
 function SectionCard({
   children,
@@ -33,9 +77,11 @@ function SectionCard({
   return (
     <section
       className={cn(
-        'rounded-2xl border border-zinc-200/90 bg-white shadow-sm',
-        'dark:border-zinc-800 dark:bg-zinc-950/80',
-        'p-5 sm:p-6',
+        /* Narrow viewports: flush on app canvas; tab+ uses card. */
+        'min-w-0 max-w-full rounded-none border-0 bg-transparent px-0 py-0 shadow-none',
+        /* Tablet+: classic card rhythm */
+        'tab:rounded-2xl tab:border tab:border-zinc-200/90 tab:bg-white tab:p-6 tab:shadow-sm',
+        'dark:tab:border-zinc-800 dark:tab:bg-zinc-950/80',
         className,
       )}
       {...props}
@@ -55,25 +101,34 @@ function ProfileField({
   children: ReactNode
 }) {
   return (
-    <div className="min-w-0 space-y-2">
-      <Label htmlFor={id} className="text-zinc-700 dark:text-zinc-300">
+    <div className="flex min-w-0 w-full max-w-full flex-col space-y-2 phone:space-y-1.5 tab:space-y-3">
+      <Label
+        htmlFor={id}
+        className={cn(
+          authFormLabelLightClass,
+          'block w-full text-left',
+          'text-zinc-500 dark:text-zinc-400',
+          'phone:text-[0.6875rem] phone:tracking-[0.12em] phone:text-zinc-400 dark:phone:text-zinc-500',
+        )}
+      >
         {label}
       </Label>
-      {children}
+      <div className="w-full min-w-0 max-w-full">{children}</div>
     </div>
   )
 }
 
 function ProfileFieldSkeleton() {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 tab:space-y-3">
       <div className="h-3 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-      <div className="h-10 w-full animate-pulse rounded-xl bg-zinc-200/90 dark:bg-zinc-800/90" />
+      <div className="h-12 w-full animate-pulse rounded-xl bg-zinc-200/90 dark:bg-zinc-800/90 tab:h-11 tab:rounded-lg" />
     </div>
   )
 }
 
 export function SettingsPage() {
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const authHydrated = useAuthStore((s) => s.authHydrated)
   const user = useAuthStore((s) => s.user)
@@ -114,6 +169,8 @@ export function SettingsPage() {
   }, [profileQuery.data, user?.firstName, user?.lastName])
 
   const showProfileSkeleton = canFetchProfile && profileQuery.isPending && !profileQuery.data
+
+  const email = user?.email ?? ''
 
   const onSaveProfile = async () => {
     setSaving(true)
@@ -176,67 +233,82 @@ export function SettingsPage() {
   }
 
   return (
-    <div className={cn(appPageShellClass, 'space-y-8 sm:space-y-10')}>
-      <header className={appPageHeaderClass}>
-        <h1 className={appPageTitleClass}>Account</h1>
-        <p className={appPageDescriptionClass}>
-          Keep your profile details up to date for a faster, personalized experience.
-        </p>
-      </header>
+    <div
+      className={cn(
+        'mx-auto min-w-0 w-full pb-2 tab:max-w-full tab:pb-0 desk:max-w-xl desk:space-y-10',
+        /* Tablet+: centered card column */
+        'max-w-md tab:max-w-full',
+        /* Phone: full-width sheet (native settings) — one inset column via inner wrapper below */
+        'phone:max-w-none phone:px-0',
+      )}
+    >
+      {/* Phones: single horizontal gutter for header + fields (tab+ uses display:contents so layout unchanged). */}
+      <div
+        className={cn(
+          'phone:box-border phone:w-full phone:min-w-0 phone:max-w-full',
+          settingsPhoneInsetXClass,
+          /* Tablet+: participate in `AppLayout` horizontal padding; no extra inset here */
+          'tab:contents tab:max-w-full tab:p-0',
+        )}
+      >
+        <header
+          className={cn(
+            appPageHeaderClass,
+            'mb-4 w-full min-w-0 max-w-full tab:mb-7 desk:mb-8',
+            /* Phone: same block header as BillingPage (title only, no back). */
+            'phone:block',
+            /* Narrow tablet: back + centered title + spacer */
+            'tab:flex tab:min-h-[2.875rem] tab:items-center',
+            'desk:block',
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className={cn(
+              'relative z-10 inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center',
+              'rounded-none border-0 bg-transparent p-0',
+              'text-zinc-900 transition-opacity hover:opacity-60 active:opacity-45',
+              'dark:text-zinc-50',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/25 focus-visible:ring-offset-0 dark:focus-visible:ring-zinc-300/35',
+              'phone:hidden desk:hidden',
+              'tab:-ml-1 tab:rounded-full tab:transition-[transform,background-color,opacity] tab:hover:bg-zinc-100/90 tab:hover:opacity-100 tab:active:scale-[0.96] dark:tab:hover:bg-zinc-800/80',
+            )}
+            aria-label="Go back"
+          >
+            <ArrowLeft className="size-[1.35rem]" aria-hidden strokeWidth={2} />
+          </button>
+          <h1
+            className={cn(
+              appPageTitleClass,
+              'w-full min-w-0 max-w-full truncate',
+              'tab:min-w-0 tab:flex-1 tab:text-center',
+              'desk:text-left',
+            )}
+          >
+            Profile
+          </h1>
+          <span
+            className="inline-flex size-11 shrink-0 select-none phone:hidden desk:hidden"
+            aria-hidden
+          />
+        </header>
 
-      <SectionCard aria-labelledby="profile-heading">
-        <div className="border-b border-zinc-100 pb-5 dark:border-zinc-800">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h2
-                id="profile-heading"
-                className="flex items-center gap-2 font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-50"
-              >
-                <User className="size-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
-                Profile
-              </h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                Saved to your account. Name fields sync with your sign-in when possible.
-              </p>
-            </div>
-            <span
-              className={cn(
-                'inline-flex h-7 shrink-0 items-center rounded-full border px-2.5 text-xs font-medium',
-                'border-emerald-200 bg-emerald-50 text-emerald-700',
-                'dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300',
-              )}
-            >
-              Secure profile
-            </span>
-          </div>
-
-          {user?.email ? (
-            <div
-              className={cn(
-                'mt-4 flex min-h-11 items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-2.5 text-sm',
-                'dark:border-zinc-800 dark:bg-zinc-900/50',
-              )}
-            >
-              <span
-                className={cn(
-                  'inline-flex size-7 shrink-0 items-center justify-center rounded-lg border',
-                  'border-brand-200/80 bg-brand-50/90 dark:border-brand-500/30 dark:bg-brand-950/50',
-                )}
-                aria-hidden
-              >
-                <Mail className="size-[0.9rem] text-brand-600 dark:text-brand-400" />
-              </span>
-              <p className="min-w-0 py-0.5 leading-snug">
-                <span className="text-zinc-500 dark:text-zinc-400">Signed in as </span>
-                <span className="break-all font-medium text-zinc-900 dark:text-zinc-100">{user.email}</span>
-              </p>
-            </div>
-          ) : null}
-        </div>
+        <SectionCard
+          aria-labelledby="profile-form-title"
+          className={cn(
+            /* Phone: no second surface — fields sit on same canvas as AppLayout (avoids stacked whites/grays). */
+            'phone:mt-3 phone:rounded-none phone:border-0 phone:bg-transparent phone:py-5 phone:shadow-none',
+            'dark:phone:bg-transparent',
+          )}
+        >
+        <h2 id="profile-form-title" className="sr-only">
+          Your profile details
+        </h2>
 
         {profileQuery.isError && canFetchProfile ? (
           <div
-            className="mt-5 rounded-xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-900 dark:border-red-900/40 dark:bg-red-950/35 dark:text-red-100"
+            className="mb-4 rounded-xl border border-red-200 bg-red-50/90 px-4 py-2.5 text-sm text-red-900 tab:mb-6 tab:py-3 dark:border-red-900/40 dark:bg-red-950/35 dark:text-red-100"
             role="alert"
           >
             <p className="font-medium">Profile could not be loaded</p>
@@ -251,131 +323,164 @@ export function SettingsPage() {
         ) : null}
 
         {showProfileSkeleton ? (
-          <div className="mt-6 space-y-5" aria-busy>
-            <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-              <Loader2 className="size-4 animate-spin text-brand-600 dark:text-brand-400" aria-hidden />
+          <div className="space-y-3 phone:space-y-5 tab:space-y-7" aria-busy>
+            <div className="flex items-center justify-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <Loader2 className="size-4 animate-spin text-zinc-600 dark:text-zinc-400" aria-hidden />
               Loading profile…
             </div>
             <ProfileFieldSkeleton />
             <ProfileFieldSkeleton />
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid min-w-0 max-w-full grid-cols-1 gap-3 tab:grid-cols-2 tab:gap-x-6 tab:gap-y-7 desk:grid-cols-1">
               <ProfileFieldSkeleton />
               <ProfileFieldSkeleton />
             </div>
           </div>
         ) : (
-          <div className="mt-6 flex flex-col gap-6">
-            <div className="grid grid-cols-1 gap-4">
-              <ProfileField id="profile-first" label="First name">
-                <Input
-                  id="profile-first"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  autoComplete="given-name"
-                  className={fieldControlInputCompactClassName}
-                  placeholder="First name"
-                />
-              </ProfileField>
-              <ProfileField id="profile-last" label="Last name">
-                <Input
-                  id="profile-last"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  autoComplete="family-name"
-                  className={fieldControlInputCompactClassName}
-                  placeholder="Last name"
-                />
-              </ProfileField>
-            </div>
+          <>
+            <div
+              className={cn(
+                'flex w-full min-w-0 max-w-full flex-col gap-3',
+                'phone:gap-5',
+                'pb-[calc(4.75rem+env(safe-area-inset-bottom,0px))] phone:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]',
+                'tab:gap-6 tab:pb-0 desk:pb-0',
+              )}
+            >
+              {email ? (
+                <ProfileField id="profile-email-ro" label="Email">
+                  <ProfileInputTrail trailing={<Mail className="stroke-[1.85]" aria-hidden />}>
+                    <Input
+                      id="profile-email-ro"
+                      readOnly
+                      tabIndex={-1}
+                      value={email}
+                      aria-label="Your email address (read only)"
+                      className={cn(
+                        profileInputClassName,
+                        'cursor-default break-all pr-12 text-left text-zinc-600 ring-0 dark:text-zinc-400',
+                      )}
+                    />
+                  </ProfileInputTrail>
+                  <p className="sr-only">
+                    Signed in email cannot be edited here.
+                  </p>
+                </ProfileField>
+              ) : null}
 
-            <div className="min-w-0 space-y-2">
-              <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300" id="profile-mobile-group">
-                Mobile
+              <div className="grid min-w-0 max-w-full grid-cols-1 gap-3 phone:gap-4 tab:grid-cols-2 tab:gap-x-6 tab:gap-y-6 desk:grid-cols-1 desk:gap-y-7">
+                <ProfileField id="profile-first" label="First name">
+                  <Input
+                    id="profile-first"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    autoComplete="given-name"
+                    className={profileInputClassName}
+                    placeholder="First name"
+                  />
+                </ProfileField>
+                <ProfileField id="profile-last" label="Last name">
+                  <Input
+                    id="profile-last"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    autoComplete="family-name"
+                    className={profileInputClassName}
+                    placeholder="Last name"
+                  />
+                </ProfileField>
               </div>
-              <div
-                className="flex min-w-0 items-stretch gap-2"
-                role="group"
-                aria-labelledby="profile-mobile-group"
-              >
-                <div
-                  className={cn(
-                    'flex h-9 min-h-9 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-zinc-300 px-2 text-xs tabular-nums leading-none',
-                    'text-zinc-600 dark:border-zinc-600 dark:text-zinc-300',
-                  )}
-                  title={`${IN_CODE_LABEL} ${IN_DIAL}`}
-                  aria-hidden
-                >
-                  <span className="font-semibold text-zinc-700 dark:text-zinc-200">{IN_CODE_LABEL}</span>
-                  <span className="text-zinc-500 dark:text-zinc-400">{IN_DIAL}</span>
-                </div>
+
+              <ProfileField id="profile-mobile-local" label="Mobile">
                 <Input
                   id="profile-mobile-local"
                   value={mobileLocal}
                   onChange={(e) => setMobileLocal(e.target.value.replace(/\D/g, ''))}
                   autoComplete="tel-national"
                   inputMode="numeric"
-                  className={cn(fieldControlInputCompactClassName, 'min-w-0 flex-1')}
-                  placeholder="10-digit number"
+                  className={profileInputClassName}
+                  placeholder="10-digit mobile number"
                   aria-label="Mobile number"
                 />
+              </ProfileField>
+
+              <div className="grid min-w-0 max-w-full grid-cols-1 gap-3 phone:gap-4 tab:grid-cols-2 tab:gap-x-6 tab:gap-y-6 desk:grid-cols-1 desk:gap-y-7">
+                <ProfileField id="profile-city" label="City">
+                  <ProfileInputTrail trailing={<MapPin className="stroke-[1.85]" aria-hidden />}>
+                    <Input
+                      id="profile-city"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      autoComplete="address-level2"
+                      className={cn(profileInputClassName, 'break-words pr-12')}
+                      placeholder="Your city"
+                    />
+                  </ProfileInputTrail>
+                </ProfileField>
+                <ProfileField id="profile-country" label="Country">
+                  <ProfileInputTrail trailing={<MapPin className="stroke-[1.85]" aria-hidden />}>
+                    <Input
+                      id="profile-country"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      autoComplete="country-name"
+                      className={cn(profileInputClassName, 'break-words pr-12')}
+                      placeholder="Country"
+                    />
+                  </ProfileInputTrail>
+                </ProfileField>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <ProfileField id="profile-city" label="City">
-                <Input
-                  id="profile-city"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  autoComplete="address-level2"
-                  className={fieldControlInputCompactClassName}
-                  placeholder="City"
-                />
-              </ProfileField>
-              <ProfileField id="profile-country" label="Country">
-                <Input
-                  id="profile-country"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  autoComplete="country-name"
-                  className={fieldControlInputCompactClassName}
-                  placeholder="Country"
-                />
-              </ProfileField>
-            </div>
-
-            <div className="sticky bottom-0 -mx-5 border-t border-zinc-100 bg-white/95 px-5 pb-1 pt-4 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-zinc-800 dark:bg-zinc-950/90 dark:supports-[backdrop-filter]:bg-zinc-950/70 sm:static sm:mx-0 sm:flex sm:justify-center sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-5 sm:backdrop-blur-0">
-              <button
-                type="button"
-                onClick={() => void onSaveProfile()}
-                disabled={saving}
+            <div
+              className={cn(
+                /* Phone: docked bar — `left`+`right` insets (not full-bleed + px) keeps the strip symmetric vs scrollbars */
+                'phone:pointer-events-none phone:fixed phone:bottom-0 phone:z-[90]',
+                settingsPhoneSaveBarPositionClass,
+                'phone:box-border phone:min-w-0',
+                'phone:border-t phone:border-zinc-200/50 phone:bg-[var(--manus-canvas)] phone:pt-3 phone:shadow-none phone:backdrop-blur-none phone:supports-[backdrop-filter]:bg-[var(--manus-canvas)]',
+                'phone:pb-[max(1rem,env(safe-area-inset-bottom))]',
+                'dark:phone:border-zinc-800/50 dark:phone:bg-[var(--manus-canvas)] dark:phone:shadow-none dark:phone:supports-[backdrop-filter]:bg-[var(--manus-canvas)]',
+                /* Tablet/desktop: flow below fields inside the card */
+                'tab:relative tab:inset-auto tab:left-auto tab:right-auto tab:bottom-auto tab:z-auto tab:mx-0 tab:mt-8 tab:flex tab:w-full tab:max-w-none tab:justify-center tab:border-0 tab:bg-transparent tab:p-0 tab:px-0 tab:shadow-none tab:backdrop-blur-none tab:pointer-events-auto dark:tab:bg-transparent',
+              )}
+            >
+              <div
                 className={cn(
-                  'inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border-0 px-5',
-                  'text-sm font-semibold text-white',
-                  'bg-emerald-600 shadow-md shadow-black/10',
-                  'transition hover:bg-emerald-700 hover:shadow-lg hover:shadow-black/15 active:scale-[0.98]',
-                  'dark:bg-emerald-500 dark:hover:bg-emerald-400',
-                  'outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400/50 dark:focus-visible:outline-zinc-500/50',
-                  'disabled:pointer-events-none disabled:opacity-60',
-                  'sm:min-w-[8.5rem] sm:w-auto',
+                  'pointer-events-auto min-w-0 max-w-full rounded-2xl border border-zinc-200/85 bg-white/98 p-1 shadow-[0_-8px_32px_-12px_rgba(15,23,42,0.14)] backdrop-blur-md',
+                  /* Phone: row centers the control; button fills the inset strip so it lines up with fields */
+                  'phone:flex phone:w-full phone:min-w-0 phone:max-w-full phone:justify-center phone:rounded-none phone:border-0 phone:bg-transparent phone:p-0 phone:shadow-none phone:backdrop-blur-none',
+                  'tab:box-border tab:flex tab:w-full tab:justify-center',
+                  'dark:border-zinc-700 dark:bg-zinc-950 dark:shadow-black/40',
+                  'tab:max-w-none tab:rounded-none tab:border-0 tab:bg-transparent tab:p-0 tab:shadow-none dark:tab:bg-transparent',
                 )}
               >
-                {saving ? (
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 className="size-4 animate-spin" aria-hidden />
-                    Saving…
-                  </span>
-                ) : (
-                  <>
-                    <Save className="size-4 shrink-0" aria-hidden />
-                    Save
-                  </>
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => void onSaveProfile()}
+                  disabled={saving}
+                  className={cn(
+                    authFormPrimaryButtonLightClass,
+                    'box-border inline-flex touch-manipulation items-center justify-center gap-2',
+                    'h-12 min-h-12 w-full max-w-full min-w-0 rounded-[0.875rem] tab:h-11 tab:min-h-11 tab:w-auto tab:rounded-lg tab:px-10',
+                    'shadow-sm dark:hover:!bg-zinc-700',
+                    /* Phone: full width of inset bar = same edges as inputs above */
+                    'phone:pointer-events-auto phone:mx-auto phone:h-[3.25rem] phone:min-h-[3.25rem] phone:w-full phone:max-w-full phone:shrink-0 phone:rounded-2xl phone:text-[0.9375rem] phone:font-semibold phone:tracking-wide phone:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.25)]',
+                  )}
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" aria-hidden />
+                      Saving…
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
+          </>
         )}
-      </SectionCard>
+        </SectionCard>
+      </div>
     </div>
   )
 }

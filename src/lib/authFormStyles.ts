@@ -28,7 +28,8 @@ export const authFormLabelClass =
 
 /** Light marketing shell (login / signup / forgot) — white field, neutral gray border. */
 export const authFormFieldCompactLightClass = cn(
-  'box-border h-9 min-h-9 rounded-md border border-zinc-300 bg-white py-0 pl-3 pr-3 text-[0.8125rem] leading-5 sm:text-sm sm:leading-5',
+  /* Mobile: 16px text avoids iOS zoom-on-focus; taller field for touch targets. */
+  'box-border h-11 min-h-11 rounded-md border border-zinc-300 bg-white py-0 pl-3 pr-3 text-base leading-normal sm:h-9 sm:min-h-9 sm:text-sm sm:leading-5',
   'text-zinc-900 shadow-sm placeholder:text-zinc-400',
   'transition-colors hover:border-zinc-400',
   'focus-visible:border-zinc-500 focus-visible:ring-2 focus-visible:ring-zinc-400/25 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
@@ -48,9 +49,35 @@ export const authFormFieldPasswordLightClass = cn(
 
 /** Black CTA on light auth cards (login / signup / forgot). */
 export const authFormPrimaryButtonLightClass = cn(
-  'h-10 w-full rounded-md border-0 text-[0.8125rem] font-semibold shadow-md sm:text-sm',
+  'h-11 min-h-11 w-full rounded-md border-0 text-[0.9375rem] font-semibold shadow-md sm:h-10 sm:min-h-10 sm:text-sm',
   '!bg-zinc-950 !text-white',
   'hover:!bg-zinc-800',
   'focus-visible:ring-2 focus-visible:ring-zinc-950/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
   'disabled:opacity-55',
 )
+
+/** Outer scroll shell: full-width white canvas below the public header (no floating-card gutters). */
+export const authLightMobilePageShellClass = cn(
+  'phone:bg-white phone:justify-start phone:px-0 phone:py-0 phone:pt-0 phone:pb-0',
+)
+
+/** Card becomes an edge-to-edge sheet on small screens. */
+export const authLightMobileCardClass = cn(
+  'phone:flex-1 phone:min-h-0 phone:w-full phone:max-w-full phone:rounded-none phone:border-0 phone:shadow-none phone:ring-0 phone:bg-white',
+)
+
+/** Horizontal safe-area inset only (pair with pt/pb; avoids double horizontal padding). */
+export const authLightMobileContentInsetClass = cn(
+  'phone:pl-[max(1rem,env(safe-area-inset-left))] phone:pr-[max(1rem,env(safe-area-inset-right))]',
+)
+
+/** Header / hero copy: app-style left alignment under `authLightMobileContentInsetClass`. */
+export const authLightMobileHeaderAlignClass = cn(
+  'phone:items-start phone:text-left',
+)
+
+/** Title row (icon + heading): left on mobile, centered from `sm`. */
+export const authLightMobileTitleRowClass = cn('phone:justify-start')
+
+/** Duplicated mark in the card: hide on mobile when the public header already shows the brand. */
+export const authLightMobileHideCardLogoClass = 'phone:hidden'

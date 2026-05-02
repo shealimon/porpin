@@ -53,9 +53,9 @@ export function LandingPage() {
             )}
           >
             <span className="block break-words">
-              Turn your content into{' '}
+              Understand any document{' '}
               <span className="relative inline-block">
-                <span className="relative z-[1]">natural Hinglish</span>
+                <span className="relative z-[1]">without struggle</span>
                 <span
                   className="absolute -inset-x-1 -bottom-0.5 top-[62%] -z-0 rounded-sm bg-orange-200/70 sm:-inset-x-1.5"
                   aria-hidden
@@ -64,7 +64,8 @@ export function LandingPage() {
               .
             </span>
             <span className="mx-auto mt-8 block w-full min-w-0 max-w-2xl !text-lg !font-normal !leading-relaxed !tracking-normal text-pretty text-stone-600 break-words sm:mt-10 sm:max-w-3xl sm:!text-xl">
-              Upload a file—get Hinglish that sounds natural and familiar.
+              <span className="block">Turn full documents into easy Hinglish in one click.</span>
+              <span className="mt-2 block sm:mt-2.5">No confusion. Just clear reading.</span>
             </span>
           </h1>
 
@@ -121,15 +122,15 @@ export function LandingPage() {
             to="/"
             className={cn(
               'group flex items-center gap-2.5 no-underline transition duration-200',
-              'text-stone-950 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/25 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+              'text-zinc-950 hover:text-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
               'active:scale-[0.97]',
             )}
             aria-label="Porpin home"
           >
-            <span className="flex size-10 shrink-0 items-center justify-center">
+            <span className="flex size-12 shrink-0 items-center justify-center sm:size-14">
               <PorpinMark className="size-full" aria-hidden />
             </span>
-            <PorpinWordmark />
+            <PorpinWordmark className="!text-[1.85rem] !tracking-[-0.05em] sm:!text-[2.35rem]" />
           </Link>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm tab:gap-x-8 tab:text-base">
             <p className="m-0 text-stone-500">© 2026 Porpin</p>

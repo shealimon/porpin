@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
-  BadgeCheck,
   CreditCard,
   Gift,
   History,
   LogOut,
   Menu,
   Sparkles,
+  UserRound,
   X,
 } from 'lucide-react'
 
@@ -56,6 +56,8 @@ export function AppLayout() {
       ? location.pathname.slice(0, -1)
       : location.pathname
   const isUploadRoute = path === '/app/upload'
+  /** Edge-to-edge, app-like chrome on phones; desktop stays centered canvas + card rhythm. */
+  const isAccountSettingsRoute = /^\/app\/settings(\/|$)/.test(location.pathname)
   const isHiddenScrollbarMainRoute =
     /^\/app\/(settings|billing|history|invite)(\/|$)/.test(location.pathname) || isUploadRoute
 
@@ -103,10 +105,25 @@ export function AppLayout() {
   }
 
   const menuRowClass =
-    'flex w-full cursor-pointer items-center gap-2 rounded-md bg-transparent px-2 py-2 text-left text-sm font-normal text-zinc-950 no-underline outline-none hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-2 focus-visible:ring-zinc-900/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-50 dark:hover:bg-transparent dark:focus-visible:bg-transparent dark:focus-visible:ring-zinc-100/20 dark:focus-visible:ring-offset-zinc-950'
+    'flex w-full cursor-pointer items-center gap-2 rounded-md bg-transparent px-2 py-2 text-left font-outfit text-[0.9375rem] font-medium leading-5 text-zinc-950 no-underline outline-none hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-2 focus-visible:ring-zinc-900/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-50 dark:hover:bg-transparent dark:focus-visible:bg-transparent dark:focus-visible:ring-zinc-100/20 dark:focus-visible:ring-offset-zinc-950'
+  const deskMenuIconWrapClass =
+    'inline-flex size-4 shrink-0 items-center justify-center text-zinc-500 dark:text-zinc-400 [&_svg]:block [&_svg]:size-3.5'
 
-  const menuRowMobileClass =
-    'flex w-full min-h-10 cursor-pointer items-center gap-2 rounded-md bg-transparent px-2 py-2 text-left text-sm font-normal leading-snug text-zinc-950 no-underline outline-none active:bg-zinc-100 hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 focus-visible:ring-offset-2 dark:text-zinc-50 dark:hover:bg-zinc-800/60 dark:active:bg-zinc-800/80 dark:focus-visible:ring-zinc-100/20'
+  /** Icon slots: fixed box + centered SVG so labels align across Lucide glyphs. */
+  const appMobileSheetIconWrapClass =
+    'inline-flex size-[1.375rem] shrink-0 items-center justify-center text-zinc-500 dark:text-zinc-400 [&_svg]:block [&_svg]:size-[1.125rem]'
+  /** Match desktop `menuRowClass` typography (Outfit 15px / medium / leading-5). */
+  const appMobileSheetLabelClass =
+    'min-w-0 flex-1 font-outfit text-[0.9375rem] font-medium leading-5 text-inherit'
+  const appMobileSheetRowClass = cn(
+    'flex min-h-11 w-full min-w-0 items-center gap-2.5 rounded-xl px-3.5 py-2 text-left font-outfit text-[0.9375rem] font-medium leading-5 text-zinc-900 no-underline transition-colors antialiased',
+    'hover:bg-zinc-100/70 active:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800/55 dark:active:bg-zinc-800/75',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 focus-visible:ring-inset focus-visible:rounded-xl dark:focus-visible:ring-zinc-100/25',
+  )
+  const appMobileSheetRowButtonClass = cn(
+    appMobileSheetRowClass,
+    'cursor-pointer border-0 bg-transparent shadow-none [appearance:button]',
+  )
 
   const closeMenu = () => setMenuOpen(false)
 
@@ -132,16 +149,17 @@ export function AppLayout() {
     <div
       className={cn(
         'manus-app-shell flex h-svh max-h-svh min-h-0 flex-col overflow-hidden font-sans text-[0.9375rem] antialiased tab:text-base',
-        isUploadRoute && 'manus-app-shell--upload-chat-mobile',
+        isUploadRoute && 'manus-app-shell--upload-chat-mobile w-full max-w-full min-w-0',
       )}
     >
       <header
         className={cn(
           'relative z-[110] flex min-h-[3.25rem] shrink-0 items-center justify-between gap-2 border-b border-sidebar-border bg-[var(--manus-canvas)]',
-          /* Match main pane: same horizontal gutter on both sides (avoids lopsided header on mobile) */
-          'px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] pt-[max(0px,env(safe-area-inset-top))]',
+          /* Match main pane: same horizontal gutter on both sides (incl. sm:px-6 like `app-main-scroll`) */
+          'px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] pt-[max(0.5rem,env(safe-area-inset-top,0px))]',
+          'sm:px-6',
           isUploadRoute &&
-            'upload-chat-mobile-header border-zinc-200/85 desk:border-sidebar-border desk:bg-[var(--manus-canvas)]',
+            'upload-chat-mobile-header border-zinc-200/85 desk:border-sidebar-border desk:bg-[#f9f7f2] dark:desk:bg-zinc-900',
         )}
       >
         <div className="flex min-w-0 flex-1 items-center">
@@ -150,14 +168,14 @@ export function AppLayout() {
             aria-label="Porpin home — go to upload"
             title="Porpin"
             className={cn(
-              'group inline-flex h-11 min-h-[44px] max-w-[min(100%,14rem)] shrink-0 items-center gap-2 rounded-full px-2 py-1 no-underline visited:no-underline transition-colors',
+              'group inline-flex h-11 min-h-[44px] max-w-[min(100%,20rem)] shrink-0 items-center gap-2 rounded-full px-2 py-1 no-underline visited:no-underline transition-colors',
               'text-zinc-900 hover:bg-zinc-100/90 dark:text-zinc-50 dark:hover:bg-zinc-800/80',
               'desk:h-9 desk:min-h-0 desk:gap-2 desk:px-2.5',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--manus-canvas)]',
               'dark:focus-visible:ring-zinc-100/30 dark:focus-visible:ring-offset-zinc-950',
             )}
           >
-            <span className="inline-flex size-9 shrink-0 items-center justify-center text-zinc-900 dark:text-zinc-50 desk:size-8">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center desk:size-9">
               <PorpinMark className="size-full" aria-hidden />
             </span>
             <PorpinWordmark className="truncate" />
@@ -167,7 +185,8 @@ export function AppLayout() {
         <div
           ref={menuSurfaceRef}
           className={cn(
-            'relative flex items-center gap-1',
+            /* Match logo side: a little air from top + from the wordmark (inline-start / “left” in LTR) */
+            'relative flex items-center gap-1 py-0.5 ms-2 sm:ms-2.5 sm:py-1',
             isUploadRoute
               ? 'min-h-[44px] flex-1 justify-end gap-1 desk:min-h-0 desk:flex-initial desk:shrink-0 desk:justify-end'
               : 'shrink-0',
@@ -184,7 +203,7 @@ export function AppLayout() {
               menuOpen && 'bg-zinc-100 dark:bg-zinc-800/80',
             )}
             aria-expanded={menuOpen}
-            aria-controls="app-nav-drawer"
+            aria-controls="app-nav-mobile-menu"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           >
             {menuOpen ? <X className="size-5 shrink-0" aria-hidden /> : <Menu className="size-5 shrink-0" aria-hidden />}
@@ -202,7 +221,7 @@ export function AppLayout() {
             )}
             aria-expanded={menuOpen}
             aria-haspopup="menu"
-            aria-label="Account menu"
+            aria-label="Profile menu"
           >
             <span className="relative inline-flex size-10 shrink-0 items-center justify-center">
               <Avatar
@@ -234,123 +253,148 @@ export function AppLayout() {
                 type="button"
                 tabIndex={-1}
                 aria-hidden
-                className="fixed inset-0 z-[198] bg-black/45 desk:hidden"
+                className="fixed inset-0 z-[198] bg-black/35 desk:hidden"
                 onClick={closeMenu}
               />
-              <aside
-                id="app-nav-drawer"
+              <div
+                id="app-nav-mobile-menu"
                 role="dialog"
                 aria-modal="true"
                 aria-label="App navigation"
                 className={cn(
-                  'fixed right-0 top-0 z-[200] flex h-svh max-h-dvh w-[min(17.5rem,calc(100vw-env(safe-area-inset-left)))] min-w-0 flex-col text-sm',
-                  'border-l border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-950',
-                  'pt-[max(0px,env(safe-area-inset-top))] pb-[max(0px,env(safe-area-inset-bottom))]',
-                  'desk:hidden',
+                  'fixed z-[200] box-border min-w-0 overflow-visible desk:hidden',
+                  'left-[max(1rem,env(safe-area-inset-left))] right-[max(1rem,env(safe-area-inset-right))] w-auto max-w-none',
+                  'top-[calc(env(safe-area-inset-top,0px)+3.25rem+0.5rem)]',
                 )}
               >
-                <div className="flex items-center justify-between gap-2 border-b border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
-                  <p className="min-w-0 truncate text-sm font-semibold text-zinc-950 dark:text-zinc-50">Menu</p>
-                  <button
-                    type="button"
-                    onClick={closeMenu}
-                    className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800/80"
-                    aria-label="Close menu"
-                  >
-                    <X className="size-[1.125rem]" aria-hidden />
-                  </button>
-                </div>
-                <div className="flex items-center gap-2.5 border-b border-zinc-200 px-3 py-3 dark:border-zinc-800" role="none">
-                  <Avatar
-                    size="sm"
-                    className={cn(
-                      'size-9 shrink-0 rounded-md border border-zinc-200 bg-white shadow-sm',
-                      'dark:border-zinc-700 dark:bg-zinc-900',
-                    )}
-                    aria-hidden
-                  >
-                    {avatarUrl ? (
-                      <AvatarImage
-                        key={avatarUrl}
-                        src={avatarUrl}
-                        alt=""
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : null}
-                    <AvatarFallback className="rounded-md bg-white text-xs font-semibold text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
-                      {avatarFallbackLetter}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1 text-left">
-                    <p className="truncate text-sm font-semibold leading-tight text-zinc-950 dark:text-zinc-50">
-                      {displayName}
-                    </p>
-                    <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{email ?? '—'}</p>
-                  </div>
-                </div>
-                <nav
-                  className="flex min-h-0 flex-1 flex-col gap-0 overflow-y-auto overscroll-y-contain p-1.5"
-                  aria-label="App"
+                <div
+                  className={cn(
+                    'box-border w-full rounded-[1.35rem] border border-zinc-200/90 bg-white p-1.5 shadow-[0_10px_40px_-12px_rgba(22,22,23,0.16),0_4px_16px_-8px_rgba(22,22,23,0.08)]',
+                    'dark:border-zinc-700 dark:bg-zinc-950 dark:shadow-black/35',
+                  )}
                 >
-                  <Link role="menuitem" to="/#pricing" className={menuRowMobileClass} onClick={onMenuPricingClick}>
-                    <Sparkles className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                    <span>Upgrade Plan</span>
-                  </Link>
-                  <div className="mx-1.5 my-1.5 h-px bg-zinc-200 dark:bg-zinc-800" role="separator" />
-                  <Link
-                    role="menuitem"
-                    to="/app/settings"
-                    className={menuRowMobileClass}
-                    onClick={onMenuLinkClick('/app/settings')}
-                  >
-                    <BadgeCheck className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                    <span>Account</span>
-                  </Link>
-                  <Link
-                    role="menuitem"
-                    to="/app/billing"
-                    className={menuRowMobileClass}
-                    onClick={onMenuLinkClick('/app/billing')}
-                  >
-                    <CreditCard className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                    <span>Billing</span>
-                  </Link>
-                  <Link
-                    role="menuitem"
-                    to="/app/history"
-                    className={menuRowMobileClass}
-                    onClick={onMenuLinkClick('/app/history')}
-                  >
-                    <History className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                    <span>History</span>
-                  </Link>
-                  <Link
-                    role="menuitem"
-                    to="/app/invite"
-                    className={menuRowMobileClass}
-                    onClick={onMenuLinkClick('/app/invite')}
-                  >
-                    <Gift className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                    <span>Invite friends</span>
-                  </Link>
-                  <div className="mx-1.5 my-1.5 h-px bg-zinc-200 dark:bg-zinc-800" role="separator" />
                   <div
-                    role="menuitem"
-                    tabIndex={0}
-                    className={menuRowMobileClass}
-                    onClick={onLogout}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        void onLogout()
-                      }
-                    }}
+                    className="flex items-center gap-2 rounded-xl px-2.5 py-2"
+                    role="none"
                   >
-                    <LogOut className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                    <span>Log out</span>
+                    <Avatar
+                      size="sm"
+                      className={cn(
+                        'size-9 shrink-0 rounded-md border border-zinc-200 bg-white shadow-sm',
+                        'dark:border-zinc-700 dark:bg-zinc-900',
+                      )}
+                      aria-hidden
+                    >
+                      {avatarUrl ? (
+                        <AvatarImage
+                          key={avatarUrl}
+                          src={avatarUrl}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : null}
+                      <AvatarFallback className="rounded-md bg-white text-xs font-semibold text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+                        {avatarFallbackLetter}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="truncate text-sm font-semibold leading-tight text-zinc-950 dark:text-zinc-50">
+                        {displayName}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{email ?? '—'}</p>
+                    </div>
                   </div>
-                </nav>
-              </aside>
+                  <div
+                    className="mx-2 mb-0.5 h-px bg-zinc-200 dark:bg-zinc-800"
+                    role="separator"
+                  />
+                  <nav
+                    className="flex w-full min-w-0 flex-col gap-0"
+                    aria-label="App"
+                  >
+                    <Link
+                      role="menuitem"
+                      to="/#pricing"
+                      className={appMobileSheetRowClass}
+                      onClick={onMenuPricingClick}
+                    >
+                      <span className={appMobileSheetIconWrapClass} aria-hidden>
+                        <Sparkles aria-hidden />
+                      </span>
+                      <span className={appMobileSheetLabelClass}>Upgrade Plan</span>
+                    </Link>
+                    <div
+                      className="mx-2 my-0.5 h-px bg-zinc-200 dark:bg-zinc-800"
+                      role="separator"
+                    />
+                    <Link
+                      role="menuitem"
+                      to="/app/settings"
+                      className={appMobileSheetRowClass}
+                      onClick={onMenuLinkClick('/app/settings')}
+                    >
+                      <span className={appMobileSheetIconWrapClass} aria-hidden>
+                        <UserRound aria-hidden />
+                      </span>
+                      <span className={appMobileSheetLabelClass}>Profile</span>
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/app/billing"
+                      className={appMobileSheetRowClass}
+                      onClick={onMenuLinkClick('/app/billing')}
+                    >
+                      <span className={appMobileSheetIconWrapClass} aria-hidden>
+                        <CreditCard aria-hidden />
+                      </span>
+                      <span className={appMobileSheetLabelClass}>Billing</span>
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/app/history"
+                      className={appMobileSheetRowClass}
+                      onClick={onMenuLinkClick('/app/history')}
+                    >
+                      <span className={appMobileSheetIconWrapClass} aria-hidden>
+                        <History aria-hidden />
+                      </span>
+                      <span className={appMobileSheetLabelClass}>History</span>
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/app/invite"
+                      className={appMobileSheetRowClass}
+                      onClick={onMenuLinkClick('/app/invite')}
+                    >
+                      <span className={appMobileSheetIconWrapClass} aria-hidden>
+                        <Gift aria-hidden />
+                      </span>
+                      <span className={appMobileSheetLabelClass}>Invite friends</span>
+                    </Link>
+                    <div
+                      className="mx-2 my-0.5 h-px bg-zinc-200 dark:bg-zinc-800"
+                      role="separator"
+                    />
+                    <div
+                      role="menuitem"
+                      tabIndex={0}
+                      className={appMobileSheetRowButtonClass}
+                      onClick={onLogout}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          void onLogout()
+                        }
+                      }}
+                    >
+                      <span className={appMobileSheetIconWrapClass} aria-hidden>
+                        <LogOut aria-hidden />
+                      </span>
+                      <span className={appMobileSheetLabelClass}>Log out</span>
+                    </div>
+                  </nav>
+                </div>
+              </div>
               <div
                 role="menu"
                 aria-orientation="vertical"
@@ -391,8 +435,10 @@ export function AppLayout() {
                 </div>
                 <div className="mx-1.5 h-px bg-zinc-200 dark:bg-zinc-800" role="separator" />
                 <Link role="menuitem" to="/#pricing" className={menuRowClass} onClick={onMenuPricingClick}>
-                  <Sparkles className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                  <span>Upgrade Plan</span>
+                  <span className={deskMenuIconWrapClass} aria-hidden>
+                    <Sparkles aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 leading-5">Upgrade Plan</span>
                 </Link>
                 <div className="mx-1.5 my-1 h-px bg-zinc-200 dark:bg-zinc-800" role="separator" />
                 <Link
@@ -401,20 +447,28 @@ export function AppLayout() {
                   className={menuRowClass}
                   onClick={onMenuLinkClick('/app/settings')}
                 >
-                  <BadgeCheck className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                  <span>Account</span>
+                  <span className={deskMenuIconWrapClass} aria-hidden>
+                    <UserRound aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 leading-5">Profile</span>
                 </Link>
                 <Link role="menuitem" to="/app/billing" className={menuRowClass} onClick={onMenuLinkClick('/app/billing')}>
-                  <CreditCard className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                  <span>Billing</span>
+                  <span className={deskMenuIconWrapClass} aria-hidden>
+                    <CreditCard aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 leading-5">Billing</span>
                 </Link>
                 <Link role="menuitem" to="/app/history" className={menuRowClass} onClick={onMenuLinkClick('/app/history')}>
-                  <History className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                  <span>History</span>
+                  <span className={deskMenuIconWrapClass} aria-hidden>
+                    <History aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 leading-5">History</span>
                 </Link>
                 <Link role="menuitem" to="/app/invite" className={menuRowClass} onClick={onMenuLinkClick('/app/invite')}>
-                  <Gift className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                  <span>Invite friends</span>
+                  <span className={deskMenuIconWrapClass} aria-hidden>
+                    <Gift aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 leading-5">Invite friends</span>
                 </Link>
                 <div className="mx-1.5 my-1 h-px bg-zinc-200 dark:bg-zinc-800" role="separator" />
                 <div
@@ -429,30 +483,71 @@ export function AppLayout() {
                     }
                   }}
                 >
-                  <LogOut className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400" aria-hidden />
-                  <span>Log out</span>
+                  <span className={deskMenuIconWrapClass} aria-hidden>
+                    <LogOut aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 leading-5">Log out</span>
                 </div>
               </div>
             </>
           ) : null}
         </div>
       </header>
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--manus-canvas)]">
+      <div
+        className={cn(
+          'flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--manus-canvas)]',
+          /* Upload: inset the scroll pane slightly so card borders aren’t flush with this clip box (flex subpixel + overflow:hidden). */
+          isUploadRoute && [
+            'px-px max-[768px]:px-0.5',
+            /* Desktop: same surface as header + main scroll (avoids canvas peeking at subpixel gaps). */
+            'desk:bg-[#f9f7f2] dark:desk:bg-zinc-900',
+          ],
+        )}
+      >
         <div
           className={cn(
-            'app-main-scroll font-outfit mx-auto flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain text-zinc-900 antialiased dark:text-zinc-50',
-            /* Upload: full-width scroll area (matches narrow viewport); other routes: centered max width */
-            isUploadRoute ? 'max-w-none' : 'max-w-5xl',
-            isHiddenScrollbarMainRoute && [
-              'app-main-scroll--scrollbar-none',
-              /* Extra hide for desktop WebKit / Windows where CSS file order can still show a rail */
-              '[scrollbar-gutter:auto] [scrollbar-width:none] [-ms-overflow-style:none]',
-              '[&::-webkit-scrollbar]:hidden',
+            'app-main-scroll font-outfit mx-auto flex min-h-0 min-w-0 w-full flex-1 flex-col overscroll-y-contain text-zinc-900 antialiased dark:text-zinc-50',
+            /* Settings + upload home: omit overflow-x-hidden — it clips rounded borders/right edge on narrow viewports when paired with scrollbar + subpixel rounding. Content is width-stable (min-w-0 + break-*). */
+            isAccountSettingsRoute || isUploadRoute ? 'overflow-y-auto' : 'overflow-x-hidden overflow-y-auto',
+            /* Upload / Account settings: full-width on small screens */
+            isUploadRoute || isAccountSettingsRoute ? 'max-w-none' : 'max-w-5xl',
+            isAccountSettingsRoute && [
+              'desk:max-w-5xl desk:bg-transparent',
+              /* Symmetric scrollbar gutter — same class used on upload home so composer borders aren’t clipped on narrow viewports. */
+              'app-main-scroll--settings-balanced',
             ],
-            /* Single px using max of both safe insets so left/right gutters match on narrow viewports */
-            'px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))]',
-            'sm:px-6',
-            isUploadRoute ? 'py-3 sm:py-4 desk:py-6 desk:sm:py-8' : 'py-6 sm:py-8',
+            isUploadRoute && [
+              'app-main-scroll--settings-balanced',
+              /* Upload home: desktop pane tint so the hero + composer sit on a defined surface (mobile keeps shell --manus-canvas). */
+              'desk:bg-[#f9f7f2] dark:desk:bg-zinc-900',
+            ],
+            isHiddenScrollbarMainRoute &&
+              cn(
+                'app-main-scroll--scrollbar-none',
+                !isAccountSettingsRoute && !isUploadRoute && '[scrollbar-gutter:auto]',
+                '[scrollbar-width:none] [-ms-overflow-style:none]',
+                '[&::-webkit-scrollbar]:hidden',
+              ),
+            /* Account settings: same surface as header + shell (--manus-canvas) — avoids white/canvas/zinc bands */
+            isAccountSettingsRoute &&
+              cn(
+                'bg-[var(--manus-canvas)] pb-[max(1.25rem,env(safe-area-inset-bottom))]',
+                /* Tablet→desk: shell horizontal inset. Phone (≤480): shell has no horizontal padding — SettingsPage applies inset to the form fields + header so controls own the gutter. */
+                'pl-[max(1.375rem,env(safe-area-inset-left))] pr-[max(1.375rem,env(safe-area-inset-right))]',
+                'phone:pl-0 phone:pr-0',
+                'py-4 tab:py-6',
+                /* Restore shared gutter with other app pages on desktop */
+                'desk:px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] desk:sm:px-6 desk:py-6 desk:sm:py-8',
+              ),
+            !isAccountSettingsRoute &&
+              cn(
+                'px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))]',
+                'sm:px-6',
+              ),
+            isUploadRoute
+              ? 'pt-4 pb-3 sm:pt-5 sm:pb-4 desk:pt-7 desk:pb-6 desk:sm:pt-9 desk:sm:pb-8'
+              : null,
+            !isUploadRoute && !isAccountSettingsRoute ? 'py-6 sm:py-8' : null,
           )}
           style={
             isHiddenScrollbarMainRoute

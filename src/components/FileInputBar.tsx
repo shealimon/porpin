@@ -404,8 +404,7 @@ export function FileInputBar({
           'file-input-bar-drop-target outline-none',
           isDragActive && 'file-input-bar-drop-target--active',
         ),
-        'aria-label':
-          'Drop a PDF, DOCX, TXT, EPUB, or Markdown file, or use the add file control',
+        'aria-label': 'Drop a file here or use the add file button',
       })}
     >
       <input
@@ -422,7 +421,7 @@ export function FileInputBar({
         className={cn(
           'dashboard-home__upload-stack relative mt-7 w-full min-w-0 sm:mt-11',
           'has-[.file-input-bar__estimate-card]:mt-4 has-[.file-input-bar__estimate-card]:sm:mt-7',
-          composerStyle && '!mt-5 sm:!mt-7',
+          composerStyle && '!mt-5 sm:!mt-6 desk:!mt-5',
           uploadStackClassName,
         )}
       >
@@ -437,16 +436,17 @@ export function FileInputBar({
             {composerStyle ? (
               <div
                 className={cn(
-                  'file-input-bar-composer outline-none ring-1 ring-black/[0.04] transition-[border-color,box-shadow,opacity] dark:ring-white/[0.045]',
-                  'w-full overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_2px_8px_-2px_rgba(15,23,42,.08),0_8px_28px_-8px_rgba(15,23,42,.1)]',
-                  'dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-[0_1px_0_rgba(255,255,255,.04)_inset,0_16px_40px_-16px_rgba(0,0,0,.55)]',
+                  'file-input-bar-composer box-border min-w-0 max-w-full outline-none ring-1 ring-black/[0.04] transition-[border-color,box-shadow,opacity] dark:ring-white/[0.045]',
+                  /* Layered shadow: crisp edge + mid lift + soft background wash (dashboard pick-a-file) */
+                  'w-full overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,.06),0_8px_28px_-8px_rgba(15,23,42,.1),0_28px_56px_-18px_rgba(24,24,27,.14)]',
+                  'dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-[0_1px_0_rgba(255,255,255,.04)_inset,0_10px_36px_-12px_rgba(0,0,0,.42),0_32px_64px_-20px_rgba(0,0,0,.58)]',
                   isDragActive &&
-                    'border-brand-400/65 ring-brand-400/35 shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary-soft)_80%,transparent)] dark:border-brand-500/55',
+                    'border-brand-400/65 ring-brand-400/35 shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary-soft)_80%,transparent),0_18px_44px_-14px_rgba(15,23,42,.12)] dark:border-brand-500/55 dark:shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary-soft)_80%,transparent),0_24px_52px_-18px_rgba(0,0,0,.5)]',
                   waitingForEstimate && 'file-input-bar--busy opacity-[0.97]',
                   isDragActive && 'file-input-bar--drag',
                 )}
               >
-                <div className="min-h-[4.375rem] px-4 pb-2 pt-3.5 text-left sm:min-h-[5.125rem] sm:px-5 sm:pb-3 sm:pt-4">
+                <div className="min-h-[4.375rem] min-w-0 px-4 pb-2 pt-3.5 text-left sm:min-h-[5.125rem] sm:px-5 sm:pb-3 sm:pt-4">
                   <p
                     className={cn(
                       'line-clamp-4 text-[0.9375rem] leading-snug sm:text-base sm:leading-normal',
@@ -460,15 +460,15 @@ export function FileInputBar({
                       ? 'Calculating estimate…'
                       : file
                         ? file.name
-                        : 'Upload a document to translate — PDF, DOCX, TXT, EPUB, or Markdown.'}
+                        : 'Pick a file.'}
                   </p>
                   {!file ? (
                     <p className="mt-2 text-xs leading-relaxed text-zinc-400 dark:text-zinc-500">
-                      Drag and drop here, or use the + button to browse.
+                      Drag here or tap +.
                     </p>
                   ) : null}
                 </div>
-                <div className="flex items-center gap-2 border-t border-zinc-200/80 px-3 py-2.5 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-900/50">
+                <div className="flex min-w-0 items-center gap-2 border-t border-zinc-200/80 px-3 py-2.5 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-900/50">
                   <Tooltip>
                     <TooltipTrigger
                       nativeButton={false}
@@ -500,11 +500,14 @@ export function FileInputBar({
                       {uploadTooltipText}
                     </TooltipContent>
                   </Tooltip>
-                  <div className="min-w-0 flex-1 text-right">
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                      {estimate ? 'Ready' : file ? 'Estimate' : 'New upload'}
-                    </span>
-                  </div>
+                  {file || estimate ? (
+                    <div className="min-w-0 shrink-0">
+                      <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                        {estimate ? 'Ready' : 'Estimate'}
+                      </span>
+                    </div>
+                  ) : null}
+                  <div className="min-w-0 flex-1" aria-hidden />
                   <Tooltip>
                     <TooltipTrigger
                       nativeButton={false}

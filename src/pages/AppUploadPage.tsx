@@ -1,13 +1,39 @@
 import { useEffect, useState } from 'react'
-import { Sparkles } from 'lucide-react'
 
+import { GreetingHeroTimeIcon } from '@/components/GreetingHeroTimeIcon'
 import { FileInputBar } from '@/components/FileInputBar'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
-import { getCompactGreetingLead, getGreetingDisplayName, getGreetingPhrase } from '@/utils/greeting'
+import {
+  getCompactGreetingLead,
+  getGreetingDisplayName,
+  getGreetingHeroIconKind,
+  getGreetingPhrase,
+  type GreetingHeroIconKind,
+} from '@/utils/greeting'
 
 /** Matches Tailwind `desk:` (769px). */
 const UPLOAD_NARROW_MQ = '(max-width: 768px)'
+
+function useGreetingHeroIconKind(): GreetingHeroIconKind {
+  const [kind, setKind] = useState<GreetingHeroIconKind>(() => getGreetingHeroIconKind())
+
+  useEffect(() => {
+    const sync = () => setKind(getGreetingHeroIconKind())
+    sync()
+    const tick = window.setInterval(sync, 60_000)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') sync()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.clearInterval(tick)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [])
+
+  return kind
+}
 
 function useUploadNarrowLayout(): boolean {
   const [narrow, setNarrow] = useState(() =>
@@ -28,6 +54,7 @@ function useUploadNarrowLayout(): boolean {
 export function AppUploadPage() {
   const firstName = useAuthStore((s) => s.user?.firstName)
   const displayName = getGreetingDisplayName({ firstName })
+  const heroIconKind = useGreetingHeroIconKind()
   const narrow = useUploadNarrowLayout()
   const compactLead = getCompactGreetingLead()
   const greetingFallback = getGreetingPhrase()
@@ -43,7 +70,11 @@ export function AppUploadPage() {
           : 'mt-3 w-full text-sm text-pretty sm:text-[0.9375rem]',
       )}
     >
-      <p className="mb-0">Instant word estimate · Pay only when you start a job.</p>
+      <p className="mb-0">
+        <span className="block md:inline">Instant word estimate</span>
+        <span className="hidden md:inline"> · </span>
+        <span className="block md:inline">Pay only when you start.</span>
+      </p>
     </div>
   )
 
@@ -57,14 +88,10 @@ export function AppUploadPage() {
           : 'text-[clamp(1.85rem,4.75vw,2.85rem)] leading-tight',
       )}
     >
-      <span className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-        <Sparkles
-          className={cn(
-            'shrink-0 text-orange-600/95 dark:text-amber-400/95',
-            narrow ? 'size-[1.5rem]' : 'size-8 sm:size-9',
-          )}
-          strokeWidth={1.65}
-          aria-hidden
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+        <GreetingHeroTimeIcon
+          kind={heroIconKind}
+          className={cn(narrow ? 'size-9' : 'size-11 sm:size-12')}
         />
         <span className="text-balance">{titlePrimary}</span>
       </span>
@@ -72,7 +99,7 @@ export function AppUploadPage() {
   )
 
   const heroDesktop = (
-    <div className="dashboard-home__hero flex min-h-0 w-full flex-1 flex-col items-center justify-center text-center">
+    <div className="dashboard-home__hero flex w-full min-h-0 flex-none flex-col items-center text-center">
       <div className="flex w-full max-w-[min(100%,34rem)] flex-col items-center text-center px-3 sm:px-4">
         {heroHeading}
         {lede}
@@ -95,7 +122,7 @@ export function AppUploadPage() {
   return (
     <div
       className={cn(
-        'dashboard-home relative box-border flex w-full min-w-0 max-w-full flex-col overflow-x-hidden',
+        'dashboard-home relative box-border flex w-full min-w-0 max-w-full flex-col',
         narrow
           ? [
               /* stretch: items-center made the upload column shrink-to-fit and look off-center vs 100vw */
@@ -122,6 +149,8 @@ export function AppUploadPage() {
           narrow
             ? [
                 'flex min-h-0 flex-1 flex-col gap-4 self-stretch',
+                /* Extra horizontal inset: shell + main use overflow/scrollbar tricks that can clip the composer’s right border on small viewports. */
+                'px-2 sm:px-3',
                 'min-h-[calc(100dvh-5.75rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]',
                 'pb-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))]',
               ]

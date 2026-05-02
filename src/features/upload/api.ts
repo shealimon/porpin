@@ -1,6 +1,7 @@
 import type { AxiosProgressEvent } from 'axios'
 import axios from 'axios'
 import { backendClient } from '@/api/backendClient'
+import { isApiRequestError } from '@/api/axiosError'
 
 export type UploadEstimateResponse = {
   job_id: string
@@ -49,6 +50,17 @@ export async function postPdfUpload(
 export function getUploadErrorMessage(err: unknown): string {
   if (axios.isCancel(err)) {
     return 'Request was cancelled.'
+  }
+  if (isApiRequestError(err) && err.status === 413) {
+    const detail = err.message
+    if (/file too large|max\s+\d+\s*mb/i.test(detail)) {
+      return detail
+    }
+    return (
+      'Upload too large for this route (413). In production, set VITE_BACKEND_ORIGIN to your API HTTPS ' +
+      'origin so the browser posts directly to the server (avoiding static-host proxy limits), or raise ' +
+      'your reverse proxy body limit (e.g. nginx client_max_body_size).'
+    )
   }
   if (err instanceof Error) {
     const msg = err.message

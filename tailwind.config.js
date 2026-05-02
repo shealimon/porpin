@@ -10,6 +10,8 @@ export default {
       /** Mobile 320+, tablet from 481px, desktop from 769px (alongside default sm/md/lg). */
       screens: {
         xs: '320px',
+        /** ≤480px — use `phone:` instead of `max-[480px]:` (Tailwind disables arbitrary max-* with mixed screen units). */
+        phone: { max: '480px' },
         tab: '481px',
         desk: '769px',
       },
@@ -25,6 +27,8 @@ export default {
         /** Voltix-style landing (Syne + Outfit) — see LandingPage */
         voltix: ['Syne', 'system-ui', 'sans-serif'],
         outfit: ['Outfit', 'system-ui', 'sans-serif'],
+        /** Chunky rounded logo type — Fredoka bold (700) + Modak fallback */
+        wordmark: ['Fredoka', 'Modak', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: 'var(--border)',
