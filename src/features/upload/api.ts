@@ -53,13 +53,25 @@ export function getUploadErrorMessage(err: unknown): string {
   }
   if (isApiRequestError(err) && err.status === 413) {
     const detail = err.message
-    if (/file too large|max\s+\d+\s*mb/i.test(detail)) {
-      return detail
+    if (/file too large/i.test(detail)) {
+      return `${detail} To allow bigger files, raise MAX_UPLOAD_BYTES on the API (and nginx client_max_body_size).`
     }
     return (
-      'Upload too large for this route (413). In production, set VITE_BACKEND_ORIGIN to your API HTTPS ' +
-      'origin so the browser posts directly to the server (avoiding static-host proxy limits), or raise ' +
-      'your reverse proxy body limit (e.g. nginx client_max_body_size).'
+      '413: body too large for this route — usually the proxy in front of your site (e.g. Vercel rewrite ' +
+      'to the VM), not FastAPI’s own limit. Fix: build with VITE_BACKEND_ORIGIN pointing at your API HTTPS URL ' +
+      'so uploads skip that proxy; allow your site origin in CORS_ORIGINS; unset or align VITE_API_BASE_URL ' +
+      'so /api uses the same host; raise nginx client_max_body_size and MAX_UPLOAD_BYTES to match.'
+    )
+  }
+  if (
+    isApiRequestError(err) &&
+    (err.status === 502 || err.status === 504)
+  ) {
+    return (
+      'Upload failed: the gateway timed out or lost contact with your API (502/504). Large PDFs need time ' +
+      'to upload and estimate; Vercel rewrites can hit upstream limits. Prefer HTTPS on your API host ' +
+      '(e.g. api.yourdomain.com), add it to CORS_ORIGINS on the server, set VITE_BACKEND_ORIGIN to that URL ' +
+      'at build time, and raise nginx proxy_read_timeout / client_max_body_size if you terminate TLS there.'
     )
   }
   if (err instanceof Error) {
