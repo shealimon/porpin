@@ -15,6 +15,11 @@ interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string
   /** Backend origin only (no path), e.g. `https://api.porpin.com`. All HTTP calls use `apiUrl('/api/...')` etc. */
   readonly VITE_BACKEND_ORIGIN?: string
+  /**
+   * Dev only: when not `"false"`, ignore `VITE_BACKEND_ORIGIN` and use same-origin `/api`, `/upload`, …
+   * so requests go through Vite’s proxy to `DEV_PROXY_TARGET` (default http://127.0.0.1:8000).
+   */
+  readonly VITE_DEV_USE_VITE_PROXY?: string
   /** Razorpay Key ID (public) for Standard Checkout — must match RAZORPAY_KEY_ID on the API */
   readonly VITE_RAZORPAY_KEY_ID?: string
   /** Optional greeting name, e.g. `VITE_USER_DISPLAY_NAME=Alex` */

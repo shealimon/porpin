@@ -78,15 +78,28 @@ export function getUploadErrorMessage(err: unknown): string {
   if (err instanceof Error) {
     const msg = err.message
     if (/timeout|timed out|ECONNABORTED/i.test(msg)) {
+      if (import.meta.env.DEV) {
+        return (
+          'The server did not respond in time. Start the API on port 8000 (uvicorn app.main:app) ' +
+          'or check that nothing else is blocking http://127.0.0.1:8000, then try again.'
+        )
+      }
       return (
-        'The server did not respond in time. Start the API on port 8000 (uvicorn app.main:app) ' +
-        'or check that nothing else is blocking http://127.0.0.1:8000, then try again.'
+        'The translation API did not respond in time. Check that your API host is up ' +
+        'and proxy timeouts allow large uploads for /upload.'
       )
     }
     if (/Network Error|ERR_NETWORK|ECONNREFUSED/i.test(msg)) {
+      if (import.meta.env.DEV) {
+        return (
+          'Cannot reach the translation API. Run the backend (e.g. uvicorn from the backend folder) ' +
+          'and keep Vite’s proxy to port 8000, then retry.'
+        )
+      }
       return (
-        'Cannot reach the translation API. Run the backend (e.g. uvicorn from the backend folder) ' +
-        'and keep Vite’s proxy to port 8000, then retry.'
+        'Cannot reach the translation API from production. Typical fix: on the EC2/backend host set ' +
+        'CORS_ORIGINS=https://www.porpin.com,https://porpin.com (backend .env), restart Gunicorn, ' +
+        'then retry. Also confirm VITE_BACKEND_ORIGIN on Vercel matches your HTTPS API URL.'
       )
     }
     return msg
