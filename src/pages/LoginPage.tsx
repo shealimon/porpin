@@ -103,13 +103,14 @@ export function LoginPage() {
     <AuthLightPageSurface>
       <div
         className={cn(
-          'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain',
+          'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain desk:overflow-visible',
           authLightMobilePageShellClass,
           /* Phone: breathe room under the public nav pill. */
           'phone:pt-4',
           'sm:items-center sm:justify-start sm:bg-transparent',
           'sm:pl-[max(1rem,env(safe-area-inset-left))] sm:pr-[max(1rem,env(safe-area-inset-right))]',
           'sm:pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pt-5 sm:justify-center sm:-translate-y-7 sm:py-12 sm:pt-12',
+          'desk:justify-start desk:translate-y-0 desk:py-10 desk:pb-14 desk:pt-8',
           'touch-manipulation [-webkit-tap-highlight-color:transparent]',
         )}
       >

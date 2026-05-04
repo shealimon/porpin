@@ -124,6 +124,15 @@ canvas {
   overflow: hidden;
 }
 
+/* Profile / Billing / History / Invite: desktop uses window scroll — #root must not clip (see AppLayout `isDesktopDocumentScrollRoute`). */
+@media (min-width: 769px) {
+  #root:has(.manus-app-shell--page-doc-scroll) {
+    max-height: none;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+}
+
 /* Single thin scrollbar in app sidebar (Windows avoids “double rail” look next to main) */
 .app-sidebar-scroll {
   scrollbar-width: thin;

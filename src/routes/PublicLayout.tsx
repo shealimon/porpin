@@ -28,6 +28,9 @@ export function PublicLayout() {
   const onResetPassword = path === '/reset-password'
   const onLightMarketing =
     onLanding || onLogin || onSignup || onForgotPassword || onResetPassword
+  /** Login/signup/forgot/reset: let main grow past the viewport on desktop so the window scrolls. */
+  const authDesktopDocumentScroll =
+    onLogin || onSignup || onForgotPassword || onResetPassword
   const onPricing = path === '/pricing' || (onLanding && hash === '#pricing')
   const loginNavActive = onLogin || onForgotPassword
   /** Logo + wordmark on landing and light auth routes (login / signup / forgot). */
@@ -415,8 +418,11 @@ export function PublicLayout() {
       </header>
       <main
         className={cn(
-          'flex min-h-0 min-w-0 flex-1 flex-col',
+          'flex min-w-0 flex-1 flex-col',
           onLightMarketing ? 'overflow-x-visible' : 'overflow-x-clip',
+          authDesktopDocumentScroll
+            ? 'max-[768px]:min-h-0 max-[768px]:flex-1 desk:flex-none desk:min-h-min desk:overflow-visible'
+            : 'min-h-0',
         )}
       >
         <Outlet />

@@ -60,14 +60,27 @@ export function AppLayout() {
   const isAccountSettingsRoute = /^\/app\/settings(\/|$)/.test(location.pathname)
   const isHiddenScrollbarMainRoute =
     /^\/app\/(settings|billing|history|invite)(\/|$)/.test(location.pathname) || isUploadRoute
+  /** Profile, Billing, History, Invite: window scrolls on desktop (769px) instead of a fixed inner pane. */
+  const isDesktopDocumentScrollRoute =
+    /^\/app\/(settings|billing|history|invite)(\/|$)/.test(location.pathname)
 
   useEffect(() => {
     const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const mq = window.matchMedia('(min-width: 769px)')
+    const applyBodyOverflow = () => {
+      if (isDesktopDocumentScrollRoute && mq.matches) {
+        document.body.style.removeProperty('overflow')
+      } else {
+        document.body.style.overflow = 'hidden'
+      }
+    }
+    applyBodyOverflow()
+    mq.addEventListener('change', applyBodyOverflow)
     return () => {
+      mq.removeEventListener('change', applyBodyOverflow)
       document.body.style.overflow = prev
     }
-  }, [])
+  }, [isDesktopDocumentScrollRoute])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -150,6 +163,9 @@ export function AppLayout() {
       className={cn(
         'manus-app-shell flex h-svh max-h-svh min-h-0 flex-col overflow-hidden font-sans text-[0.9375rem] antialiased tab:text-base',
         isUploadRoute && 'manus-app-shell--upload-chat-mobile w-full max-w-full min-w-0',
+        isDesktopDocumentScrollRoute && 'manus-app-shell--page-doc-scroll',
+        isDesktopDocumentScrollRoute &&
+          'desk:h-auto desk:max-h-none desk:min-h-svh desk:overflow-visible',
       )}
     >
       <header
@@ -158,6 +174,7 @@ export function AppLayout() {
           /* Match main pane: same horizontal gutter on both sides (incl. sm:px-6 like `app-main-scroll`) */
           'px-[max(1rem,env(safe-area-inset-left),env(safe-area-inset-right))] pt-[max(0.5rem,env(safe-area-inset-top,0px))]',
           'sm:px-6',
+          isDesktopDocumentScrollRoute && 'desk:sticky desk:top-0',
           isUploadRoute &&
             'upload-chat-mobile-header border-zinc-200/85 desk:border-sidebar-border desk:bg-[#f9f7f2] dark:desk:bg-zinc-900',
         )}
@@ -496,6 +513,7 @@ export function AppLayout() {
       <div
         className={cn(
           'flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--manus-canvas)]',
+          isDesktopDocumentScrollRoute && 'desk:flex-none desk:min-h-min desk:overflow-visible',
           /* Upload: inset the scroll pane slightly so card borders aren’t flush with this clip box (flex subpixel + overflow:hidden). */
           isUploadRoute && [
             'px-px max-[768px]:px-0.5',
@@ -507,6 +525,8 @@ export function AppLayout() {
         <div
           className={cn(
             'app-main-scroll font-outfit mx-auto flex min-h-0 min-w-0 w-full flex-1 flex-col overscroll-y-contain text-zinc-900 antialiased dark:text-zinc-50',
+            isDesktopDocumentScrollRoute &&
+              'desk:min-h-min desk:flex-none desk:overflow-visible desk:overscroll-y-auto',
             /* Settings + upload home: omit overflow-x-hidden — it clips rounded borders/right edge on narrow viewports when paired with scrollbar + subpixel rounding. Content is width-stable (min-w-0 + break-*). */
             isAccountSettingsRoute || isUploadRoute ? 'overflow-y-auto' : 'overflow-x-hidden overflow-y-auto',
             /* Upload / Account settings: full-width on small screens */
