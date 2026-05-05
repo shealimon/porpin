@@ -18,6 +18,7 @@ import {
   writeStoredTranslationTarget,
   type TranslationTarget,
 } from '@/features/upload/sourceLang'
+import { PorpinMark } from '@/components/brand/PorpinMark'
 import { SourceLangChips } from '@/components/SourceLangChips'
 import { PaygPricingCalculator } from '@/components/PaygPricingCalculator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -531,7 +532,9 @@ export function FileInputBar({
                               }}
                             >
                               {showRightSpinner ? (
-                                <span className="file-input-bar__spinner" aria-hidden />
+                                <span className="file-input-bar__loading-mark" aria-hidden>
+                                  <PorpinMark className="size-full porpin-mark--loading" aria-hidden />
+                                </span>
                               ) : (
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
                                   <path
@@ -628,7 +631,9 @@ export function FileInputBar({
                           }}
                         >
                           {showRightSpinner ? (
-                            <span className="file-input-bar__spinner" aria-hidden />
+                            <span className="file-input-bar__loading-mark" aria-hidden>
+                              <PorpinMark className="size-full porpin-mark--loading" aria-hidden />
+                            </span>
                           ) : (
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
                               <path

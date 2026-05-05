@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Download } from 'lucide-react'
+
+import { PorpinMark } from '@/components/brand/PorpinMark'
 import { estimatePaygInrWholeRupees } from '@/lib/paygPricing'
 import { cn } from '@/lib/utils'
 import { getGreetingPhrase } from '@/utils/greeting'
@@ -423,7 +425,9 @@ export function LandingUploadPreview() {
                         </span>
                       </div>
                       <div className="file-input-bar__action file-input-bar__action--send" aria-hidden>
-                        <span className="file-input-bar__spinner" />
+                        <span className="file-input-bar__loading-mark" aria-hidden>
+                          <PorpinMark className="size-full porpin-mark--loading" aria-hidden />
+                        </span>
                       </div>
                     </div>
                     <div className="landing-upload-preview__progress mt-6 w-full">

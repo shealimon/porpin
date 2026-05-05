@@ -1329,9 +1329,9 @@ code {
     height: 20px;
   }
 
-  .dashboard-home .file-input-bar__action .file-input-bar__spinner {
-    width: 1.28rem;
-    height: 1.28rem;
+  .dashboard-home .file-input-bar__action .file-input-bar__loading-mark {
+    width: 1.75rem;
+    height: 1.75rem;
   }
 
   .dashboard-home .file-input-bar__field {
@@ -1657,25 +1657,24 @@ code {
   font-weight: 500;
 }
 
-.file-input-bar__spinner {
-  width: 1.1rem;
-  height: 1.1rem;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: upload-spin 0.7s linear infinite;
+/* Logo busy state next to Start (word estimate in flight) — same footprint as old ring spinner */
+.file-input-bar__loading-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex-shrink: 0;
 }
 
-/* Neutral send circle (e.g. estimating, landing “Translating” demo): white ring is illegible on #f1f5f9 */
-.file-input-bar__action--send:not(.file-input-bar__action--send-active) .file-input-bar__spinner {
-  border-color: rgba(234, 88, 12, 0.28);
-  border-top-color: #c2410c;
+/* Neutral send circle: warm tint so the mark reads on #f1f5f9 (matches prior spinner treatment) */
+.file-input-bar__action--send:not(.file-input-bar__action--send-active) .file-input-bar__loading-mark {
+  color: #c2410c;
 }
 
 @media (prefers-color-scheme: dark) {
-  .file-input-bar__action--send:not(.file-input-bar__action--send-active) .file-input-bar__spinner {
-    border-color: rgba(251, 146, 60, 0.35);
-    border-top-color: #fb923c;
+  .file-input-bar__action--send:not(.file-input-bar__action--send-active) .file-input-bar__loading-mark {
+    color: #fb923c;
   }
 }
 
