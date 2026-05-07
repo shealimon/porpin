@@ -161,7 +161,7 @@ export function AppLayout() {
   return (
     <div
       className={cn(
-        'manus-app-shell flex h-svh max-h-svh min-h-0 flex-col overflow-hidden font-sans text-[0.9375rem] antialiased tab:text-base',
+        'manus-app-shell flex h-svh max-h-svh min-h-0 flex-col overflow-hidden bg-[var(--manus-canvas)] font-sans text-[0.9375rem] antialiased tab:text-base',
         isUploadRoute && 'manus-app-shell--upload-chat-mobile w-full max-w-full min-w-0',
         isDesktopDocumentScrollRoute && 'manus-app-shell--page-doc-scroll',
         isDesktopDocumentScrollRoute &&
@@ -176,7 +176,7 @@ export function AppLayout() {
           'sm:px-6',
           isDesktopDocumentScrollRoute && 'desk:sticky desk:top-0',
           isUploadRoute &&
-            'upload-chat-mobile-header border-zinc-200/85 desk:border-sidebar-border desk:bg-[#f9f7f2] dark:desk:bg-zinc-900',
+            'upload-chat-mobile-header border-zinc-200/85 desk:border-sidebar-border desk:bg-[var(--manus-canvas)] dark:desk:bg-zinc-900',
         )}
       >
         <div className="flex min-w-0 flex-1 items-center">
@@ -527,24 +527,22 @@ export function AppLayout() {
             'app-main-scroll font-outfit mx-auto flex min-h-0 min-w-0 w-full flex-1 flex-col overscroll-y-contain text-zinc-900 antialiased dark:text-zinc-50',
             isDesktopDocumentScrollRoute &&
               'desk:min-h-min desk:flex-none desk:overflow-visible desk:overscroll-y-auto',
-            /* Settings + upload home: omit overflow-x-hidden — it clips rounded borders/right edge on narrow viewports when paired with scrollbar + subpixel rounding. Content is width-stable (min-w-0 + break-*). */
-            isAccountSettingsRoute || isUploadRoute ? 'overflow-y-auto' : 'overflow-x-hidden overflow-y-auto',
+            /* Hidden-scrollbar routes: omit overflow-x-hidden — it can clip card radii and skew perceived centering on narrow viewports. */
+            isHiddenScrollbarMainRoute ? 'overflow-y-auto' : 'overflow-x-hidden overflow-y-auto',
             /* Upload / Account settings: full-width on small screens */
             isUploadRoute || isAccountSettingsRoute ? 'max-w-none' : 'max-w-5xl',
             isAccountSettingsRoute && [
               'desk:max-w-5xl desk:bg-transparent',
-              /* Symmetric scrollbar gutter — same class used on upload home so composer borders aren’t clipped on narrow viewports. */
-              'app-main-scroll--settings-balanced',
             ],
             isUploadRoute && [
-              'app-main-scroll--settings-balanced',
               /* Upload home: desktop pane tint so the hero + composer sit on a defined surface (mobile keeps shell --manus-canvas). */
-              'desk:bg-[#f9f7f2] dark:desk:bg-zinc-900',
+              'desk:bg-[var(--manus-canvas)] dark:desk:bg-zinc-900',
             ],
             isHiddenScrollbarMainRoute &&
               cn(
                 'app-main-scroll--scrollbar-none',
-                !isAccountSettingsRoute && !isUploadRoute && '[scrollbar-gutter:auto]',
+                /* Billing / History / Invite / Settings / Upload: stable both-edges avoids lopsided padding when scrollbar is hidden (mobile + Windows). */
+                'app-main-scroll--settings-balanced',
                 '[scrollbar-width:none] [-ms-overflow-style:none]',
                 '[&::-webkit-scrollbar]:hidden',
               ),

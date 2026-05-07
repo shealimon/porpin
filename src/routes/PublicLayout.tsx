@@ -26,8 +26,14 @@ export function PublicLayout() {
   const onSignup = path === '/signup'
   const onForgotPassword = path === '/forgot-password'
   const onResetPassword = path === '/reset-password'
+  const onAuthConfirm = path === '/auth/confirm'
   const onLightMarketing =
-    onLanding || onLogin || onSignup || onForgotPassword || onResetPassword
+    onLanding ||
+    onLogin ||
+    onSignup ||
+    onForgotPassword ||
+    onResetPassword ||
+    onAuthConfirm
   /** Login/signup/forgot/reset: let main grow past the viewport on desktop so the window scrolls. */
   const authDesktopDocumentScroll =
     onLogin || onSignup || onForgotPassword || onResetPassword
@@ -141,22 +147,22 @@ export function PublicLayout() {
           ref={menuSurfaceRef}
           className={cn(
             'mx-auto flex w-full min-w-0 max-w-6xl',
-            headerLightMobilePill
-              ? 'relative flex-col items-stretch overflow-visible px-4 pt-4 pb-2 tab:px-6 desk:flex-row desk:items-center desk:justify-between desk:gap-3 desk:overflow-visible desk:px-6 desk:py-4 desk:pt-3 desk:pb-2'
+                headerLightMobilePill
+                  ? 'relative flex-col items-stretch overflow-visible px-5 pt-4 pb-2 tab:px-6 desk:flex-row desk:items-center desk:justify-between desk:gap-3 desk:overflow-visible desk:px-6 desk:py-4 desk:pt-3 desk:pb-2'
               : 'items-center justify-between gap-3 px-4 py-3 tab:px-6 tab:py-4',
           )}
         >
           <div
             className={cn(
-              headerLightMobilePill
-                ? 'relative w-full min-w-0 desk:contents'
+                headerLightMobilePill
+                  ? 'relative w-full min-w-0 max-w-full max-[768px]:box-border max-[768px]:px-3 desk:contents'
                 : 'contents',
             )}
           >
             <div
               className={cn(
                 headerLightMobilePill
-                  ? 'box-border flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-visible rounded-full border border-stone-200/80 bg-[#faf9f7] px-4 py-3 shadow-[0_6px_24px_-8px_rgba(28,25,23,0.12),0_2px_8px_-4px_rgba(28,25,23,0.06)] tab:gap-3 tab:px-5 tab:py-3.5 desk:contents desk:w-auto desk:gap-3 desk:overflow-visible desk:border-0 desk:bg-transparent desk:p-0 desk:shadow-none desk:backdrop-blur-none'
+                  ? 'box-border flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-visible rounded-full border border-stone-200/80 bg-background px-5 py-3 shadow-[0_6px_24px_-8px_rgba(28,25,23,0.12),0_2px_8px_-4px_rgba(28,25,23,0.06)] tab:gap-3 tab:px-5 tab:py-3.5 desk:contents desk:w-auto desk:max-w-none desk:gap-3 desk:self-stretch desk:overflow-visible desk:border-0 desk:bg-transparent desk:p-0 desk:shadow-none desk:backdrop-blur-none'
                   : 'contents',
               )}
             >
@@ -169,7 +175,7 @@ export function PublicLayout() {
               'hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               'active:scale-[0.97]',
               onLightMarketing ? 'text-zinc-950 hover:text-zinc-800' : 'text-white',
-              headerLightMobilePill && 'focus-visible:ring-stone-400/35 focus-visible:ring-offset-[#faf9f7]',
+              headerLightMobilePill && 'focus-visible:ring-stone-400/35 focus-visible:ring-offset-background',
             )}
             aria-label="Porpin home"
           >
@@ -185,7 +191,7 @@ export function PublicLayout() {
               <PorpinWordmark
                 className={cn(
                   'min-w-0 truncate',
-                  '!text-[1.7rem] !tracking-[-0.05em] tab:!text-[1.95rem] sm:!text-[2.2rem]',
+                  '!text-[1.7rem] tab:!text-[1.95rem] sm:!text-[2.2rem]',
                 )}
               />
             ) : null}
@@ -228,35 +234,50 @@ export function PublicLayout() {
               'relative z-[2] flex shrink-0 items-center justify-center desk:hidden',
             )}
           >
-            <button
-              type="button"
-              onClick={() => setMenuOpen((o) => !o)}
-              className={cn(
-                'inline-flex shrink-0 items-center justify-center overflow-visible text-foreground transition',
-                'border-0 bg-transparent shadow-none [appearance:button] outline-none',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
-                headerLightMobilePill
-                  ? menuOpen
-                    ? 'min-h-11 min-w-11 items-center justify-center text-stone-950 hover:bg-stone-200/25 focus-visible:ring-stone-400/40'
-                    : 'min-h-11 min-w-11 items-center justify-center px-1 text-stone-950 hover:bg-stone-200/25 focus-visible:ring-stone-400/40 tab:px-1.5'
-                  : 'min-h-11 min-w-11 rounded-full border border-border bg-background/90 px-0 hover:bg-muted',
-              )}
-              aria-expanded={menuOpen}
-              aria-controls={mobileMenuId}
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            >
-              {headerLightMobilePill ? (
-                <PublicNavHamburgerGlyph />
-              ) : menuOpen ? (
-                <X
-                  className="size-5 shrink-0 text-zinc-50"
-                  strokeWidth={2.25}
-                  aria-hidden
-                />
-              ) : (
-                <PublicNavHamburgerGlyph darkBg />
-              )}
-            </button>
+            {headerLightMobilePill ? (
+              <div className="box-border flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-200/80 bg-background shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((o) => !o)}
+                  className={cn(
+                    'inline-flex shrink-0 items-center justify-center overflow-visible text-foreground transition',
+                    'border-0 bg-transparent shadow-none [appearance:button] outline-none',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
+                    menuOpen
+                      ? 'min-h-11 min-w-11 items-center justify-center rounded-full text-stone-950 hover:bg-stone-200/25 focus-visible:ring-stone-400/40'
+                      : 'min-h-11 min-w-11 items-center justify-center rounded-full px-1 text-stone-950 hover:bg-stone-200/25 focus-visible:ring-stone-400/40 tab:px-1.5',
+                  )}
+                  aria-expanded={menuOpen}
+                  aria-controls={mobileMenuId}
+                  aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                >
+                  <PublicNavHamburgerGlyph />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setMenuOpen((o) => !o)}
+                className={cn(
+                  'inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center overflow-visible text-foreground transition',
+                  'rounded-full border border-border bg-background/90 shadow-none [appearance:button] outline-none hover:bg-muted',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
+                )}
+                aria-expanded={menuOpen}
+                aria-controls={mobileMenuId}
+                aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              >
+                {menuOpen ? (
+                  <X
+                    className="size-5 shrink-0 text-zinc-50"
+                    strokeWidth={2.25}
+                    aria-hidden
+                  />
+                ) : (
+                  <PublicNavHamburgerGlyph darkBg />
+                )}
+              </button>
+            )}
 
             {menuOpen && !headerLightMobilePill ? (
               <>
@@ -365,12 +386,12 @@ export function PublicLayout() {
                   aria-label="Site navigation"
                   className={cn(
                     'fixed z-[90] box-border min-w-0 overflow-visible',
-                    'left-4 right-4 w-auto max-w-none tab:left-6 tab:right-6',
+                    'left-1/2 w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2 tab:w-[min(26rem,calc(100vw-3rem))]',
                     'top-[calc(env(safe-area-inset-top,0px)+1rem+4.5rem+0.5rem)]',
                     'desk:hidden',
                   )}
                 >
-                  <div className="box-border w-full max-w-none rounded-[1.35rem] border border-stone-200/25 bg-[#fefdfb] p-1.5 shadow-[0_10px_40px_-12px_rgba(28,25,23,0.18),0_4px_16px_-8px_rgba(28,25,23,0.08)]">
+                  <div className="box-border w-full max-w-none rounded-[1.35rem] border border-stone-200/25 bg-background p-1.5 shadow-[0_10px_40px_-12px_rgba(28,25,23,0.18),0_4px_16px_-8px_rgba(28,25,23,0.08)]">
                     <nav
                       className="flex w-full min-w-0 flex-col gap-0"
                       aria-label="Marketing mobile menu"

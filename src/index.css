@@ -33,7 +33,8 @@
 :root {
   --text: #6b6375;
   --text-h: #08060d;
-  --bg: #fff;
+  /* Littlebird.ai marketing surfaces (Webflow theme — cream card / section fill) */
+  --bg: #fff9e9;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
   /* Primary CTAs (buttons, progress, file bar send) */
@@ -108,6 +109,17 @@
   display: block;
   box-sizing: border-box;
   overflow-x: clip;
+}
+
+/* Light marketing (landing, auth): avoid #root clipping the header pill’s right radius + shadow on narrow viewports. */
+@media (max-width: 768px) {
+  #root:has([data-public-shell='voltix-marketing-light']) {
+    overflow-x: visible;
+  }
+  /* `html` also uses overflow-x: clip in @layer base — without this, the pill can still lose its right margin/radius. */
+  html:has([data-public-shell='voltix-marketing-light']) {
+    overflow-x: visible;
+  }
 }
 
 img,
@@ -1903,7 +1915,7 @@ code {
     --font-sans: 'Geist Variable', sans-serif;
   }
   :root {
-    --background: oklch(1 0 0);
+    --background: #fff9e9;
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -1988,11 +2000,11 @@ code {
 }
 
 /*
- * App shell (Manus.im–inspired): white rail, gray canvas, black primary CTA, flat rows.
+ * App shell (Manus.im–inspired): white rail, cream canvas (Littlebird #fff9e9), black primary CTA, flat rows.
  * Tokens scoped so marketing / auth routes keep default :root theme.
  */
 .manus-app-shell {
-  --manus-canvas: #f4f4f5;
+  --manus-canvas: #fff9e9;
   --manus-cta-bg: #18181b;
   --manus-cta-fg: #fafafa;
   --manus-cta-hover: #27272a;
@@ -2043,7 +2055,7 @@ code {
 
 @media (max-width: 768px) {
   .manus-app-shell--upload-chat-mobile {
-    --manus-canvas: #f9f7f2;
+    --manus-canvas: #fff9e9;
   }
 }
 
@@ -2129,11 +2141,11 @@ code {
 /* Marketing homepage: aligned with app canvas (--manus-canvas) */
 .voltix-landing {
   color: #57534e;
-  background-color: #f6f4f1;
+  background-color: #fff9e9;
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  --background: oklch(1 0 0);
+  --background: #fff9e9;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -2155,9 +2167,9 @@ code {
 
 /* Public routes on homepage: match document light theme */
 [data-public-shell='voltix-marketing-light'] {
-  background-color: #f6f4f1;
+  background-color: #fff9e9;
   color: oklch(0.205 0 0);
-  --background: oklch(1 0 0);
+  --background: #fff9e9;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

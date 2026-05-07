@@ -74,11 +74,6 @@ const passwordInputMobileClass = cn(
   'phone:h-14 phone:min-h-14 phone:rounded-xl phone:border-zinc-200 phone:px-4 phone:text-[1.0625rem] phone:shadow-none',
 )
 
-const buttonMobileClass = cn(
-  authFormPrimaryButtonLightClass,
-  'phone:h-14 phone:min-h-14 phone:rounded-xl phone:text-[1.0625rem] phone:font-semibold phone:shadow-sm',
-)
-
 const cardTitleClass = cn(
   'flex w-full flex-wrap items-center justify-center gap-2.5 font-display text-[1.5rem] font-semibold !leading-snug tracking-tight text-zinc-950 sm:gap-2.5 sm:text-2xl sm:font-normal lg:gap-3 lg:text-[1.75rem]',
   authLightMobileTitleRowClass,
@@ -391,7 +386,7 @@ export function ResetPasswordPage() {
                 />
               </div>
 
-              <Button type="submit" disabled={busy} className={cn(buttonMobileClass, 'gap-2')}>
+              <Button type="submit" disabled={busy} className={authFormPrimaryButtonLightClass}>
                 {busy ? (
                   <>
                     <Loader2 className="size-4 animate-spin" aria-hidden />

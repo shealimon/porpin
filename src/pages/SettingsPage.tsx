@@ -460,11 +460,7 @@ export function SettingsPage() {
                   disabled={saving}
                   className={cn(
                     authFormPrimaryButtonLightClass,
-                    'box-border inline-flex touch-manipulation items-center justify-center gap-2',
-                    'h-12 min-h-12 w-full max-w-full min-w-0 rounded-[0.875rem] tab:h-11 tab:min-h-11 tab:w-auto tab:rounded-lg tab:px-10',
-                    'shadow-sm dark:hover:!bg-zinc-700',
-                    /* Phone: full width of inset bar = same edges as inputs above */
-                    'phone:pointer-events-auto phone:mx-auto phone:h-[3.25rem] phone:min-h-[3.25rem] phone:w-full phone:max-w-full phone:shrink-0 phone:rounded-2xl phone:text-[0.9375rem] phone:font-semibold phone:tracking-wide phone:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.25)]',
+                    'touch-manipulation phone:pointer-events-auto tab:w-auto tab:min-w-[14rem]',
                   )}
                 >
                   {saving ? (

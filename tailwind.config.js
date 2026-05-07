@@ -27,8 +27,8 @@ export default {
         /** Voltix-style landing (Syne + Outfit) — see LandingPage */
         voltix: ['Syne', 'system-ui', 'sans-serif'],
         outfit: ['Outfit', 'system-ui', 'sans-serif'],
-        /** Chunky rounded logo type — Fredoka bold (700) + Modak fallback */
-        wordmark: ['Fredoka', 'Modak', 'system-ui', 'sans-serif'],
+        /** Logo wordmark — high-contrast display serif (vintage poster / 70s energy) */
+        wordmark: ['"Abril Fatface"', 'Fraunces', 'Georgia', 'serif'],
       },
       colors: {
         border: 'var(--border)',

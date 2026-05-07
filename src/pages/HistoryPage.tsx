@@ -126,7 +126,7 @@ function HistoryPagination({
     <nav
       className={cn(
         'mt-6 box-border w-full min-w-0 max-w-full overflow-x-hidden',
-        'flex flex-col gap-3 rounded-2xl border border-zinc-200/90 bg-zinc-50/80 px-3 py-3',
+        'flex flex-col gap-3 rounded-2xl border border-zinc-200/90 bg-white/65 px-3 py-3',
         'sm:flex-row sm:items-center sm:justify-between sm:px-4',
         'dark:border-zinc-800 dark:bg-zinc-900/50',
       )}
@@ -242,8 +242,7 @@ export function HistoryPage() {
           ) : null}
         </div>
         <p className={cn(appPageDescriptionClass, 'max-w-full break-words [overflow-wrap:anywhere]')}>
-          Download past Hinglish outputs anytime. Jobs are listed with the newest first (
-          {pageSize} per page).
+          Download past Hinglish anytime.
         </p>
       </header>
 
@@ -310,7 +309,7 @@ export function HistoryPage() {
         <>
           <div
             className={cn(
-              'rounded-2xl border border-zinc-200 bg-zinc-50/80 px-5 py-8 text-center dark:border-zinc-800 dark:bg-zinc-900/40',
+              'rounded-2xl border border-zinc-200 bg-white/65 px-5 py-8 text-center dark:border-zinc-800 dark:bg-zinc-900/40',
             )}
           >
             <p className="text-sm text-zinc-600 dark:text-zinc-400">Nothing on this page.</p>

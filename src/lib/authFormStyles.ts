@@ -47,18 +47,20 @@ export const authFormFieldPasswordLightClass = cn(
   'auth-password-no-native-reveal',
 )
 
-/** Black CTA on light auth cards (login / signup / forgot). */
+/** Black pill CTA on light auth cards — same shape as landing “Start Free”. */
 export const authFormPrimaryButtonLightClass = cn(
-  'h-11 min-h-11 w-full rounded-md border-0 text-[0.9375rem] font-semibold shadow-md sm:h-10 sm:min-h-10 sm:text-sm',
-  '!bg-zinc-950 !text-white',
-  'hover:!bg-zinc-800',
-  'focus-visible:ring-2 focus-visible:ring-zinc-950/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
-  'disabled:opacity-55',
+  'box-border inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-full border-0',
+  '!h-auto min-h-14 px-10 text-base font-semibold whitespace-normal',
+  '!bg-stone-900 !text-white shadow-lg !shadow-stone-900/15',
+  'transition hover:!bg-stone-800 active:scale-[0.98]',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+  'disabled:opacity-55 disabled:active:scale-100',
+  'sm:min-h-[3.75rem] sm:px-12 sm:text-lg',
 )
 
-/** Outer scroll shell: full-width white canvas below the public header (no floating-card gutters). */
+/** Outer scroll shell: same canvas as landing below the public header (no floating-card gutters). */
 export const authLightMobilePageShellClass = cn(
-  'phone:bg-white phone:justify-start phone:px-0 phone:py-0 phone:pt-0 phone:pb-0',
+  'phone:bg-background phone:justify-start phone:px-0 phone:py-0 phone:pt-0 phone:pb-0',
 )
 
 /** Card becomes an edge-to-edge sheet on small screens. */

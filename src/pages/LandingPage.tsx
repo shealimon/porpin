@@ -24,7 +24,7 @@ export function LandingPage() {
   return (
     <div
       className={cn(
-        'voltix-landing relative flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col bg-[#f6f4f1] font-sans text-stone-600 antialiased',
+        'voltix-landing relative flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col bg-background font-sans text-stone-600 antialiased',
         'selection:bg-orange-200/35 selection:text-stone-900',
       )}
     >
@@ -37,15 +37,15 @@ export function LandingPage() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(246,244,241,0)_0%,#f6f4f1_100%)]"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(255,249,233,0)_0%,#fff9e9_100%)]"
         aria-hidden
       />
 
       <section
         aria-labelledby="landing-hero-heading"
-        className="mx-auto flex min-h-[calc(100svh-4.5rem)] w-full min-w-0 max-w-6xl flex-col justify-center px-4 pb-10 pt-14 sm:min-h-[calc(100svh-4.75rem)] sm:pb-12 sm:pt-20 lg:min-h-[calc(76svh-4.75rem)] lg:pb-8 lg:pt-14 tab:px-6"
+        className="mx-auto flex min-h-[calc(100svh-4.5rem)] w-full min-w-0 max-w-6xl flex-col justify-center px-5 pb-10 pt-14 sm:min-h-[calc(100svh-4.75rem)] sm:pb-12 sm:pt-20 lg:min-h-[calc(76svh-4.75rem)] lg:pb-8 lg:pt-14 tab:px-6"
       >
-        <div className="mx-auto w-full min-w-0 max-w-5xl text-center">
+        <div className="mx-auto w-full min-w-0 max-w-5xl text-center max-[768px]:box-border max-[768px]:px-3">
           <h1
             id="landing-hero-heading"
             className={cn(
@@ -80,14 +80,13 @@ export function LandingPage() {
               className={cn(
                 'inline-flex min-h-14 w-full max-w-[18rem] items-center justify-center rounded-full bg-stone-900 px-10 text-base font-semibold text-white shadow-lg shadow-stone-900/15 no-underline transition sm:min-h-[3.75rem] sm:max-w-none sm:px-12 sm:text-lg',
                 'hover:bg-stone-800 active:scale-[0.98]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f6f4f1]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                 'sm:w-auto sm:min-w-[14rem]',
               )}
             >
               Start Free
             </Link>
           </div>
-        </div>
 
         <p
           className={cn(
@@ -97,6 +96,7 @@ export function LandingPage() {
         >
           Less friction, more natural reading.
         </p>
+        </div>
       </section>
 
       {/*
@@ -130,7 +130,7 @@ export function LandingPage() {
             <span className="flex size-12 shrink-0 items-center justify-center sm:size-14">
               <PorpinMark className="size-full" aria-hidden />
             </span>
-            <PorpinWordmark className="!text-[1.85rem] !tracking-[-0.05em] sm:!text-[2.35rem]" />
+            <PorpinWordmark className="!text-[1.85rem] sm:!text-[2.35rem]" />
           </Link>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm tab:gap-x-8 tab:text-base">
             <p className="m-0 text-stone-500">© 2026 Porpin</p>

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import {
   CheckCircle2,
   Clock3,
-  Copy,
   CreditCard,
   Gift,
   Link2,
+  Share2,
   Sparkles,
   UserPlus,
   Users,
@@ -21,6 +21,7 @@ import {
   appPageShellClass,
   appPageTitleClass,
 } from '@/lib/appPageLayout'
+import { authFormPrimaryButtonLightClass } from '@/lib/authFormStyles'
 import { refreshProfileExtras } from '@/lib/syncBackendProfile'
 import { cn } from '@/lib/utils'
 import { SITE_ORIGIN } from '@/seo/site'
@@ -132,6 +133,26 @@ export function InviteFriendsPage() {
       .catch(() => toast.error('Could not copy'))
   }
 
+  const onShareOrCopy = () => {
+    if (!shareUrl) return
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      void navigator
+        .share({
+          title: 'Join me on Porpin',
+          text: 'Sign up with my invite link and get bonus words.',
+          url: shareUrl,
+        })
+        .then(() => toast.success('Shared'))
+        .catch((err: unknown) => {
+          const name = err instanceof Error ? err.name : ''
+          if (name === 'AbortError') return
+          onCopy()
+        })
+      return
+    }
+    onCopy()
+  }
+
   const cap = stats?.rewarded_cap ?? 10
   const done = stats?.rewarded_completed ?? 0
   const wordsCap = stats?.referrer_max_words_cap ?? 100_000
@@ -146,7 +167,7 @@ export function InviteFriendsPage() {
       <section className={cardClass} aria-labelledby="invite-hero-heading">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
-            <p className="inline-flex rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+            <p className="inline-flex rounded-full border border-zinc-200/90 bg-white/80 px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
               Friends get {REFEREE_SIGNUP_BONUS_WORDS.toLocaleString('en-IN')} words on signup
             </p>
             <div>
@@ -195,7 +216,7 @@ export function InviteFriendsPage() {
                 <Link2 className="size-4 text-brand-600 dark:text-brand-400" aria-hidden />
               </span>
               <span>
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">Copy your link</span>
+                <span className="font-medium text-zinc-900 dark:text-zinc-100">Share your link</span>
                 <span className="mt-0.5 block text-zinc-600 dark:text-zinc-400">Send it to anyone who should join.</span>
               </span>
             </li>
@@ -241,32 +262,34 @@ export function InviteFriendsPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               Your invite link
             </p>
-            <div className="mt-3 flex flex-col gap-2 rounded-xl bg-zinc-100/80 p-1 dark:bg-zinc-900/60 sm:flex-row sm:items-stretch">
+            <div className="mt-3 flex flex-col gap-2 rounded-xl bg-zinc-100/80 p-1 dark:bg-zinc-900/60 sm:flex-row sm:items-center">
               <div className="flex min-h-10 min-w-0 flex-1 items-center gap-2 px-3">
                 <Link2 className="size-4 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
                 <code className="min-w-0 truncate text-xs text-zinc-800 dark:text-zinc-200">{shareUrl}</code>
               </div>
               <button
                 type="button"
-                onClick={() => void onCopy()}
-                className={cn(
-                  'inline-flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-lg border-0 px-5',
-                  'bg-emerald-600 text-sm font-semibold text-white shadow-md shadow-black/10',
-                  'transition hover:bg-emerald-700 hover:shadow-lg hover:shadow-black/15 active:scale-[0.98]',
-                  'dark:bg-emerald-500 dark:hover:bg-emerald-400',
-                  'outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400/50 dark:focus-visible:outline-zinc-500/50',
-                  'sm:w-auto',
-                )}
+                onClick={() => void onShareOrCopy()}
+                className={cn(authFormPrimaryButtonLightClass, 'sm:w-auto sm:shrink-0 sm:self-center')}
               >
-                <Copy className="size-4" aria-hidden />
-                {copied ? 'Copied' : 'Copy Link'}
+                {copied ? (
+                  <>
+                    <CheckCircle2 className="size-[1.125rem] sm:size-5" aria-hidden />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="size-[1.125rem] sm:size-5" aria-hidden />
+                    Share
+                  </>
+                )}
               </button>
             </div>
           </div>
         ) : (
           <div
             className={cn(
-              'mt-6 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/80 px-4 py-6 text-center text-sm text-zinc-600',
+              'mt-6 rounded-xl border border-dashed border-zinc-200 bg-white/60 px-4 py-6 text-center text-sm text-zinc-600',
               'dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400',
             )}
           >

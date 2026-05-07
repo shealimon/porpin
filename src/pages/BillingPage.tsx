@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import {
-  Calendar,
-  CalendarDays,
-  CalendarRange,
-  Gift,
-  HelpCircle,
-  Loader2,
-  Sparkles,
-  Upload,
-} from 'lucide-react'
+import { CalendarDays, Gift, Loader2, Sparkles } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 import {
@@ -22,6 +13,7 @@ import { usePricingConfig } from '@/hooks/usePricingConfig'
 import { loadRazorpayScript } from '@/lib/razorpayScript'
 import { refreshProfileExtras } from '@/lib/syncBackendProfile'
 import { appPageHeaderClass, appPageShellClass, appPageTitleClass } from '@/lib/appPageLayout'
+import { authFormPrimaryButtonLightClass } from '@/lib/authFormStyles'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/utils/format'
 import { useProfileExtrasStore } from '@/stores/profileExtrasStore'
@@ -36,6 +28,18 @@ function formatInr(amount: number): string {
   }).format(amount)
 }
 
+/** Server `profiles.plan` + subscription flag → billing display tier. */
+function getAccountPlanKind(
+  planSlug: string,
+  subscriptionActive: boolean,
+): 'free' | 'payg' | 'monthly' | 'yearly' {
+  const p = planSlug.toLowerCase().trim()
+  if (subscriptionActive && p === 'yearly') return 'yearly'
+  if (subscriptionActive && p === 'monthly') return 'monthly'
+  if (p === 'payg') return 'payg'
+  return 'free'
+}
+
 export function BillingPage() {
   const { pricing } = usePricingConfig()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -47,6 +51,7 @@ export function BillingPage() {
   const subExpiry = useProfileExtrasStore((s) => s.subscriptionExpiry)
 
   const [busyPlan, setBusyPlan] = useState<'monthly' | 'yearly' | null>(null)
+  const [upgradeCycle, setUpgradeCycle] = useState<'monthly' | 'yearly'>('monthly')
 
   const startSubscription = useCallback(
     async (plan: 'monthly' | 'yearly') => {
@@ -139,6 +144,13 @@ export function BillingPage() {
     [pricing.subscription_inr_monthly, pricing.subscription_inr_yearly],
   )
 
+  const isMonthlySub = planSlug === 'monthly'
+  const isYearlySub = planSlug === 'yearly'
+  const busyAny = busyPlan !== null
+  const monthlySubscribeDisabled =
+    busyAny || (subActive && isMonthlySub) || (subActive && isYearlySub)
+  const yearlySubscribeDisabled = busyAny || (subActive && isYearlySub)
+
   useEffect(() => {
     const raw = searchParams.get('subscribe')
     const fromLanding = raw === 'monthly' || raw === 'yearly'
@@ -169,299 +181,287 @@ export function BillingPage() {
     }
   }, [searchParams, setSearchParams, startSubscription])
 
+  useEffect(() => {
+    const raw = searchParams.get('subscribe')
+    if (raw === 'monthly' || raw === 'yearly') {
+      setUpgradeCycle(raw)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    if (monthlySubscribeDisabled && !yearlySubscribeDisabled) {
+      setUpgradeCycle('yearly')
+    } else if (!monthlySubscribeDisabled && yearlySubscribeDisabled) {
+      setUpgradeCycle('monthly')
+    }
+  }, [monthlySubscribeDisabled, yearlySubscribeDisabled])
+
   const effFreePool = freeCredits + referralBonus
-  const subWordsPerCycle = pricing.subscription_words_per_cycle.toLocaleString('en-IN')
-  const isMonthlySub = planSlug === 'monthly'
-  const isYearlySub = planSlug === 'yearly'
-  const busyAny = busyPlan !== null
-  const monthlySubscribeDisabled =
-    busyAny || (subActive && isMonthlySub) || (subActive && isYearlySub)
-  const yearlySubscribeDisabled = busyAny || (subActive && isYearlySub)
+  const subWordsPerCycleFmt = pricing.subscription_words_per_cycle.toLocaleString('en-IN')
+  const getSubscribeDisabled =
+    upgradeCycle === 'monthly' ? monthlySubscribeDisabled : yearlySubscribeDisabled
+
+  const planKind = getAccountPlanKind(planSlug, subActive)
+  const accountPlanTitle =
+    planKind === 'yearly'
+      ? 'Yearly'
+      : planKind === 'monthly'
+        ? 'Monthly'
+        : planKind === 'payg'
+          ? 'Account Plan'
+          : 'Free'
+
+  const yearlySaveVsMonthly = Math.round(
+    pricing.subscription_inr_monthly * 12 - pricing.subscription_inr_yearly,
+  )
+  const yearlyPerMonthRounded = Math.round(pricing.subscription_inr_yearly / 12)
+
+  const subscriptionPlanCardClass =
+    'min-w-0 rounded-xl border px-2.5 py-2.5 text-left [overflow-wrap:anywhere] transition-colors sm:px-4 sm:py-4'
+  const subscriptionPlanSelected =
+    'border-zinc-400 bg-zinc-50 dark:border-zinc-500 dark:bg-zinc-900/45'
+  const subscriptionPlanUnselected =
+    'border-zinc-200/95 bg-white hover:bg-zinc-50/70 dark:border-zinc-700/80 dark:bg-zinc-950/60 dark:hover:bg-zinc-900/50'
+
+  /** Account / Free / Upgrade outer cards — lifts sections off canvas. */
+  const billingHighlightCardClass = cn(
+    'box-border min-w-0 max-w-full rounded-2xl border border-zinc-200/95',
+    'shadow-lg shadow-zinc-900/10',
+    'bg-white p-3 sm:p-5',
+    'dark:border-zinc-700/80 dark:bg-zinc-950/80 dark:shadow-xl dark:shadow-black/35',
+  )
 
   return (
     <div
       className={cn(
         appPageShellClass,
-        'w-full min-w-0 max-w-full space-y-8 sm:space-y-10 md:space-y-12',
-        'px-px',
+        /** `max-w-full` wins over shell `max-w-3xl` — stay within scroll pane so parent `overflow:hidden` does not clip. */
+        'box-border min-w-0 max-w-full space-y-7 sm:space-y-10 md:space-y-12',
+        'touch-manipulation [-webkit-tap-highlight-color:transparent]',
+        '[overflow-wrap:anywhere]',
       )}
     >
       <header className={appPageHeaderClass}>
         <h1 className={appPageTitleClass}>Billing</h1>
       </header>
 
-      {/* How it works */}
-      <section
-        aria-labelledby="how-heading"
-        className={cn(
-          'box-border w-full min-w-0 max-w-full overflow-x-hidden rounded-2xl border border-zinc-200/90',
-          'bg-zinc-50/90 p-5 sm:p-6',
-          'dark:border-zinc-700/90 dark:bg-zinc-900/40',
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <HelpCircle className="size-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
-          <h2
-            id="how-heading"
-            className="font-display text-base font-normal tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-lg"
-          >
-            How billing works
-          </h2>
-        </div>
-        <ol className="mt-5 space-y-4">
-          <li className="flex gap-4">
-            <span
-              className={cn(
-                'flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold',
-                'bg-white text-brand-700 shadow-sm ring-1 ring-zinc-200/80',
-                'dark:bg-zinc-950 dark:text-brand-300 dark:ring-zinc-700',
-              )}
-              aria-hidden
-            >
-              1
-            </span>
-            <div className="min-w-0 pt-0.5">
-              <p className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-zinc-100">
-                <Gift className="size-4 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
-                Free & referral words
-              </p>
-              <p className="mt-1 min-w-0 break-words text-sm leading-relaxed text-zinc-600 [overflow-wrap:anywhere] dark:text-zinc-400">
-                Used first on every translation. No card required.
-              </p>
-            </div>
-          </li>
-          <li className="flex gap-4">
-            <span
-              className={cn(
-                'flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold',
-                'bg-white text-brand-700 shadow-sm ring-1 ring-zinc-200/80',
-                'dark:bg-zinc-950 dark:text-brand-300 dark:ring-zinc-700',
-              )}
-              aria-hidden
-            >
-              2
-            </span>
-            <div className="min-w-0 pt-0.5">
-              <p className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-zinc-100">
-                <Sparkles className="size-4 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
-                Monthly subscription (optional)
-              </p>
-              <p className="mt-1 min-w-0 break-words text-sm leading-relaxed text-zinc-600 [overflow-wrap:anywhere] dark:text-zinc-400">
-                Adds a large word pool each billing cycle. Subscribe below if you want this tier.
-              </p>
-            </div>
-          </li>
-          <li className="flex gap-4">
-            <span
-              className={cn(
-                'flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold',
-                'bg-white text-brand-700 shadow-sm ring-1 ring-zinc-200/80',
-                'dark:bg-zinc-950 dark:text-brand-300 dark:ring-zinc-700',
-              )}
-              aria-hidden
-            >
-              3
-            </span>
-            <div className="min-w-0 pt-0.5">
-              <p className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-zinc-100">
-                <Upload className="size-4 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
-                Pay-as-you-go
-              </p>
-              <p className="mt-1 min-w-0 break-words text-sm leading-relaxed text-zinc-600 [overflow-wrap:anywhere] dark:text-zinc-400">
-                After included words run out, you pay per job when you confirm the estimate on Home — not from this page.
-              </p>
-            </div>
-          </li>
-        </ol>
-      </section>
-
-      {/* Balances */}
-      <section aria-labelledby="balances-heading" className="min-w-0 max-w-full">
-        <h2
-          id="balances-heading"
-          className="min-w-0 break-words font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-50"
-        >
-          Your word balance
+      {/* Account plan */}
+      <section aria-labelledby="account-plan-heading" className="min-w-0 max-w-full">
+        <h2 id="account-plan-heading" className="sr-only">
+          Account Plan
         </h2>
-        <p className="mt-1 min-w-0 break-words text-sm text-zinc-600 [overflow-wrap:anywhere] dark:text-zinc-400">
-          Pools that apply before pay-as-you-go. Server totals are authoritative if something looks off — refresh or
-          sign in again.
-        </p>
-        <div className="mt-4 grid min-w-0 max-w-full gap-4 sm:grid-cols-2">
-          <div
-            className={cn(
-              'box-border min-w-0 max-w-full overflow-x-hidden rounded-2xl border border-zinc-200/95',
-              'bg-white p-5',
-              'dark:border-zinc-700/80 dark:bg-zinc-950/80',
-            )}
-          >
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              <Gift className="size-3.5 text-brand-600 dark:text-brand-400" aria-hidden />
-              Free + referral
-            </div>
-            <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
-              {effFreePool.toLocaleString('en-IN')}
-            </p>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">words available</p>
-            {referralBonus > 0 ? (
-              <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                Includes {referralBonus.toLocaleString('en-IN')} words from referrals.
+        <div className={billingHighlightCardClass}>
+          <div className="flex items-start gap-2.5 sm:gap-4">
+            <CalendarDays className="mt-0.5 size-9 shrink-0 text-brand-600 dark:text-brand-400 sm:size-10" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-[1.625rem]">
+                {accountPlanTitle}
               </p>
-            ) : (
-              <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                Base free tier: {pricing.free_credits_words.toLocaleString('en-IN')} words (see pricing on the site).
-              </p>
-            )}
-          </div>
-          <div
-            className={cn(
-              'box-border min-w-0 max-w-full overflow-x-hidden rounded-2xl border border-zinc-200/95',
-              'bg-white p-5',
-              'dark:border-zinc-700/80 dark:bg-zinc-950/80',
-            )}
-          >
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              <CalendarDays className="size-3.5 text-brand-600 dark:text-brand-400" aria-hidden />
-              Subscription
-            </div>
-            {subActive ? (
-              <>
-                <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
-                  {subCredits.toLocaleString('en-IN')}
+              {planKind === 'payg' ? (
+                <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl [overflow-wrap:anywhere]">
+                  Pay per job
                 </p>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">words this cycle</p>
-                {subExpiry ? (
-                  <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                    Renews or ends{' '}
-                    <time className="font-medium text-zinc-700 dark:text-zinc-300" dateTime={subExpiry}>
-                      {formatDate(subExpiry, 'en-IN')}
-                    </time>
-                    .
+              ) : null}
+              {planKind === 'free' && !subActive ? (
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  Referrals apply first—upgrade below or pay per job.
+                </p>
+              ) : null}
+              {(planKind === 'monthly' || planKind === 'yearly') && subActive ? (
+                <>
+                  <p className="mt-3 text-2xl font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl [overflow-wrap:anywhere]">
+                    {subCredits.toLocaleString('en-IN')}
                   </p>
-                ) : null}
-              </>
-            ) : (
-              <>
-                <p className="mt-3 text-lg font-semibold text-zinc-900 dark:text-zinc-50">Not subscribed</p>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  Add a monthly pool below, or stay on free + pay-as-you-go.
-                </p>
-              </>
-            )}
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">plan words · this cycle</p>
+                  {subExpiry ? (
+                    <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+                      Next:{' '}
+                      <time className="font-medium text-zinc-700 dark:text-zinc-300" dateTime={subExpiry}>
+                        {formatDate(subExpiry, 'en-IN')}
+                      </time>
+                    </p>
+                  ) : null}
+                </>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Subscription CTA */}
-      <section
-        aria-labelledby="sub-heading"
-        className={cn(
-          'box-border w-full min-w-0 max-w-full overflow-x-hidden rounded-2xl border border-brand-300/80',
-          'bg-brand-50/70 p-4 sm:p-6',
-          'dark:border-brand-500/45 dark:bg-brand-950/30',
-        )}
-      >
-        <h2
-          id="sub-heading"
-          className="min-w-0 break-words font-display text-lg font-normal tracking-tight text-zinc-900 dark:text-zinc-50"
-        >
-          Subscription plans
+      {/* Free + referral words */}
+      <section aria-labelledby="free-words-heading" className="min-w-0 max-w-full">
+        <h2 id="free-words-heading" className="sr-only">
+          Free + Referral Words
         </h2>
-        <p className="mt-2 min-w-0 break-words text-sm text-zinc-600 [overflow-wrap:anywhere] dark:text-zinc-400">
-          <strong>{subWordsPerCycle}</strong> words per cycle on both tiers (yearly = one payment per 12 months, pool
-          resets every 30 days in-app).
-        </p>
-        <ul className="mt-3 min-w-0 max-w-full space-y-2 break-words text-sm text-zinc-700 [overflow-wrap:anywhere] dark:text-zinc-300">
-          <li className="flex min-w-0 gap-2">
-            <span className="shrink-0 text-brand-600 dark:text-brand-400" aria-hidden>
-              ·
-            </span>
-            <span className="min-w-0">
-              <strong>Monthly</strong> — {formatInr(pricing.subscription_inr_monthly)} / month
-            </span>
-          </li>
-          <li className="flex min-w-0 gap-2">
-            <span className="shrink-0 text-brand-600 dark:text-brand-400" aria-hidden>
-              ·
-            </span>
-            <span className="min-w-0">
-              <strong>Yearly</strong> — {formatInr(pricing.subscription_inr_yearly)} / year
-            </span>
-          </li>
-        </ul>
-        <div
-          className={cn(
-            'mt-5 grid w-full min-w-0 max-w-full grid-cols-1 justify-center gap-2.5',
-            'sm:mx-auto sm:max-w-md sm:grid-cols-2 sm:gap-3',
-          )}
-        >
-          <button
-            type="button"
-            disabled={monthlySubscribeDisabled}
-            onClick={() => void startSubscription('monthly')}
-            className={cn(
-              'inline-flex h-10 w-full min-w-0 max-w-full shrink-0 items-center justify-center gap-2 rounded-lg border-0 px-5',
-              'text-sm font-semibold text-white',
-              'bg-emerald-600 shadow-md shadow-black/10',
-              'transition hover:bg-emerald-700 hover:shadow-lg hover:shadow-black/15 active:scale-[0.98]',
-              'dark:bg-emerald-500 dark:hover:bg-emerald-400',
-              'outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/50',
-              'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60',
-              'touch-manipulation',
-            )}
-          >
-            {busyPlan === 'monthly' ? (
-              <>
-                <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
-                <span>Opening…</span>
-              </>
-            ) : (
-              <>
-                <Calendar className="size-4 shrink-0 opacity-90" aria-hidden />
-                Subscribe Monthly
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            disabled={yearlySubscribeDisabled}
-            onClick={() => void startSubscription('yearly')}
-            className={cn(
-              'inline-flex h-10 w-full min-w-0 max-w-full shrink-0 items-center justify-center gap-2 rounded-lg border-0 px-5',
-              'text-sm font-semibold text-white',
-              'bg-brand-600 shadow-md shadow-black/10',
-              'transition hover:bg-brand-700 hover:shadow-lg hover:shadow-black/15 active:scale-[0.98]',
-              'dark:bg-brand-600 dark:hover:bg-brand-500',
-              'outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/50',
-              'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60',
-              'touch-manipulation',
-            )}
-          >
-            {busyPlan === 'yearly' ? (
-              <>
-                <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
-                <span>Opening…</span>
-              </>
-            ) : (
-              <>
-                <CalendarRange className="size-4 shrink-0 opacity-90" aria-hidden />
-                Subscribe Yearly
-              </>
-            )}
-          </button>
+        <div className={billingHighlightCardClass}>
+          <div className="flex items-start gap-2.5 sm:gap-4">
+            <Gift className="mt-0.5 size-9 shrink-0 text-brand-600 dark:text-brand-400 sm:size-10" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-[1.625rem]">
+                Free + Referral Words
+              </p>
+              <p className="mt-3 text-2xl font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl [overflow-wrap:anywhere]">
+                {effFreePool.toLocaleString('en-IN')}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <p className="text-center text-xs leading-relaxed text-zinc-500 dark:text-zinc-500">
-        Any help:{' '}
+      {/* Upgrade */}
+      <section aria-labelledby="upgrade-heading" className="min-w-0 max-w-full">
+        <h2 id="upgrade-heading" className="sr-only">
+          Upgrade
+        </h2>
+        <div className={billingHighlightCardClass}>
+          <div className="flex items-start gap-2.5 sm:gap-4">
+            <Sparkles className="mt-0.5 size-9 shrink-0 text-brand-600 dark:text-brand-400 sm:size-10" aria-hidden />
+            <p className="min-w-0 font-display text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-[1.625rem]">
+              Upgrade
+            </p>
+          </div>
+          <fieldset
+            className={cn(
+              /** One column on narrow phones: avoids clipping under shell `overflow:hidden`. Two columns from `sm` up. */
+              'm-0 mt-4 grid w-full min-w-0 grid-cols-1 gap-3 border-0 p-0',
+              'sm:mt-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-4',
+            )}
+          >
+            <legend className="sr-only">Billing period</legend>
+                <label
+                  htmlFor="billing-upgrade-monthly"
+                  className={cn(
+                    'flex h-full min-w-0 cursor-pointer touch-manipulation items-start gap-1.5 sm:gap-3',
+                    '[&:has(input:disabled)_*]:opacity-55',
+                    monthlySubscribeDisabled && upgradeCycle !== 'monthly'
+                      ? 'cursor-not-allowed'
+                      : null,
+                  )}
+                >
+                  <input
+                    id="billing-upgrade-monthly"
+                    name="billing-upgrade-cycle"
+                    type="radio"
+                    className={cn(
+                      'mt-1 size-[0.9375rem] shrink-0 accent-brand-600 sm:size-4',
+                      '[&:disabled]:cursor-not-allowed',
+                    )}
+                    checked={upgradeCycle === 'monthly'}
+                    disabled={monthlySubscribeDisabled}
+                    onChange={() => setUpgradeCycle('monthly')}
+                  />
+                  <span
+                    className={cn(
+                      subscriptionPlanCardClass,
+                      'pointer-events-none min-w-0 flex-1',
+                      upgradeCycle === 'monthly' ? subscriptionPlanSelected : subscriptionPlanUnselected,
+                    )}
+                  >
+                    <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-50 sm:text-base">
+                      Monthly
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold tabular-nums text-brand-800 sm:text-base dark:text-brand-200">
+                      {formatInr(pricing.subscription_inr_monthly)}{' '}
+                      <span className="font-medium text-zinc-600 dark:text-zinc-400">/ mo</span>
+                    </span>
+                    <span className="mt-2 block text-xs leading-relaxed text-zinc-600 sm:text-sm dark:text-zinc-400">
+                      {subWordsPerCycleFmt} words / month
+                    </span>
+                    <span className="mt-2 block text-xs leading-relaxed text-zinc-600 sm:text-sm dark:text-zinc-400">
+                      Billed monthly
+                    </span>
+                    {monthlySubscribeDisabled ? (
+                      <span className="mt-2 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        {subActive && isMonthlySub ? 'Current plan.' : subActive ? 'Use yearly only.' : null}
+                      </span>
+                    ) : null}
+                  </span>
+                </label>
+                <label
+                  htmlFor="billing-upgrade-yearly"
+                  className={cn(
+                    'flex h-full min-w-0 cursor-pointer touch-manipulation items-start gap-1.5 sm:gap-3',
+                    '[&:has(input:disabled)_*]:opacity-55',
+                    yearlySubscribeDisabled && upgradeCycle !== 'yearly'
+                      ? 'cursor-not-allowed'
+                      : null,
+                  )}
+                >
+                  <input
+                    id="billing-upgrade-yearly"
+                    name="billing-upgrade-cycle"
+                    type="radio"
+                    className={cn(
+                      'mt-1 size-[0.9375rem] shrink-0 accent-brand-600 sm:size-4',
+                      '[&:disabled]:cursor-not-allowed',
+                    )}
+                    checked={upgradeCycle === 'yearly'}
+                    disabled={yearlySubscribeDisabled}
+                    onChange={() => setUpgradeCycle('yearly')}
+                  />
+                  <span
+                    className={cn(
+                      subscriptionPlanCardClass,
+                      'pointer-events-none min-w-0 flex-1',
+                      upgradeCycle === 'yearly' ? subscriptionPlanSelected : subscriptionPlanUnselected,
+                    )}
+                  >
+                    <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-50 sm:text-base">
+                      Yearly
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold tabular-nums text-brand-800 sm:text-base dark:text-brand-200">
+                      {formatInr(pricing.subscription_inr_yearly)}{' '}
+                      <span className="font-medium text-zinc-600 dark:text-zinc-400">/ yr</span>
+                    </span>
+                    <span className="mt-2 block text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
+                      {formatInr(yearlyPerMonthRounded)}/mo
+                      {yearlySaveVsMonthly > 0 ? (
+                        <> - Save {formatInr(yearlySaveVsMonthly)}.</>
+                      ) : (
+                        <>.</>
+                      )}
+                    </span>
+                    <span className="mt-2 block text-xs leading-relaxed text-zinc-600 sm:text-sm dark:text-zinc-400">
+                      Billed yearly
+                    </span>
+                    {yearlySubscribeDisabled ? (
+                      <span className="mt-2 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        Yearly active.
+                      </span>
+                    ) : null}
+                  </span>
+                </label>
+            </fieldset>
+          <div className="mx-auto mt-6 w-full max-w-md">
+            <button
+              type="button"
+              disabled={getSubscribeDisabled}
+              onClick={() => void startSubscription(upgradeCycle)}
+              className={cn(
+                authFormPrimaryButtonLightClass,
+                'touch-manipulation disabled:pointer-events-none disabled:cursor-not-allowed',
+              )}
+            >
+              {busyPlan === upgradeCycle ? (
+                <>
+                  <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                  <span>Opening…</span>
+                </>
+              ) : (
+                'Get Subscribe'
+              )}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <p className="mx-auto max-w-lg px-1 text-center text-xs leading-relaxed text-zinc-500 dark:text-zinc-500">
         <a
           href="mailto:help@porpin.com"
-          className="font-medium text-zinc-700 underline decoration-zinc-400/80 underline-offset-2 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+          className="inline-flex min-h-11 items-center justify-center rounded-md px-2 font-medium text-zinc-700 underline decoration-zinc-400/80 underline-offset-2 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
         >
           help@porpin.com
         </a>
-        {' '}
-        · We usually reply within an hour.
       </p>
     </div>
   )

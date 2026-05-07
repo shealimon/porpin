@@ -230,10 +230,7 @@ export function LoginPage() {
               <Button
                 type="submit"
                 disabled={busy}
-                className={cn(
-                  authFormPrimaryButtonLightClass,
-                  'phone:h-14 phone:min-h-14 phone:rounded-xl phone:text-[1.0625rem] phone:font-semibold phone:shadow-sm',
-                )}
+                className={authFormPrimaryButtonLightClass}
               >
                 {busy ? (
                   <>
