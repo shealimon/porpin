@@ -167,7 +167,7 @@ export function InviteFriendsPage() {
       <section className={cardClass} aria-labelledby="invite-hero-heading">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
-            <p className="inline-flex rounded-full border border-zinc-200/90 bg-white/80 px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+            <p className="inline-flex rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
               Friends get {REFEREE_SIGNUP_BONUS_WORDS.toLocaleString('en-IN')} words on signup
             </p>
             <div>
@@ -289,7 +289,7 @@ export function InviteFriendsPage() {
         ) : (
           <div
             className={cn(
-              'mt-6 rounded-xl border border-dashed border-zinc-200 bg-white/60 px-4 py-6 text-center text-sm text-zinc-600',
+              'mt-6 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/80 px-4 py-6 text-center text-sm text-zinc-600',
               'dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400',
             )}
           >

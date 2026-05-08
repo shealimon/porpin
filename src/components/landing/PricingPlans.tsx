@@ -150,7 +150,7 @@ export function PricingPlans({ variant }: PricingPlansProps) {
     isLanding
       ? cn(
           'border-zinc-200/95 bg-white text-zinc-800 shadow-[0_2px_8px_-2px_rgba(24,24,27,0.06)] hover:bg-zinc-50/95',
-          'focus-visible:ring-zinc-400 focus-visible:ring-offset-background',
+          'focus-visible:ring-zinc-400 focus-visible:ring-offset-[#f6f4f1]',
         )
       : cn(
           'border-border bg-background/90 text-foreground hover:bg-muted hover:text-foreground',
@@ -164,7 +164,7 @@ export function PricingPlans({ variant }: PricingPlansProps) {
     isLanding
       ? cn(
           'border-zinc-900 bg-zinc-900 text-white shadow-[0_8px_24px_-4px_rgba(24,24,27,0.35)] hover:bg-zinc-800',
-          'focus-visible:ring-zinc-900/45 focus-visible:ring-offset-background',
+          'focus-visible:ring-zinc-900/45 focus-visible:ring-offset-[#f6f4f1]',
         )
       : cn(
           'border-primary bg-primary text-primary-foreground shadow-primary/20 hover:opacity-90',
@@ -604,7 +604,7 @@ export function PricingPlans({ variant }: PricingPlansProps) {
           'w-full min-w-0 max-w-full scroll-mt-28 border-t border-stone-200/80 py-14 sm:py-20',
           /* Gutter comes from `LandingPage` below-fold `px-4 tab:px-6` — do not add second px here or the right side clips on mobile. */
           'px-0',
-          'bg-[linear-gradient(180deg,#fff9e9_0%,#fff2e6_55%,#fff9e9_100%)]',
+          'bg-[linear-gradient(180deg,#f6f4f1_0%,#f1ece6_55%,#f6f4f1_100%)]',
         )}
       >
         <div className="mx-auto w-full min-w-0 max-w-full box-border">{content}</div>

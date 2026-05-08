@@ -33,8 +33,7 @@
 :root {
   --text: #6b6375;
   --text-h: #08060d;
-  /* Littlebird.ai marketing surfaces (Webflow theme — cream card / section fill) */
-  --bg: #fff9e9;
+  --bg: #fff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
   /* Primary CTAs (buttons, progress, file bar send) */
@@ -120,6 +119,15 @@
   html:has([data-public-shell='voltix-marketing-light']) {
     overflow-x: visible;
   }
+}
+
+/* Light marketing (landing + light auth): canvas + overscroll match cream (`#f6f4f1`) so body `bg-background` white doesn't peek. */
+html:has([data-public-marketing-cream]) {
+  background-color: #f6f4f1;
+}
+
+html:has([data-public-marketing-cream]) body {
+  background-color: #f6f4f1;
 }
 
 img,
@@ -1915,7 +1923,7 @@ code {
     --font-sans: 'Geist Variable', sans-serif;
   }
   :root {
-    --background: #fff9e9;
+    --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -2000,11 +2008,11 @@ code {
 }
 
 /*
- * App shell (Manus.im–inspired): white rail, cream canvas (Littlebird #fff9e9), black primary CTA, flat rows.
+ * App shell (Manus.im–inspired): white rail, gray canvas, black primary CTA, flat rows.
  * Tokens scoped so marketing / auth routes keep default :root theme.
  */
 .manus-app-shell {
-  --manus-canvas: #fff9e9;
+  --manus-canvas: #f4f4f5;
   --manus-cta-bg: #18181b;
   --manus-cta-fg: #fafafa;
   --manus-cta-hover: #27272a;
@@ -2055,7 +2063,7 @@ code {
 
 @media (max-width: 768px) {
   .manus-app-shell--upload-chat-mobile {
-    --manus-canvas: #fff9e9;
+    --manus-canvas: #f9f7f2;
   }
 }
 
@@ -2141,11 +2149,11 @@ code {
 /* Marketing homepage: aligned with app canvas (--manus-canvas) */
 .voltix-landing {
   color: #57534e;
-  background-color: #fff9e9;
+  background-color: #f6f4f1;
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  --background: #fff9e9;
+  --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -2167,9 +2175,9 @@ code {
 
 /* Public routes on homepage: match document light theme */
 [data-public-shell='voltix-marketing-light'] {
-  background-color: #fff9e9;
+  background-color: #f6f4f1;
   color: oklch(0.205 0 0);
-  --background: #fff9e9;
+  --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

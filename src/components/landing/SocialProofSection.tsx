@@ -271,7 +271,7 @@ export function SocialProofSection() {
       aria-labelledby="social-proof-heading"
       className={cn(
         'w-full min-w-0 max-w-full scroll-mt-28',
-        'border-t border-stone-200/90 bg-[linear-gradient(180deg,#fff9e9_0%,#fff1e6_45%,#fff9e9_100%)]',
+        'border-t border-stone-200/90 bg-[linear-gradient(180deg,#f6f4f1_0%,#f0ebe4_45%,#f6f4f1_100%)]',
         'px-0 py-14 sm:px-0 sm:py-20',
       )}
     >

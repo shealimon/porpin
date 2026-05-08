@@ -24,7 +24,7 @@ export function LandingPage() {
   return (
     <div
       className={cn(
-        'voltix-landing relative flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col bg-background font-sans text-stone-600 antialiased',
+        'voltix-landing relative flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col bg-[#f6f4f1] font-sans text-stone-600 antialiased',
         'selection:bg-orange-200/35 selection:text-stone-900',
       )}
     >
@@ -37,7 +37,7 @@ export function LandingPage() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(255,249,233,0)_0%,#fff9e9_100%)]"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(246,244,241,0)_0%,#f6f4f1_100%)]"
         aria-hidden
       />
 
@@ -80,7 +80,7 @@ export function LandingPage() {
               className={cn(
                 'inline-flex min-h-14 w-full max-w-[18rem] items-center justify-center rounded-full bg-stone-900 px-10 text-base font-semibold text-white shadow-lg shadow-stone-900/15 no-underline transition sm:min-h-[3.75rem] sm:max-w-none sm:px-12 sm:text-lg',
                 'hover:bg-stone-800 active:scale-[0.98]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f6f4f1]',
                 'sm:w-auto sm:min-w-[14rem]',
               )}
             >
@@ -116,13 +116,13 @@ export function LandingPage() {
         </Suspense>
       </div>
 
-      <footer className="mt-auto border-t border-stone-200/80 bg-white/90 py-8 backdrop-blur-sm sm:py-10">
+      <footer className="mt-auto border-t border-stone-200/80 bg-[#f6f4f1] py-8 sm:py-10">
         <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col items-center gap-6 px-4 tab:px-6 sm:gap-7">
           <Link
             to="/"
             className={cn(
               'group flex items-center gap-2.5 no-underline transition duration-200',
-              'text-zinc-950 hover:text-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+              'text-zinc-950 hover:text-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f6f4f1]',
               'active:scale-[0.97]',
             )}
             aria-label="Porpin home"
@@ -139,7 +139,7 @@ export function LandingPage() {
               className={cn(
                 'font-medium text-stone-700 no-underline transition',
                 'hover:text-stone-950 active:opacity-90',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:rounded-sm',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f6f4f1] focus-visible:rounded-sm',
               )}
             >
               help@porpin.com

@@ -58,9 +58,9 @@ export const authFormPrimaryButtonLightClass = cn(
   'sm:min-h-[3.75rem] sm:px-12 sm:text-lg',
 )
 
-/** Outer scroll shell: same canvas as landing below the public header (no floating-card gutters). */
+/** Outer scroll shell: inherits `AuthLightPageSurface` cream canvas; card stays white edge-to-edge on phone. */
 export const authLightMobilePageShellClass = cn(
-  'phone:bg-background phone:justify-start phone:px-0 phone:py-0 phone:pt-0 phone:pb-0',
+  'phone:bg-transparent phone:justify-start phone:px-0 phone:py-0 phone:pt-0 phone:pb-0',
 )
 
 /** Card becomes an edge-to-edge sheet on small screens. */

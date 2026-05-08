@@ -108,9 +108,9 @@ export function AuthConfirmPage() {
   }, [navigate, clearSession])
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 bg-background px-4 text-center">
-      <p className="text-sm font-medium text-stone-800">Verifying your email…</p>
-      <p className="max-w-sm text-xs text-stone-500">You’ll be taken to sign in next.</p>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 bg-[#050506] px-4 text-center">
+      <p className="text-sm font-medium text-zinc-200">Verifying your email…</p>
+      <p className="max-w-sm text-xs text-zinc-500">You’ll be taken to sign in next.</p>
     </div>
   )
 }

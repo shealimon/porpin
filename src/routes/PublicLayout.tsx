@@ -26,14 +26,8 @@ export function PublicLayout() {
   const onSignup = path === '/signup'
   const onForgotPassword = path === '/forgot-password'
   const onResetPassword = path === '/reset-password'
-  const onAuthConfirm = path === '/auth/confirm'
   const onLightMarketing =
-    onLanding ||
-    onLogin ||
-    onSignup ||
-    onForgotPassword ||
-    onResetPassword ||
-    onAuthConfirm
+    onLanding || onLogin || onSignup || onForgotPassword || onResetPassword
   /** Login/signup/forgot/reset: let main grow past the viewport on desktop so the window scrolls. */
   const authDesktopDocumentScroll =
     onLogin || onSignup || onForgotPassword || onResetPassword
@@ -130,8 +124,10 @@ export function PublicLayout() {
   return (
     <div
       data-public-shell={onLightMarketing ? 'voltix-marketing-light' : 'voltix-marketing-dark'}
+      {...(onLightMarketing ? { 'data-public-marketing-cream': '' } : {})}
       className={cn(
-        'flex min-h-svh min-w-0 flex-col bg-background font-outfit text-[0.9375rem] text-foreground antialiased tab:text-base',
+        'flex min-h-svh min-w-0 flex-col font-outfit text-[0.9375rem] text-foreground antialiased tab:text-base',
+        onLightMarketing ? 'bg-[#f6f4f1]' : 'bg-background',
         onLightMarketing ? 'overflow-x-visible' : 'overflow-x-clip',
       )}
     >
@@ -139,7 +135,7 @@ export function PublicLayout() {
         className={cn(
           'sticky top-0 z-50 overflow-visible',
           headerLightMobilePill
-            ? 'border-0 bg-transparent supports-[backdrop-filter]:bg-transparent desk:border-b desk:border-border desk:bg-background/90 desk:backdrop-blur-xl supports-[backdrop-filter]:desk:bg-background/80'
+            ? 'border-0 bg-transparent supports-[backdrop-filter]:bg-transparent desk:border-b desk:border-stone-200/70 desk:bg-[#f6f4f1]/88 desk:backdrop-blur-xl supports-[backdrop-filter]:desk:bg-[#f6f4f1]/78'
             : 'border-b border-border bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80',
         )}
       >
@@ -162,7 +158,7 @@ export function PublicLayout() {
             <div
               className={cn(
                 headerLightMobilePill
-                  ? 'box-border flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-visible rounded-full border border-stone-200/80 bg-background px-5 py-3 shadow-[0_6px_24px_-8px_rgba(28,25,23,0.12),0_2px_8px_-4px_rgba(28,25,23,0.06)] tab:gap-3 tab:px-5 tab:py-3.5 desk:contents desk:w-auto desk:max-w-none desk:gap-3 desk:self-stretch desk:overflow-visible desk:border-0 desk:bg-transparent desk:p-0 desk:shadow-none desk:backdrop-blur-none'
+                  ? 'box-border flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-visible rounded-full border border-stone-200/80 bg-[#faf9f7] px-5 py-3 shadow-[0_6px_24px_-8px_rgba(28,25,23,0.12),0_2px_8px_-4px_rgba(28,25,23,0.06)] tab:gap-3 tab:px-5 tab:py-3.5 desk:contents desk:w-auto desk:max-w-none desk:gap-3 desk:self-stretch desk:overflow-visible desk:border-0 desk:bg-transparent desk:p-0 desk:shadow-none desk:backdrop-blur-none'
                   : 'contents',
               )}
             >
@@ -175,7 +171,7 @@ export function PublicLayout() {
               'hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               'active:scale-[0.97]',
               onLightMarketing ? 'text-zinc-950 hover:text-zinc-800' : 'text-white',
-              headerLightMobilePill && 'focus-visible:ring-stone-400/35 focus-visible:ring-offset-background',
+              headerLightMobilePill && 'focus-visible:ring-stone-400/35 focus-visible:ring-offset-[#faf9f7]',
             )}
             aria-label="Porpin home"
           >
@@ -235,7 +231,7 @@ export function PublicLayout() {
             )}
           >
             {headerLightMobilePill ? (
-              <div className="box-border flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-200/80 bg-background shadow-sm">
+              <div className="box-border flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-200/80 bg-[#faf9f7] shadow-sm">
                 <button
                   type="button"
                   onClick={() => setMenuOpen((o) => !o)}
@@ -386,12 +382,12 @@ export function PublicLayout() {
                   aria-label="Site navigation"
                   className={cn(
                     'fixed z-[90] box-border min-w-0 overflow-visible',
-                    'left-1/2 w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2 tab:w-[min(26rem,calc(100vw-3rem))]',
+                    'left-1/2 w-[min(28rem,calc(100vw-0.75rem))] -translate-x-1/2 tab:w-[min(30rem,calc(100vw-1rem))]',
                     'top-[calc(env(safe-area-inset-top,0px)+1rem+4.5rem+0.5rem)]',
                     'desk:hidden',
                   )}
                 >
-                  <div className="box-border w-full max-w-none rounded-[1.35rem] border border-stone-200/25 bg-background p-1.5 shadow-[0_10px_40px_-12px_rgba(28,25,23,0.18),0_4px_16px_-8px_rgba(28,25,23,0.08)]">
+                  <div className="box-border w-full max-w-none rounded-[1.35rem] border border-stone-200/25 bg-[#fefdfb] p-1.5 shadow-[0_10px_40px_-12px_rgba(28,25,23,0.18),0_4px_16px_-8px_rgba(28,25,23,0.08)]">
                     <nav
                       className="flex w-full min-w-0 flex-col gap-0"
                       aria-label="Marketing mobile menu"

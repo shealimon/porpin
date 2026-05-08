@@ -258,7 +258,7 @@ export function LandingUploadPreview() {
 
   return (
     <div
-      className="landing-upload-preview relative z-[1] w-full min-w-0 max-w-full overflow-x-visible rounded-2xl border border-orange-200/80 bg-white p-4 shadow-[0_28px_64px_-20px_rgba(234,88,12,0.18),0_16px_40px_-24px_rgba(15,23,42,0.12)] ring-2 ring-orange-100/90 ring-offset-2 ring-offset-background xs:p-5 sm:rounded-[1.25rem] sm:p-8"
+      className="landing-upload-preview relative z-[1] w-full min-w-0 max-w-full overflow-x-visible rounded-2xl border border-orange-200/80 bg-white p-4 shadow-[0_28px_64px_-20px_rgba(234,88,12,0.18),0_16px_40px_-24px_rgba(15,23,42,0.12)] ring-2 ring-orange-100/90 ring-offset-2 ring-offset-[#f6f4f1] xs:p-5 sm:rounded-[1.25rem] sm:p-8"
       role="region"
       aria-label={liveLabel}
     >

@@ -161,7 +161,7 @@ export function AppLayout() {
   return (
     <div
       className={cn(
-        'manus-app-shell flex h-svh max-h-svh min-h-0 flex-col overflow-hidden bg-[var(--manus-canvas)] font-sans text-[0.9375rem] antialiased tab:text-base',
+        'manus-app-shell flex h-svh max-h-svh min-h-0 flex-col overflow-hidden font-sans text-[0.9375rem] antialiased tab:text-base',
         isUploadRoute && 'manus-app-shell--upload-chat-mobile w-full max-w-full min-w-0',
         isDesktopDocumentScrollRoute && 'manus-app-shell--page-doc-scroll',
         isDesktopDocumentScrollRoute &&
@@ -176,7 +176,7 @@ export function AppLayout() {
           'sm:px-6',
           isDesktopDocumentScrollRoute && 'desk:sticky desk:top-0',
           isUploadRoute &&
-            'upload-chat-mobile-header border-zinc-200/85 desk:border-sidebar-border desk:bg-[var(--manus-canvas)] dark:desk:bg-zinc-900',
+            'upload-chat-mobile-header border-zinc-200/85 desk:border-sidebar-border desk:bg-[#f9f7f2] dark:desk:bg-zinc-900',
         )}
       >
         <div className="flex min-w-0 flex-1 items-center">
@@ -536,7 +536,7 @@ export function AppLayout() {
             ],
             isUploadRoute && [
               /* Upload home: desktop pane tint so the hero + composer sit on a defined surface (mobile keeps shell --manus-canvas). */
-              'desk:bg-[var(--manus-canvas)] dark:desk:bg-zinc-900',
+              'desk:bg-[#f9f7f2] dark:desk:bg-zinc-900',
             ],
             isHiddenScrollbarMainRoute &&
               cn(
