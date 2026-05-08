@@ -43,13 +43,13 @@ export function LandingPage() {
 
       <section
         aria-labelledby="landing-hero-heading"
-        className="mx-auto flex min-h-[calc(100svh-4.5rem)] w-full min-w-0 max-w-6xl flex-col justify-center px-5 pb-10 pt-14 sm:min-h-[calc(100svh-4.75rem)] sm:pb-12 sm:pt-20 lg:min-h-[calc(76svh-4.75rem)] lg:pb-8 lg:pt-14 tab:px-6"
+        className="mx-auto flex min-h-[calc(100svh-4.5rem)] w-full min-w-0 max-w-6xl flex-col items-center justify-center px-4 pb-10 pt-14 text-center sm:min-h-[calc(100svh-4.75rem)] sm:px-5 sm:pb-12 sm:pt-20 lg:min-h-[calc(76svh-4.75rem)] lg:pb-8 lg:pt-14 tab:px-6"
       >
-        <div className="mx-auto w-full min-w-0 max-w-5xl text-center max-[768px]:box-border max-[768px]:px-3">
+        <div className="mx-auto w-full min-w-0 max-w-5xl text-center">
           <h1
             id="landing-hero-heading"
             className={cn(
-              'voltix-fade-in animate-fade-up-delay-1 !m-0 w-full min-w-0 max-w-full font-display !text-[clamp(2.65rem,calc(9.25vw_+_0.85rem),5.75rem)] !font-normal !leading-[1.04] !tracking-[-0.038em] text-stone-900 opacity-0 motion-reduce:opacity-100 [animation-fill-mode:forwards] sm:!text-[clamp(2.85rem,8.2vw,5.75rem)]',
+              'voltix-fade-in animate-fade-up-delay-1 !m-0 w-full min-w-0 max-w-full text-balance font-display !text-[clamp(2.65rem,calc(9.25vw_+_0.85rem),5.75rem)] !font-normal !leading-[1.04] !tracking-[-0.038em] text-stone-900 opacity-0 motion-reduce:opacity-100 [animation-fill-mode:forwards] sm:!text-[clamp(2.85rem,8.2vw,5.75rem)]',
             )}
           >
             <span className="block break-words">

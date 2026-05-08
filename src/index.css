@@ -110,17 +110,6 @@
   overflow-x: clip;
 }
 
-/* Light marketing (landing, auth): avoid #root clipping the header pill’s right radius + shadow on narrow viewports. */
-@media (max-width: 768px) {
-  #root:has([data-public-shell='voltix-marketing-light']) {
-    overflow-x: visible;
-  }
-  /* `html` also uses overflow-x: clip in @layer base — without this, the pill can still lose its right margin/radius. */
-  html:has([data-public-shell='voltix-marketing-light']) {
-    overflow-x: visible;
-  }
-}
-
 /* Light marketing (landing + light auth): canvas + overscroll match cream (`#f6f4f1`) so body `bg-background` white doesn't peek. */
 html:has([data-public-marketing-cream]) {
   background-color: #f6f4f1;

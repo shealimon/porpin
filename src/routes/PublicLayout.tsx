@@ -128,7 +128,10 @@ export function PublicLayout() {
       className={cn(
         'flex min-h-svh min-w-0 flex-col font-outfit text-[0.9375rem] text-foreground antialiased tab:text-base',
         onLightMarketing ? 'bg-[#f6f4f1]' : 'bg-background',
-        onLightMarketing ? 'overflow-x-visible' : 'overflow-x-clip',
+        /* Mobile: inset for pill/shadow; same padding L+R (max of safe areas) so body copy stays visually centered. */
+        onLightMarketing &&
+          'max-[768px]:box-border max-[768px]:px-[max(0.5rem,env(safe-area-inset-left),env(safe-area-inset-right))]',
+        'overflow-x-clip',
       )}
     >
       <header
@@ -144,21 +147,21 @@ export function PublicLayout() {
           className={cn(
             'mx-auto flex w-full min-w-0 max-w-6xl',
                 headerLightMobilePill
-                  ? 'relative flex-col items-stretch overflow-visible px-5 pt-4 pb-2 tab:px-6 desk:flex-row desk:items-center desk:justify-between desk:gap-3 desk:overflow-visible desk:px-6 desk:py-4 desk:pt-3 desk:pb-2'
+                  ? 'relative flex-col items-stretch overflow-visible max-[768px]:px-0 pt-4 pb-2 px-5 tab:px-6 desk:flex-row desk:items-center desk:justify-between desk:gap-3 desk:overflow-visible desk:px-6 desk:py-4 desk:pt-3 desk:pb-2'
               : 'items-center justify-between gap-3 px-4 py-3 tab:px-6 tab:py-4',
           )}
         >
           <div
             className={cn(
                 headerLightMobilePill
-                  ? 'relative w-full min-w-0 max-w-full max-[768px]:box-border max-[768px]:px-3 desk:contents'
+                  ? 'relative w-full min-w-0 max-w-full max-[768px]:box-border desk:contents'
                 : 'contents',
             )}
           >
             <div
               className={cn(
                 headerLightMobilePill
-                  ? 'box-border flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-visible rounded-full border border-stone-200/80 bg-[#faf9f7] px-5 py-3 shadow-[0_6px_24px_-8px_rgba(28,25,23,0.12),0_2px_8px_-4px_rgba(28,25,23,0.06)] tab:gap-3 tab:px-5 tab:py-3.5 desk:contents desk:w-auto desk:max-w-none desk:gap-3 desk:self-stretch desk:overflow-visible desk:border-0 desk:bg-transparent desk:p-0 desk:shadow-none desk:backdrop-blur-none'
+                  ? 'box-border flex w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-visible rounded-full border border-stone-200/80 bg-[#faf9f7] px-4 py-3 shadow-[0_6px_24px_-8px_rgba(28,25,23,0.12),0_2px_8px_-4px_rgba(28,25,23,0.06)] max-[768px]:shadow-[0_4px_18px_-6px_rgba(28,25,23,0.1)] tab:gap-3 tab:px-5 tab:py-3.5 desk:contents desk:w-auto desk:max-w-none desk:gap-3 desk:self-stretch desk:overflow-visible desk:border-0 desk:bg-transparent desk:p-0 desk:shadow-none desk:backdrop-blur-none'
                   : 'contents',
               )}
             >
@@ -167,6 +170,7 @@ export function PublicLayout() {
             onClick={onHomeLogoClick}
             className={cn(
               'group relative flex min-w-0 max-w-[min(100%,21rem)] shrink items-center gap-2 no-underline transition duration-200 sm:gap-2.5',
+              headerLightMobilePill && 'max-[768px]:flex-1 desk:flex-initial',
               'overflow-hidden desk:shrink-0',
               'hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               'active:scale-[0.97]',
@@ -436,7 +440,7 @@ export function PublicLayout() {
       <main
         className={cn(
           'flex min-w-0 flex-1 flex-col',
-          onLightMarketing ? 'overflow-x-visible' : 'overflow-x-clip',
+          'overflow-x-clip',
           authDesktopDocumentScroll
             ? 'max-[768px]:min-h-0 max-[768px]:flex-1 desk:flex-none desk:min-h-min desk:overflow-visible'
             : 'min-h-0',
